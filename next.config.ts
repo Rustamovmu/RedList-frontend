@@ -10,6 +10,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The Playwright suite builds into its own folder so it never disturbs a running dev server.
+  distDir: process.env.NEXT_DIST_DIR ?? '.next',
   output: 'standalone',
   poweredByHeader: false,
   // The browser calls same-origin /api/v1/*. In development Next proxies those calls to the API.

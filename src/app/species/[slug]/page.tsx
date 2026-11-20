@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { AddToCompare } from '@/components/compare/AddToCompare';
 import { Cite, Missing, type SourceIndex } from '@/components/profile/Cite';
+import { SpeciesCard } from '@/components/SpeciesCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
@@ -27,7 +29,7 @@ async function load(slug: string): Promise<Profile> {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) notFound();
   try {
     // Cached until the API revalidates this tag on publish (PLAN §3 "Caching").
-    return await apiGet('/api/v1/species/{slug}', { params: { slug }, tags: [`species:${slug}`] });
+    return await apiGet('/api/v1/species/{slug}', { params: { slug }, tags: [`species:${slug}`, 'catalogue'] });
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     throw e;
@@ -89,6 +91,9 @@ export default async function SpeciesPage({ params }: Params) {
             <dd className="mt-1">{p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ') || 'Unknown'}</dd>
           </div>
         </dl>
+        <div className="mt-4">
+          <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
+        </div>
       </header>
 
       {/* ---------- in-page navigation (sticky on small screens) ---------- */}
@@ -382,6 +387,20 @@ export default async function SpeciesPage({ params }: Params) {
           {p.review.selfReviewed ? ' (self-reviewed: the author published their own edit, with no independent review)' : ''}.
         </p>
       </Section>
+
+      {p.related.length ? (
+        <section aria-labelledby="related-h" className="mt-12 border-t border-line pt-8">
+          <h2 id="related-h" className="text-2xl font-semibold">Related species</h2>
+          <p className="mt-1 text-sm text-ink-muted">Chosen because they share an animal group, threats or places.</p>
+          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {p.related.map((c) => (
+              <li key={c.slug}>
+                <SpeciesCard card={c} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </article>
   );
 }

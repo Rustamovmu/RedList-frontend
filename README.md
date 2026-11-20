@@ -14,7 +14,7 @@ npm run contracts:generate    # types from ../RedList-backent/openapi.json
 npm run dev                   # http://localhost:3000
 ```
 
-The home page currently shows a system check. It should say **"API and database connected"**.
+Pages: home `/`, Explore `/species`, profiles `/species/<slug>`, compare `/compare?species=a,b,c`.
 
 - **Species profiles:** `/species/<slug>` (try `fictus-regionalis` after `npm run db:seed:fixtures` in the backend).
 - **Staff area:** `/admin`. Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.
@@ -25,4 +25,6 @@ The home page currently shows a system check. It should say **"API and database 
 - **After publishing**, the backend calls `POST /api/revalidate` (header `x-revalidate-secret`, body `{ "tags": [...] }`) so changes appear immediately.
 
 ## Commands
-`npm run typecheck` · `npm run lint` · `npm run build` · `npm run contracts:generate`
+`npm run typecheck` · `npm run lint` · `npm run build` · `npm run contracts:generate` · `npm run test:e2e`
+
+`test:e2e` runs Playwright against its own stack (API :4110 on the `wild_e2e` database, web :3110 built into `.next-e2e`) using your installed Google Chrome. Docker PostGIS must be running. Your dev servers and dev database are not touched.

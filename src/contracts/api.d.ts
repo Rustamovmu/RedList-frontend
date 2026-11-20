@@ -244,6 +244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/species": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/species/{slug}": {
         parameters: {
             query?: never;
@@ -252,6 +268,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["SpeciesController_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_filters"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_compare"];
         put?: never;
         post?: never;
         delete?: never;
@@ -660,6 +708,43 @@ export interface components {
             media: components["schemas"]["MediaRefDto"][];
             supportLinks: components["schemas"]["SupportLinkRefDto"][];
         };
+        CardStatusDto: {
+            /** @enum {string} */
+            category: "EX" | "EW" | "CR" | "EN" | "VU" | "NT" | "LC" | "DD" | "NE";
+            /** @enum {string} */
+            scope: "global" | "regional";
+            assessedOn: string | null;
+            /** @enum {string} */
+            trend: "increasing" | "decreasing" | "stable" | "unknown";
+        };
+        CardImageDto: {
+            storageKey: string;
+            altText: string;
+            credit: string;
+            license: string;
+        };
+        SpeciesCardDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Headline assessment: global if there is one, else regional; most recent first */
+            status: components["schemas"]["CardStatusDto"] | null;
+            notAssessed: boolean;
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            /** @description Number of countries, seas and oceans; null when locations are withheld */
+            regionCount: number | null;
+            locationWithheld: boolean;
+            image: components["schemas"]["CardImageDto"] | null;
+        };
+        SpeciesListDto: {
+            items: components["schemas"]["SpeciesCardDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
         NameDto: {
             language: string;
             name: string;
@@ -869,6 +954,52 @@ export interface components {
             sources: components["schemas"]["SourceRefDto"][];
             citations: components["schemas"]["CitationDto"][];
             review: components["schemas"]["ReviewDto"];
+            /** @description Up to 4 published species sharing group, threats or (non-sensitive) regions */
+            related: components["schemas"]["SpeciesCardDto"][];
+        };
+        FacetDto: {
+            value: string;
+            count: number;
+        };
+        RegionFacetDto: {
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+            count: number;
+        };
+        HabitatFacetDto: {
+            code: string;
+            name: string;
+            count: number;
+        };
+        FiltersDto: {
+            /** @description Published species in this catalogue */
+            total: number;
+            /** @description Published species whose headline category is CR, EN or VU */
+            threatened: number;
+            groups: components["schemas"]["FacetDto"][];
+            environments: components["schemas"]["FacetDto"][];
+            categories: components["schemas"]["FacetDto"][];
+            trends: components["schemas"]["FacetDto"][];
+            /** @description Location-sensitive species are not counted */
+            regions: components["schemas"]["RegionFacetDto"][];
+            habitats: components["schemas"]["HabitatFacetDto"][];
+        };
+        PopulationComparisonDto: {
+            /**
+             * @description same_basis: every species has a wild, global, numeric estimate in one shared unit. Values are still never combined or scored.
+             * @enum {string}
+             */
+            status: "same_basis" | "not_directly_comparable" | "unknown";
+            message: string;
+            /** @enum {string|null} */
+            basis: "mature_individuals" | "breeding_pairs" | "individuals" | "other" | null;
+        };
+        CompareDto: {
+            /** @description In the requested order */
+            species: components["schemas"]["SpeciesProfileDto"][];
+            population: components["schemas"]["PopulationComparisonDto"];
         };
     };
     responses: never;
@@ -1305,6 +1436,51 @@ export interface operations {
             };
         };
     };
+    SpeciesController_list: {
+        parameters: {
+            query?: {
+                /** @description Search common names, scientific names and synonyms (prefix match per word) */
+                q?: string;
+                /** @description Animal group: mammal, bird, reptile, amphibian, fish, insect, arachnid, mollusc, crustacean, coral, other_invertebrate. Comma-separated; any of the values matches. */
+                group?: string;
+                /** @description Environment: terrestrial, freshwater, marine, brackish, subterranean, aerial. Comma-separated; any of the values matches. */
+                environment?: string;
+                /** @description IUCN category of the headline (global, most recent) assessment. Comma-separated; any of the values matches. */
+                category?: string;
+                /** @description Country, sea or ocean slug. Location-sensitive species never match.. Comma-separated; any of the values matches. */
+                region?: string;
+                /** @description Habitat code. Comma-separated; any of the values matches. */
+                habitat?: string;
+                /** @description Population trend of the headline assessment. Comma-separated; any of the values matches. */
+                trend?: string;
+                /** @description name, status (most threatened first; DD, NE and unassessed last), reviewed (newest first) */
+                sort?: "name" | "status" | "reviewed";
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpeciesListDto"];
+                };
+            };
+            /** @description Invalid filter value or pageSize above 48 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     SpeciesController_profile: {
         parameters: {
             query?: never;
@@ -1325,6 +1501,61 @@ export interface operations {
                 };
             };
             /** @description No published species with this slug */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SpeciesController_filters: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiltersDto"];
+                };
+            };
+        };
+    };
+    SpeciesController_compare: {
+        parameters: {
+            query?: {
+                /** @description 1 to 3 species slugs, comma-separated. Duplicates are ignored. */
+                species?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareDto"];
+                };
+            };
+            /** @description Not 1 to 3 distinct valid slugs */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A slug is not a published species */
             404: {
                 headers: {
                     [name: string]: unknown;
