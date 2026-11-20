@@ -388,6 +388,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_sitemap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/support": {
         parameters: {
             query?: never;
@@ -1516,6 +1548,38 @@ export interface components {
             species: components["schemas"]["SpeciesProfileDto"][];
             population: components["schemas"]["PopulationComparisonDto"];
         };
+        CitingSpeciesDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+        };
+        PublicSourceDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            publisher: string | null;
+            authors: string | null;
+            url: string | null;
+            doi: string | null;
+            publishedOn: string | null;
+            accessedOn: string | null;
+            license: string | null;
+            /** @description How the source may be used, and caveats such as "second-hand" */
+            note: string | null;
+            /** @description True for the boundary data behind maps and region pages */
+            usedForBoundaries: boolean;
+            species: components["schemas"]["CitingSpeciesDto"][];
+        };
+        SitemapSpeciesDto: {
+            slug: string;
+            /** @description When the live revision was published */
+            publishedAt: string;
+        };
+        SitemapDto: {
+            species: components["schemas"]["SitemapSpeciesDto"][];
+            /** @description Regions with at least one published, non-sensitive species */
+            regions: string[];
+        };
         SupportSpeciesRefDto: {
             slug: string;
             scientificName: string;
@@ -2371,6 +2435,44 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SpeciesController_sources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSourceDto"][];
+                };
+            };
+        };
+    };
+    SpeciesController_sitemap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitemapDto"];
+                };
             };
         };
     };

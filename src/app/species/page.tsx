@@ -138,9 +138,9 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
                 {list.total} {list.total === 1 ? 'species' : 'species'} in this catalogue match
               </p>
               <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {list.items.map((c) => (
+                {list.items.map((c, i) => (
                   <li key={c.slug}>
-                    <SpeciesCard card={c} headingLevel="h2" />
+                    <SpeciesCard card={c} headingLevel="h2" eager={i < 3} />
                   </li>
                 ))}
               </ul>

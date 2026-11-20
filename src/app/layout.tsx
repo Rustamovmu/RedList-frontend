@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: { default: 'Wildward: understand, locate and help wildlife', template: '%s · Wildward' },
   description: 'Understand a species, discover where it lives, and find a credible way to help.',
+  applicationName: 'Wildward',
+  openGraph: { type: 'website', siteName: 'Wildward', locale: 'en_GB' },
+  twitter: { card: 'summary_large_image' },
 };
 
 export const viewport: Viewport = { themeColor: '#1f3d2b' };

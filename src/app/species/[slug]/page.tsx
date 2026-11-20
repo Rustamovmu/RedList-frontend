@@ -9,6 +9,8 @@ import { SpeciesCard } from '@/components/SpeciesCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
+import { mediaSrc } from '@/lib/media';
+import { absolute, jsonLd } from '@/lib/site';
 import {
   ACTION_LABEL, BASIS_LABEL, ENVIRONMENT_LABEL, estimateValue, formatDate, GROUP_LABEL, ORIGIN_LABEL, PRESENCE_LABEL,
   referencePeriod, SEASON_LABEL, TREND_LABEL,
@@ -42,11 +44,58 @@ async function load(slug: string): Promise<Profile> {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const p = await load((await params).slug);
   const name = p.commonName ? `${p.commonName} (${p.scientificName})` : p.scientificName;
+  const description = summary(p.overview) ?? `Status, population, range and threats of ${p.scientificName}.`;
+  const photo = primaryPhoto(p);
+  // Open Graph uses the licensed catalogue photo itself (served by our API), never a stock or generated image.
+  const images = photo
+    ? [{ url: absolute(`${mediaSrc(photo.storageKey)}/1280.webp`), width: Math.min(photo.width, 1280), height: Math.round((Math.min(photo.width, 1280) * photo.height) / photo.width), alt: photo.altText }]
+    : undefined;
   return {
     title: name,
-    description: p.overview?.slice(0, 160) ?? `Status, population, range and threats of ${p.scientificName}.`,
+    description,
     alternates: { canonical: `/species/${p.slug}` },
+    openGraph: { type: 'article', title: name, description, url: `/species/${p.slug}`, images },
+    twitter: { card: photo ? 'summary_large_image' : 'summary', title: name, description, images: images?.map((i) => i.url) },
   };
+}
+
+/** First sentences of the overview, cut at a word boundary, at most 160 characters. */
+function summary(text: string | null): string | null {
+  if (!text) return null;
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 157);
+  return `${cut.slice(0, cut.lastIndexOf(' '))}…`;
+}
+
+const primaryPhoto = (p: Profile) => p.media.find((m) => m.role === 'primary') ?? p.media[0];
+
+/** schema.org structured data: the species as a Taxon, and a breadcrumb trail. Built only from the published profile. */
+function structuredData(p: Profile) {
+  const url = absolute(`/species/${p.slug}`);
+  const photo = primaryPhoto(p);
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Taxon',
+      name: p.scientificName,
+      taxonRank: p.rank,
+      url,
+      ...(p.commonName || p.commonNames.length || p.synonyms.length
+        ? { alternateName: [...new Set([p.commonName, ...p.commonNames.map((n) => n.name), ...p.synonyms.map((n) => n.name)].filter(Boolean))] }
+        : {}),
+      ...(p.taxonomy.genus ? { parentTaxon: { '@type': 'Taxon', name: p.taxonomy.genus, taxonRank: 'genus' } } : {}),
+      ...(photo ? { image: absolute(`${mediaSrc(photo.storageKey)}/1280.webp`) } : {}),
+      ...(p.overview ? { description: summary(p.overview) } : {}),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Explore', item: absolute('/species') },
+        { '@type': 'ListItem', position: 2, name: p.commonName ?? p.scientificName, item: url },
+      ],
+    },
+  ];
 }
 
 export default async function SpeciesPage({ params }: Params) {
@@ -55,10 +104,11 @@ export default async function SpeciesPage({ params }: Params) {
   const cited = (section: string) => p.citations.filter((c) => c.sectionKey === section).map((c) => c.sourceId);
   const headline = p.status.assessments.find((a) => a.scope === 'global') ?? p.status.assessments[0];
   const year = (d: string | null) => (d ? Number(d.slice(0, 4)) : undefined);
-  const photo = p.media.find((m) => m.role === 'primary') ?? p.media[0];
+  const photo = primaryPhoto(p);
 
   return (
     <article className="mx-auto max-w-4xl px-4 pb-16">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(p)) }} />
       {/* ---------- header and key facts ---------- */}
       <header className="pt-8">
         <p className="text-sm font-medium uppercase tracking-wider text-forest-light">{GROUP_LABEL[p.displayGroup]}</p>

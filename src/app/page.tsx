@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
@@ -5,11 +6,14 @@ import { SpeciesCard } from '@/components/SpeciesCard';
 import { apiGet } from '@/lib/api';
 import { ENVIRONMENT_LABEL, GROUP_LABEL } from '@/lib/labels';
 import { mediaSrc } from '@/lib/media';
+import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
 
 /**
  * Home (PLAN §4). Every number comes from the database and says "in this catalogue": never a global total.
  * The hero photo, when there is one, is a catalogue image with its credit: never a stock or invented image.
  */
+export const metadata: Metadata = { alternates: { canonical: '/' } };
+
 export default async function Home() {
   // Render per request (never prerendered at build, when the API may be down). Data stays cached by tag.
   await connection();
@@ -23,8 +27,18 @@ export default async function Home() {
   const environments = filters?.environments.filter((e) => e.count > 0) ?? [];
   const places = [...(filters?.regions ?? [])].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 8);
 
+  // schema.org WebSite with the site search, so search engines can offer a search box for the catalogue.
+  const site = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: absolute('/'),
+    potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: absolute('/species?q={search_term_string}') }, 'query-input': 'required name=search_term_string' },
+  };
+
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(site) }} />
       <section className="bg-forest text-paper">
         <div className={`mx-auto max-w-6xl px-4 py-14 sm:py-20 ${hero ? 'lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-10' : ''}`}>
           <div>
