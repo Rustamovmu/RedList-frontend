@@ -8,6 +8,8 @@ out
 .env.local
 *.tsbuildinfo
 next-env.d.ts
+# copied from node_modules by scripts/copy-maplibre-worker.mjs
+public/vendor
 
 # Shared agent skills (~/Developer/skills)
 .claude/skills

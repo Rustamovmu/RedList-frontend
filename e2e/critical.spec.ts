@@ -34,13 +34,13 @@ test('search → filter → profile → compare three → Back restores the filt
   await page.getByRole('searchbox', { name: 'Search species by name' }).fill('fictus');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
   await expect(page).toHaveURL(/\/species\?q=fictus$/);
-  await expect(page.getByRole('status')).toHaveText('5 species in this catalogue match');
+  await expect(page.getByRole('status')).toHaveText('6 species in this catalogue match');
 
   await openFilters(page);
   await page.getByRole('checkbox', { name: /^Land/ }).check();
   await page.getByRole('button', { name: 'Apply filters' }).click();
   await expect(page).toHaveURL(/environment=terrestrial/);
-  await expect(page.getByRole('status')).toHaveText('4 species in this catalogue match');
+  await expect(page.getByRole('status')).toHaveText('5 species in this catalogue match');
   await expect(page.getByRole('link', { name: /Environment: Land/ })).toBeVisible(); // chip
   await expectNoHorizontalOverflow(page);
   const filteredUrl = page.url();
@@ -49,7 +49,7 @@ test('search → filter → profile → compare three → Back restores the filt
   await page.goBack();
   // Back restores the filtered list: URL, results and the checked box.
   await expect(page).toHaveURL(filteredUrl);
-  await expect(page.getByRole('status')).toHaveText('4 species in this catalogue match');
+  await expect(page.getByRole('status')).toHaveText('5 species in this catalogue match');
   await openFilters(page);
   await expect(page.getByRole('checkbox', { name: /^Land/ })).toBeChecked();
   await closeFilters(page);
@@ -74,7 +74,7 @@ test('search → filter → profile → compare three → Back restores the filt
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hidden example frog (fixture)');
   await page.goBack();
   await expect(page).toHaveURL(filteredUrl);
-  await expect(page.getByRole('status')).toHaveText('4 species in this catalogue match');
+  await expect(page.getByRole('status')).toHaveText('5 species in this catalogue match');
 });
 
 test('compare holds at most three and says so', async ({ page }) => {

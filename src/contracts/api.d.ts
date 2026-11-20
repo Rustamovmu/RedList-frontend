@@ -84,6 +84,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GeographyController_map"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/map/basemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GeographyController_basemap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/regions/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GeographyController_region"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/species": {
         parameters: {
             query?: never;
@@ -308,6 +356,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/support": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffSupportController_organizations"];
+        put?: never;
+        post: operations["StaffSupportController_createOrganization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/organizations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["StaffSupportController_updateOrganization"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/organizations/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffSupportController_approveOrganization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/organizations/{id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffSupportController_disableOrganization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/support-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffSupportController_createLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/support-links/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["StaffSupportController_updateLink"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/support-links/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffSupportController_approveLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/support-links/{id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffSupportController_disableLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -342,6 +534,168 @@ export interface components {
         OkDto: {
             /** @example true */
             ok: boolean;
+        };
+        CardStatusDto: {
+            /** @enum {string} */
+            category: "EX" | "EW" | "CR" | "EN" | "VU" | "NT" | "LC" | "DD" | "NE";
+            /** @enum {string} */
+            scope: "global" | "regional";
+            assessedOn: string | null;
+            /** @enum {string} */
+            trend: "increasing" | "decreasing" | "stable" | "unknown";
+        };
+        CardImageDto: {
+            storageKey: string;
+            altText: string;
+            credit: string;
+            license: string;
+        };
+        MapSpeciesDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Headline assessment: global if there is one, else regional; most recent first */
+            status: components["schemas"]["CardStatusDto"] | null;
+            notAssessed: boolean;
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            /** @description Number of countries, seas and oceans; null when locations are withheld */
+            regionCount: number | null;
+            locationWithheld: boolean;
+            image: components["schemas"]["CardImageDto"] | null;
+            /**
+             * @description range: a published range map is shown. country: only country/sea-level presence is known, so whole regions are shaded.
+             * @enum {string}
+             */
+            layer: "range" | "country";
+        };
+        CountryPresenceDto: {
+            /** @description Region slug; its shape is in GET /map/basemap */
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+            speciesCount: number;
+            /** @description Slugs of the species shaded here */
+            species: string[];
+        };
+        MultiPolygonDto: {
+            /** @enum {string} */
+            type: "MultiPolygon";
+            /** @description WGS84 [longitude, latitude]; never crosses ±180 (shapes are split there) */
+            coordinates: number[][][][];
+        };
+        MapRangeDto: {
+            speciesSlug: string;
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            /** @description True when the shape was generalized to whole countries or seas to protect the species */
+            generalized: boolean;
+            note: string | null;
+            /** Format: uuid */
+            sourceId: string;
+            /** @description Clipped to the viewport and simplified for display */
+            geometry: components["schemas"]["MultiPolygonDto"];
+        };
+        MapLimitsDto: {
+            maxSpecies: number;
+            maxVertices: number;
+        };
+        MapDto: {
+            /** @description [west, south, east, north] as interpreted */
+            bbox: number[];
+            species: components["schemas"]["MapSpeciesDto"][];
+            /** @description Layer "Country-level presence" */
+            countryPresence: components["schemas"]["CountryPresenceDto"][];
+            /** @description Layer "Published range map" */
+            ranges: components["schemas"]["MapRangeDto"][];
+            /** @description True when a species or vertex cap cut the result short; zoom in to see everything */
+            truncated: boolean;
+            limits: components["schemas"]["MapLimitsDto"];
+        };
+        BasemapPropertiesDto: {
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            kind: "country" | "ocean" | "sea" | "other";
+        };
+        BasemapFeatureDto: {
+            /** @enum {string} */
+            type: "Feature";
+            properties: components["schemas"]["BasemapPropertiesDto"];
+            geometry: components["schemas"]["MultiPolygonDto"];
+        };
+        BasemapDto: {
+            /** @enum {string} */
+            type: "FeatureCollection";
+            features: components["schemas"]["BasemapFeatureDto"][];
+            attribution: string;
+        };
+        RegionSourceDto: {
+            title: string;
+            url: string | null;
+            license: string | null;
+        };
+        RegionDto: {
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+            isoA2: string | null;
+            /** @description [west, south, east, north]; west > east crosses the antimeridian */
+            bbox: number[] | null;
+            source: components["schemas"]["RegionSourceDto"] | null;
+        };
+        FacetDto: {
+            value: string;
+            count: number;
+        };
+        RegionFacetsDto: {
+            groups: components["schemas"]["FacetDto"][];
+            categories: components["schemas"]["FacetDto"][];
+            origins: components["schemas"]["FacetDto"][];
+            seasonalities: components["schemas"]["FacetDto"][];
+        };
+        SpeciesCardDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Headline assessment: global if there is one, else regional; most recent first */
+            status: components["schemas"]["CardStatusDto"] | null;
+            notAssessed: boolean;
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            /** @description Number of countries, seas and oceans; null when locations are withheld */
+            regionCount: number | null;
+            locationWithheld: boolean;
+            image: components["schemas"]["CardImageDto"] | null;
+        };
+        OccurrenceDto: {
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            /** @enum {string} */
+            origin: "native" | "reintroduced" | "introduced" | "vagrant" | "origin_uncertain";
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+        };
+        RegionSpeciesDto: {
+            card: components["schemas"]["SpeciesCardDto"];
+            /** @description How the species occurs in this region, as the source records it */
+            occurrences: components["schemas"]["OccurrenceDto"][];
+        };
+        RegionPageDto: {
+            region: components["schemas"]["RegionDto"];
+            /** @description Counts of published species in this region */
+            facets: components["schemas"]["RegionFacetsDto"];
+            items: components["schemas"]["RegionSpeciesDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
         };
         IdentifierDto: {
             /** Format: uuid */
@@ -452,6 +806,24 @@ export interface components {
             /** Format: uuid */
             sourceId: string;
         };
+        RangeInput: {
+            /** Format: uuid */
+            sourceId: string;
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            /** @description Version of the source dataset, if any */
+            datasetVersion?: string | null;
+            /** @description How the shape was simplified. Set automatically for location-sensitive species. */
+            generalizationNote?: string | null;
+            /** @description GeoJSON Polygon or MultiPolygon, WGS84 [lon, lat], at most 50000 vertices. Longitudes may run to ±540 to cross the antimeridian in one shape; it is split at ±180 on save. For "generalize_country" species the shape is replaced by the whole countries (or seas) it covers; "hide_regions" species cannot have ranges. */
+            geometry?: {
+                /** @enum {string} */
+                type: "Polygon" | "MultiPolygon";
+                coordinates: unknown[];
+            };
+        };
         HabitatInput: {
             /** Format: uuid */
             habitatId: string;
@@ -544,6 +916,8 @@ export interface components {
             assessments: components["schemas"]["AssessmentInput"][];
             populationEstimates: components["schemas"]["EstimateInput"][];
             regions: components["schemas"]["RegionPresenceInput"][];
+            /** @description Published range maps (approved through the revision workflow) */
+            ranges: components["schemas"]["RangeInput"][];
             habitats: components["schemas"]["HabitatInput"][];
             threats: components["schemas"]["ThreatInput"][];
             citations: components["schemas"]["CitationInput"][];
@@ -637,6 +1011,8 @@ export interface components {
             assessments: components["schemas"]["AssessmentInput"][];
             populationEstimates: components["schemas"]["EstimateInput"][];
             regions: components["schemas"]["RegionPresenceInput"][];
+            /** @description Published range maps (approved through the revision workflow) */
+            ranges: components["schemas"]["RangeInput"][];
             habitats: components["schemas"]["HabitatInput"][];
             threats: components["schemas"]["ThreatInput"][];
             citations: components["schemas"]["CitationInput"][];
@@ -707,36 +1083,6 @@ export interface components {
             threats: components["schemas"]["CodedRefDto"][];
             media: components["schemas"]["MediaRefDto"][];
             supportLinks: components["schemas"]["SupportLinkRefDto"][];
-        };
-        CardStatusDto: {
-            /** @enum {string} */
-            category: "EX" | "EW" | "CR" | "EN" | "VU" | "NT" | "LC" | "DD" | "NE";
-            /** @enum {string} */
-            scope: "global" | "regional";
-            assessedOn: string | null;
-            /** @enum {string} */
-            trend: "increasing" | "decreasing" | "stable" | "unknown";
-        };
-        CardImageDto: {
-            storageKey: string;
-            altText: string;
-            credit: string;
-            license: string;
-        };
-        SpeciesCardDto: {
-            slug: string;
-            scientificName: string;
-            commonName: string | null;
-            /** @enum {string} */
-            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
-            /** @description Headline assessment: global if there is one, else regional; most recent first */
-            status: components["schemas"]["CardStatusDto"] | null;
-            notAssessed: boolean;
-            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
-            /** @description Number of countries, seas and oceans; null when locations are withheld */
-            regionCount: number | null;
-            locationWithheld: boolean;
-            image: components["schemas"]["CardImageDto"] | null;
         };
         SpeciesListDto: {
             items: components["schemas"]["SpeciesCardDto"][];
@@ -821,6 +1167,16 @@ export interface components {
             /** Format: uuid */
             sourceId: string;
         };
+        RangeMetaDto: {
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            datasetVersion: string | null;
+            generalizationNote: string | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
         HabitatDto: {
             code: string;
             name: string;
@@ -846,7 +1202,11 @@ export interface components {
             environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
             /** @description True when the species is location-sensitive and its regions are withheld */
             locationWithheld: boolean;
+            /** @description True when locations are shown only at whole-country (or sea) level to protect the species */
+            locationGeneralized: boolean;
             regions: components["schemas"]["PresenceDto"][];
+            /** @description Published range maps. Empty when only country-level presence is known. */
+            ranges: components["schemas"]["RangeMetaDto"][];
             habitats: components["schemas"]["HabitatDto"][];
             climate: components["schemas"]["ClimateDto"];
         };
@@ -957,10 +1317,6 @@ export interface components {
             /** @description Up to 4 published species sharing group, threats or (non-sensitive) regions */
             related: components["schemas"]["SpeciesCardDto"][];
         };
-        FacetDto: {
-            value: string;
-            count: number;
-        };
         RegionFacetDto: {
             slug: string;
             name: string;
@@ -1000,6 +1356,90 @@ export interface components {
             /** @description In the requested order */
             species: components["schemas"]["SpeciesProfileDto"][];
             population: components["schemas"]["PopulationComparisonDto"];
+        };
+        SupportSpeciesRefDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+        };
+        DirectoryLinkDto: {
+            url: string;
+            /** @description Destination domain, shown next to the link */
+            domain: string;
+            /** @enum {string} */
+            actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
+            description: string;
+            /** @description Published species whose profile shows this link */
+            species: components["schemas"]["SupportSpeciesRefDto"][];
+        };
+        DirectoryOrganizationDto: {
+            slug: string;
+            name: string;
+            website: string;
+            websiteDomain: string;
+            description: string;
+            /** @description When site staff last reviewed this organization. A review is not a certification of effectiveness. */
+            reviewedAt: string | null;
+            links: components["schemas"]["DirectoryLinkDto"][];
+        };
+        SupportDirectoryDto: {
+            organizations: components["schemas"]["DirectoryOrganizationDto"][];
+        };
+        StaffSupportLinkDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            organizationId: string;
+            url: string;
+            /** @enum {string} */
+            actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
+            description: string;
+            /** @enum {string} */
+            editorialStatus: "pending" | "approved" | "disabled";
+            lastCheckedAt: string | null;
+            lastStatus: number | null;
+        };
+        StaffOrganizationDto: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            website: string;
+            description: string;
+            /** @enum {string} */
+            reviewStatus: "pending" | "approved" | "disabled";
+            reviewedAt: string | null;
+            links: components["schemas"]["StaffSupportLinkDto"][];
+        };
+        CreateOrganizationDto: {
+            name: string;
+            /** @example https://example.org */
+            website: string;
+            description: string;
+            /** @example example-trust */
+            slug: string;
+        };
+        UpdateOrganizationDto: {
+            name: string;
+            /** @example https://example.org */
+            website: string;
+            description: string;
+        };
+        CreateSupportLinkDto: {
+            /** @example https://example.org/act */
+            url: string;
+            /** @enum {string} */
+            actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
+            description: string;
+            /** Format: uuid */
+            organizationId: string;
+        };
+        UpdateSupportLinkDto: {
+            /** @example https://example.org/act */
+            url: string;
+            /** @enum {string} */
+            actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
+            description: string;
         };
     };
     responses: never;
@@ -1106,6 +1546,99 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SessionDto"];
                 };
+            };
+        };
+    };
+    GeographyController_map: {
+        parameters: {
+            query?: {
+                /** @description Viewport "west,south,east,north" in degrees. west > east crosses the antimeridian. Default: the whole world. */
+                bbox?: string;
+                /** @description Animal group(s), comma-separated */
+                group?: string;
+                /** @description IUCN category of the headline assessment, comma-separated */
+                category?: string;
+                /** @description Only this published species (used by the profile map) */
+                species?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapDto"];
+                };
+            };
+            /** @description BAD_BBOX: bbox is not four numbers in range with south < north and west ≠ east */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GeographyController_basemap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BasemapDto"];
+                };
+            };
+        };
+    };
+    GeographyController_region: {
+        parameters: {
+            query?: {
+                /** @description Animal group(s), comma-separated */
+                group?: string;
+                /** @description Headline IUCN category, comma-separated */
+                category?: string;
+                /** @description Origin in this region (native, introduced, …), comma-separated */
+                origin?: string;
+                /** @description Seasonality in this region (resident, breeding, …), comma-separated */
+                seasonality?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegionPageDto"];
+                };
+            };
+            /** @description No region with this slug */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1561,6 +2094,255 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SupportController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportDirectoryDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_organizations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOrganizationDto"][];
+                };
+            };
+        };
+    };
+    StaffSupportController_createOrganization: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrganizationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOrganizationDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_updateOrganization: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrganizationDto"];
+            };
+        };
+        responses: {
+            /** @description Edits send the organization back to pending review */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOrganizationDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_approveOrganization: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOrganizationDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_disableOrganization: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hides the organization and all its links at once */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOrganizationDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_createLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSupportLinkDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSupportLinkDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_updateLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSupportLinkDto"];
+            };
+        };
+        responses: {
+            /** @description Edits send the link back to pending review */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSupportLinkDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_approveLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSupportLinkDto"];
+                };
+            };
+        };
+    };
+    StaffSupportController_disableLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hides the link everywhere at once; audited; no new species revision */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSupportLinkDto"];
+                };
             };
         };
     };

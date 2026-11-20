@@ -44,7 +44,8 @@ export default defineConfig({
       },
     },
     {
-      command: `npx next build && npx next start -p ${WEB_PORT}`,
+      // The fetch cache in .next-e2e survives rebuilds; clear it so pages never show API data from an earlier run.
+      command: `node -e "require('fs').rmSync('.next-e2e/cache/fetch-cache',{recursive:true,force:true})" && npm run build && npx next start -p ${WEB_PORT}`,
       url: WEB,
       timeout: 300_000,
       reuseExistingServer: false,

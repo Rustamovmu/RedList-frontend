@@ -103,7 +103,7 @@ export default async function Home() {
             <ul className="mt-4 flex flex-wrap gap-2">
               {places.map((r) => (
                 <li key={r.slug}>
-                  <Link href={`/species?region=${r.slug}`} className="inline-block rounded-full border border-line bg-white/70 px-4 py-2 hover:border-forest">
+                  <Link href={`/regions/${r.slug}`} className="inline-block rounded-full border border-line bg-white/70 px-4 py-2 hover:border-forest">
                     {r.name} <span className="text-ink-muted">({r.count})</span>
                   </Link>
                 </li>

@@ -36,7 +36,10 @@ export function StaffSessionProvider({ children }: { children: React.ReactNode }
   return (
     <StaffCtx.Provider value={{ user, signOut }}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3 text-sm">
-        <Link href="/admin" className="font-semibold">Staff area</Link>
+        <nav aria-label="Staff" className="flex gap-4">
+          <Link href="/admin" className="font-semibold">Species</Link>
+          <Link href="/admin/support" className="font-semibold">Support directory</Link>
+        </nav>
         <span>
           {user.name} ({user.role}){' '}
           <button onClick={signOut} className="ml-2 underline underline-offset-4">Sign out</button>

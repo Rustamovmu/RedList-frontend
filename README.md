@@ -14,7 +14,9 @@ npm run contracts:generate    # types from ../RedList-backent/openapi.json
 npm run dev                   # http://localhost:3000
 ```
 
-Pages: home `/`, Explore `/species`, profiles `/species/<slug>`, compare `/compare?species=a,b,c`.
+Pages: home `/`, Explore `/species`, profiles `/species/<slug>`, compare `/compare?species=a,b,c`, map `/map`, regions `/regions/<slug>`, support directory `/support`, staff `/admin` (and `/admin/support`).
+
+The map uses MapLibre GL JS with our own Natural Earth basemap from the API (no tile provider or key). `npm run dev` and `npm run build` first copy MapLibre's worker to `public/vendor/` (`scripts/copy-maplibre-worker.mjs`, DECISIONS D-016).
 
 - **Species profiles:** `/species/<slug>` (try `fictus-regionalis` after `npm run db:seed:fixtures` in the backend).
 - **Staff area:** `/admin`. Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.

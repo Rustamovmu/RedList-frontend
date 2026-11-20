@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { AddToCompare } from '@/components/compare/AddToCompare';
+import { ProfileMap } from '@/components/map/ProfileMap';
 import { Cite, Missing, type SourceIndex } from '@/components/profile/Cite';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -223,27 +225,54 @@ export default async function SpeciesPage({ params }: Params) {
 
       {/* 4 ---------- Where does it live? ---------- */}
       <Section id="where" title="Where does it live?">
-        <h3 className="font-semibold">Countries, seas and oceans</h3>
         {p.geography.locationWithheld ? (
           <Missing>Locations are withheld to protect this species from collection or disturbance.</Missing>
-        ) : p.geography.regions.length ? (
-          <>
-            <p className="text-sm text-ink-muted">Country-level presence. This is not a range map.</p>
-            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-              {p.geography.regions.map((r, i) => (
-                <li key={i} className="rounded border border-line bg-white/60 px-3 py-2 text-sm">
-                  <span className="font-medium">{r.region.name}</span>
-                  <Cite ids={[r.sourceId]} index={index} />
-                  <br />
-                  <span className="text-ink-muted">
-                    {PRESENCE_LABEL[r.presence]} · {ORIGIN_LABEL[r.origin]} · {SEASON_LABEL[r.seasonality]}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </>
         ) : (
-          <Missing>Not yet documented.</Missing>
+          <>
+            {p.geography.regions.length || p.geography.ranges.length ? <ProfileMap slug={p.slug} name={p.commonName ?? p.scientificName} /> : null}
+            {p.geography.locationGeneralized ? (
+              <p className="mb-3 text-sm">
+                <strong>Generalized to whole countries or seas</strong> to protect this species. Its precise locations are not published.
+              </p>
+            ) : null}
+
+            <h3 className="font-semibold">Range maps</h3>
+            {p.geography.ranges.length ? (
+              <ul className="mt-2 space-y-1 text-sm">
+                {p.geography.ranges.map((r, i) => (
+                  <li key={i}>
+                    Published range map: {PRESENCE_LABEL[r.presence]} · {SEASON_LABEL[r.seasonality]}
+                    {r.datasetVersion ? <> · dataset {r.datasetVersion}</> : null}
+                    <Cite ids={[r.sourceId]} index={index} />
+                    {r.generalizationNote ? <span className="block text-ink-muted">{r.generalizationNote}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Missing>No published range map. Only country-level presence is shown; we never draw a range a source has not published.</Missing>
+            )}
+
+            <h3 className="mt-6 font-semibold">Countries, seas and oceans</h3>
+            {p.geography.regions.length ? (
+              <>
+                <p className="text-sm text-ink-muted">Country-level presence: the species is recorded somewhere in each place, not everywhere in it.</p>
+                <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {p.geography.regions.map((r, i) => (
+                    <li key={i} className="rounded border border-line bg-white/60 px-3 py-2 text-sm">
+                      <Link href={`/regions/${r.region.slug}`} className="font-medium underline-offset-4 hover:underline">{r.region.name}</Link>
+                      <Cite ids={[r.sourceId]} index={index} />
+                      <br />
+                      <span className="text-ink-muted">
+                        {PRESENCE_LABEL[r.presence]} · {ORIGIN_LABEL[r.origin]} · {SEASON_LABEL[r.seasonality]}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <Missing>Not yet documented.</Missing>
+            )}
+          </>
         )}
 
         <h3 className="mt-6 font-semibold">Habitats</h3>
@@ -340,7 +369,8 @@ export default async function SpeciesPage({ params }: Params) {
           <Missing>No reviewed support links for this species yet.</Missing>
         )}
         <p className="mt-3 text-sm text-ink-muted">
-          Links go to independent organizations. Our review does not certify how effective an organization is, and a click is not a donation.
+          Links go to independent organizations. Our review does not certify how effective an organization is, and a click is not a donation.{' '}
+          <Link href="/support" className="underline underline-offset-4">See the support directory and how we review links</Link>.
         </p>
       </Section>
 

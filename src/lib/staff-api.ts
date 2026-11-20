@@ -67,6 +67,15 @@ export const staffApi = {
   listSources: (q?: string) => call<S['SourceDto'][]>('GET', `/sources${q ? `?q=${enc(q)}` : ''}`),
   createSource: (b: S['CreateSourceDto']) => call<S['SourceDto']>('POST', '/sources', b),
   reference: () => call<S['ReferenceListsDto']>('GET', '/reference'),
+
+  // Support directory (admin-only mutations; any staff member may read)
+  listOrganizations: () => call<S['StaffOrganizationDto'][]>('GET', '/organizations'),
+  createOrganization: (b: S['CreateOrganizationDto']) => call<S['StaffOrganizationDto']>('POST', '/organizations', b),
+  updateOrganization: (id: string, b: S['UpdateOrganizationDto']) => call<S['StaffOrganizationDto']>('PUT', `/organizations/${enc(id)}`, b),
+  setOrganizationStatus: (id: string, action: 'approve' | 'disable') => call<S['StaffOrganizationDto']>('POST', `/organizations/${enc(id)}/${action}`),
+  createSupportLink: (b: S['CreateSupportLinkDto']) => call<S['StaffSupportLinkDto']>('POST', '/support-links', b),
+  updateSupportLink: (id: string, b: S['UpdateSupportLinkDto']) => call<S['StaffSupportLinkDto']>('PUT', `/support-links/${enc(id)}`, b),
+  setSupportLinkStatus: (id: string, action: 'approve' | 'disable') => call<S['StaffSupportLinkDto']>('POST', `/support-links/${enc(id)}/${action}`),
 };
 
 export function errorText(e: unknown): string {
