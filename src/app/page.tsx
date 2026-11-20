@@ -1,12 +1,14 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import { apiGet } from '@/lib/api';
 import { ENVIRONMENT_LABEL, GROUP_LABEL } from '@/lib/labels';
+import { mediaSrc } from '@/lib/media';
 
 /**
  * Home (PLAN §4). Every number comes from the database and says "in this catalogue": never a global total.
- * The hero has no photograph yet: no licensed hero image exists, and one is never invented (media lands in M4).
+ * The hero photo, when there is one, is a catalogue image with its credit: never a stock or invented image.
  */
 export default async function Home() {
   // Render per request (never prerendered at build, when the API may be down). Data stays cached by tag.
@@ -15,6 +17,8 @@ export default async function Home() {
     apiGet('/api/v1/filters', { tags: ['catalogue'] }).catch(() => null),
     apiGet('/api/v1/species', { query: { category: 'CR,EN,VU', sort: 'status', pageSize: '4' }, tags: ['catalogue'] }).catch(() => null),
   ]);
+  // The hero photo is the first threatened species that has an approved, licensed photo. Never a stock or invented image.
+  const hero = threatened?.items.find((c) => c.image) ?? null;
   const groups = filters?.groups.filter((g) => g.count > 0) ?? [];
   const environments = filters?.environments.filter((e) => e.count > 0) ?? [];
   const places = [...(filters?.regions ?? [])].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 8);
@@ -22,25 +26,40 @@ export default async function Home() {
   return (
     <div>
       <section className="bg-forest text-paper">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
-          <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-            Understand a species, discover where it lives, and find a credible way to help.
-          </h1>
-          <form action="/species" method="get" role="search" className="mt-8 flex max-w-xl flex-wrap gap-2">
-            <label htmlFor="home-q" className="sr-only">Search species by name</label>
-            <input
-              id="home-q"
-              name="q"
-              type="search"
-              placeholder="Search by common or scientific name"
-              className="min-w-0 flex-1 basis-60 rounded border border-paper/40 bg-paper px-4 py-3 text-ink"
-            />
-            <button className="rounded border border-paper bg-paper px-5 py-3 font-medium text-forest hover:bg-paper-deep">Search</button>
-          </form>
-          {filters ? (
-            <p className="mt-6 text-sm text-paper/90">
-              {filters.total} species in this catalogue, {filters.threatened} of them threatened (Critically Endangered, Endangered or Vulnerable).
-            </p>
+        <div className={`mx-auto max-w-6xl px-4 py-14 sm:py-20 ${hero ? 'lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-10' : ''}`}>
+          <div>
+            <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
+              Understand a species, discover where it lives, and find a credible way to help.
+            </h1>
+            <form action="/species" method="get" role="search" className="mt-8 flex max-w-xl flex-wrap gap-2">
+              <label htmlFor="home-q" className="sr-only">Search species by name</label>
+              <input
+                id="home-q"
+                name="q"
+                type="search"
+                placeholder="Search by common or scientific name"
+                className="min-w-0 flex-1 basis-60 rounded border border-paper/40 bg-paper px-4 py-3 text-ink"
+              />
+              <button className="rounded border border-paper bg-paper px-5 py-3 font-medium text-forest hover:bg-paper-deep">Search</button>
+            </form>
+            {filters ? (
+              <p className="mt-6 text-sm text-paper/90">
+                {filters.total} species in this catalogue, {filters.threatened} of them threatened (Critically Endangered, Endangered or Vulnerable).
+              </p>
+            ) : null}
+          </div>
+          {hero?.image ? (
+            <figure className="mt-10 lg:mt-0">
+              <Link href={`/species/${hero.slug}`} className="group block focus:outline-none">
+                <span className="relative block aspect-[4/3] overflow-hidden rounded-lg ring-1 ring-paper/20 group-focus-visible:ring-2 group-focus-visible:ring-paper">
+                  <Image src={mediaSrc(hero.image.storageKey)} alt={hero.image.altText} fill priority sizes="(min-width: 1024px) 520px, 100vw" className="object-cover" />
+                </span>
+                <span className="mt-2 block text-sm text-paper underline-offset-4 group-hover:underline">
+                  {hero.commonName ?? <i>{hero.scientificName}</i>}
+                </span>
+              </Link>
+              <figcaption className="mt-0.5 text-xs text-paper/85">{hero.image.credit}</figcaption>
+            </figure>
           ) : null}
         </div>
       </section>

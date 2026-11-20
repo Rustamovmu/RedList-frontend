@@ -38,6 +38,7 @@ export function StaffSessionProvider({ children }: { children: React.ReactNode }
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3 text-sm">
         <nav aria-label="Staff" className="flex gap-4">
           <Link href="/admin" className="font-semibold">Species</Link>
+          <Link href="/admin/media" className="font-semibold">Media</Link>
           <Link href="/admin/support" className="font-semibold">Support directory</Link>
         </nav>
         <span>

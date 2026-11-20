@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { useStaff } from '@/components/admin/StaffSession';
 import { errorText, type S, staffApi } from '@/lib/staff-api';
 
 export default function AdminSpecies() {
@@ -10,6 +11,8 @@ export default function AdminSpecies() {
   const router = useRouter();
   const [sp, setSp] = useState<S['StaffSpeciesDto'] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const { user } = useStaff();
 
   const reload = useCallback(() => staffApi.getSpecies(id).then(setSp).catch((e) => setError(errorText(e))), [id]);
   useEffect(() => {
@@ -39,6 +42,21 @@ export default function AdminSpecies() {
     }
   }
 
+  /** Rollback (admin only, PLAN §6): make an earlier published version live again. Audited; needs a reason. */
+  async function rollback(r: S['RevisionSummaryDto']) {
+    if (!sp?.publishedRevisionId) return;
+    const reason = window.prompt(`Make version ${r.version} live again instead of the current version? Give a short reason (kept in the audit log).`);
+    if (!reason || reason.trim().length < 3) return;
+    setError(null);
+    setNotice(null);
+    try {
+      setSp(await staffApi.rollback(id, { targetRevisionId: r.id, expectedPublishedRevisionId: sp.publishedRevisionId, reason: reason.trim() }));
+      setNotice(`Version ${r.version} is live again. Drafts started from the replaced version can no longer be published; start a new draft.`);
+    } catch (err) {
+      setError(errorText(err));
+    }
+  }
+
   if (!sp) return error ? <p role="alert" className="text-status-cr">{error}</p> : <p role="status">Loading…</p>;
   return (
     <div>
@@ -49,15 +67,23 @@ export default function AdminSpecies() {
         {sp.publishedRevisionId ? <> · <Link href={`/species/${sp.slug}`} className="underline">public page</Link></> : ' · not published'}
       </p>
       {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-status-cr">{error}</p> : null}
+      {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
       <h2 className="mt-8 text-lg font-semibold">Revisions</h2>
       <ul className="mt-2 divide-y divide-line rounded border border-line bg-white/60">
         {[...sp.revisions].reverse().map((r) => (
           <li key={r.id} className="flex flex-wrap justify-between gap-2 px-3 py-2">
             <Link href={`/admin/revisions/${r.id}`} className="font-medium underline-offset-4 hover:underline">Version {r.version}</Link>
-            <span className="text-sm text-ink-muted">
-              {r.state}
-              {r.isPublished ? ' · live' : ''} · updated {new Date(r.updatedAt).toLocaleString()}
+            <span className="flex flex-wrap items-center gap-3 text-sm text-ink-muted">
+              <span>
+                {r.state}
+                {r.isPublished ? ' · live' : ''} · updated {new Date(r.updatedAt).toLocaleString()}
+              </span>
+              {user.role === 'admin' && r.state === 'published' && !r.isPublished && sp.publishedRevisionId ? (
+                <button type="button" onClick={() => void rollback(r)} className="rounded border border-forest px-2 py-0.5 text-forest hover:bg-paper-deep">
+                  Make this version live again
+                </button>
+              ) : null}
             </span>
           </li>
         ))}

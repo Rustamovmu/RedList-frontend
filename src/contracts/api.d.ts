@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/species/{id}/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/revisions/{id}": {
         parameters: {
             query?: never;
@@ -270,6 +286,22 @@ export interface paths {
         get: operations["EditorialController_listSources"];
         put?: never;
         post: operations["EditorialController_createSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/sources/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EditorialController_updateSource"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -494,6 +526,102 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["StaffSupportController_disableLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{key}/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMediaController_variant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffMediaController_list"];
+        put?: never;
+        post: operations["StaffMediaController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffMediaController_get"];
+        put: operations["StaffMediaController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/media/{id}/preview/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffMediaController_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/media/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffMediaController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/media/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffMediaController_reject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -959,6 +1087,20 @@ export interface components {
             externalId: string;
             sourceUrl?: string | null;
         };
+        RollbackDto: {
+            /**
+             * Format: uuid
+             * @description An earlier published revision of this species
+             */
+            targetRevisionId: string;
+            /**
+             * Format: uuid
+             * @description The revision you saw as live; 409 if it has changed since
+             */
+            expectedPublishedRevisionId: string;
+            /** @description Why the earlier version is restored (kept in the audit log) */
+            reason: string;
+        };
         SaveDraftDto: {
             /** @enum {string} */
             displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
@@ -1046,6 +1188,23 @@ export interface components {
             accessedOn?: string | null;
             license?: string | null;
             permittedUseNote?: string | null;
+        };
+        UpdateSourceDto: {
+            title: string;
+            publisher?: string | null;
+            authors?: string | null;
+            url?: string | null;
+            doi?: string | null;
+            publishedOn?: string | null;
+            accessedOn?: string | null;
+            license?: string | null;
+            permittedUseNote?: string | null;
+        };
+        SourceUpdateResultDto: {
+            /** @description The source as it now reads. Its id differs from the requested one when a new row was created. */
+            source: components["schemas"]["SourceDto"];
+            /** @description True when the old source is cited by a submitted or published revision, so a new source row was created and the old one left unchanged */
+            createdNewRow: boolean;
         };
         RegionRefDto: {
             /** Format: uuid */
@@ -1441,6 +1600,66 @@ export interface components {
             actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
             description: string;
         };
+        StaffMediaDto: {
+            /** Format: uuid */
+            id: string;
+            /** @description Public images are served at /api/v1/media/<storageKey>/<width>.webp once approved */
+            storageKey: string;
+            width: number;
+            height: number;
+            bytes: number;
+            variants: number[];
+            creator: string;
+            credit: string;
+            license: string;
+            /** @description Whether the licence is on the allow-list */
+            licenseAllowed: boolean;
+            licenseUrl: string | null;
+            sourceUrl: string | null;
+            modifications: string | null;
+            /** @enum {string} */
+            reviewState: "pending" | "approved" | "rejected";
+            reviewNote: string | null;
+            reviewedAt: string | null;
+            createdAt: string;
+            /** @description How many revisions use this image (any state) */
+            usedByRevisions: number;
+        };
+        MediaUploadDto: {
+            /** @description Who made the image, as the source names them */
+            creator: string;
+            /** @description The credit line shown under the image, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
+            credit: string;
+            /** @description Licence. Must be on the allow-list: CC0, PDM, CC BY, CC BY-SA (any version) */
+            license: string;
+            licenseUrl?: string | null;
+            /** @description The page the image came from (https) */
+            sourceUrl?: string | null;
+            /** @description Changes made before upload (cropping, colour). Resizing and re-encoding are added automatically. */
+            modifications?: string | null;
+            /**
+             * Format: binary
+             * @description JPEG, PNG or WebP. SVG and anything else is refused.
+             */
+            file: string;
+        };
+        MediaMetadataDto: {
+            /** @description Who made the image, as the source names them */
+            creator: string;
+            /** @description The credit line shown under the image, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
+            credit: string;
+            /** @description Licence. Must be on the allow-list: CC0, PDM, CC BY, CC BY-SA (any version) */
+            license: string;
+            licenseUrl?: string | null;
+            /** @description The page the image came from (https) */
+            sourceUrl?: string | null;
+            /** @description Changes made before upload (cropping, colour). Resizing and re-encoding are added automatically. */
+            modifications?: string | null;
+        };
+        RejectMediaDto: {
+            /** @description Why the image was rejected (shown to staff only) */
+            note: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1768,6 +1987,35 @@ export interface operations {
             };
         };
     };
+    EditorialController_rollback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RollbackDto"];
+            };
+        };
+        responses: {
+            /** @description The species with its published pointer moved to the restored revision */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSpeciesDto"];
+                };
+            };
+        };
+    };
     EditorialController_getRevision: {
         parameters: {
             query?: never;
@@ -1942,6 +2190,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceDto"];
+                };
+            };
+        };
+    };
+    EditorialController_updateSource: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSourceDto"];
+            };
+        };
+        responses: {
+            /** @description A source cited by a submitted or published revision is never changed: a new row is created instead */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceUpdateResultDto"];
                 };
             };
         };
@@ -2342,6 +2619,211 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffSupportLinkDto"];
+                };
+            };
+        };
+    };
+    PublicMediaController_variant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description storageKey from a profile or card */
+                key: string;
+                /** @description <width>.webp; the nearest generated width at least as wide is served */
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description WebP image */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMediaController_list: {
+        parameters: {
+            query?: {
+                state?: "pending" | "approved" | "rejected";
+            };
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first; filter by review state for the queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"][];
+                };
+            };
+        };
+    };
+    StaffMediaController_upload: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["MediaUploadDto"];
+            };
+        };
+        responses: {
+            /** @description Stored as pending review */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"];
+                };
+            };
+        };
+    };
+    StaffMediaController_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"];
+                };
+            };
+        };
+    };
+    StaffMediaController_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaMetadataDto"];
+            };
+        };
+        responses: {
+            /** @description Edits send the image back to pending review. Published revisions keep their snapshots. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"];
+                };
+            };
+        };
+    };
+    StaffMediaController_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description WebP preview of any image, for review */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMediaController_approve: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"];
+                };
+            };
+        };
+    };
+    StaffMediaController_reject: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectMediaDto"];
+            };
+        };
+        responses: {
+            /** @description A rejected image disappears from public pages at once */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMediaDto"];
                 };
             };
         };

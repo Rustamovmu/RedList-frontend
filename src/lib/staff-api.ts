@@ -45,6 +45,23 @@ async function call<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unkn
   return json as T;
 }
 
+/** Multipart upload: the browser sets the multipart boundary, so no content-type header here. CSRF as for every mutation. */
+async function upload<T>(path: string, form: FormData): Promise<T> {
+  const res = await fetch(`/api/v1/staff${path}`, {
+    method: 'POST',
+    headers: { accept: 'application/json', 'x-csrf-token': csrfToken() ?? '' },
+    credentials: 'same-origin',
+    cache: 'no-store',
+    body: form,
+  });
+  const json = (await res.json().catch(() => null)) as { error?: { code?: string; message?: string; details?: unknown } } | null;
+  if (!res.ok) {
+    const details = Array.isArray(json?.error?.details) ? (json.error.details as unknown[]).map(String) : undefined;
+    throw new StaffApiError(res.status, json?.error?.code ?? 'ERROR', json?.error?.message ?? res.statusText, details);
+  }
+  return json as T;
+}
+
 const enc = encodeURIComponent;
 
 export const staffApi = {
@@ -57,6 +74,7 @@ export const staffApi = {
   createSpecies: (b: S['CreateSpeciesDto']) => call<S['RevisionDetailDto']>('POST', '/species', b),
   addIdentifier: (id: string, b: S['AddIdentifierDto']) => call<S['StaffSpeciesDto']>('POST', `/species/${enc(id)}/identifiers`, b),
   createDraft: (id: string) => call<S['RevisionDetailDto']>('POST', `/species/${enc(id)}/drafts`),
+  rollback: (id: string, b: S['RollbackDto']) => call<S['StaffSpeciesDto']>('POST', `/species/${enc(id)}/rollback`, b),
 
   getRevision: (id: string) => call<S['RevisionDetailDto']>('GET', `/revisions/${enc(id)}`),
   saveDraft: (id: string, b: S['SaveDraftDto']) => call<S['RevisionDetailDto']>('PUT', `/revisions/${enc(id)}`, b),
@@ -66,7 +84,16 @@ export const staffApi = {
 
   listSources: (q?: string) => call<S['SourceDto'][]>('GET', `/sources${q ? `?q=${enc(q)}` : ''}`),
   createSource: (b: S['CreateSourceDto']) => call<S['SourceDto']>('POST', '/sources', b),
+  updateSource: (id: string, b: S['UpdateSourceDto']) => call<S['SourceUpdateResultDto']>('PUT', `/sources/${enc(id)}`, b),
   reference: () => call<S['ReferenceListsDto']>('GET', '/reference'),
+
+  // Media (any staff member uploads and edits; admins approve or reject)
+  listMedia: (state?: S['StaffMediaDto']['reviewState']) => call<S['StaffMediaDto'][]>('GET', `/media${state ? `?state=${state}` : ''}`),
+  uploadMedia: (form: FormData) => upload<S['StaffMediaDto']>('/media', form),
+  updateMedia: (id: string, b: S['MediaMetadataDto']) => call<S['StaffMediaDto']>('PUT', `/media/${enc(id)}`, b),
+  approveMedia: (id: string) => call<S['StaffMediaDto']>('POST', `/media/${enc(id)}/approve`),
+  rejectMedia: (id: string, note: string) => call<S['StaffMediaDto']>('POST', `/media/${enc(id)}/reject`, { note }),
+  mediaPreviewUrl: (id: string, width = 640) => `/api/v1/staff/media/${enc(id)}/preview/${width}.webp`,
 
   // Support directory (admin-only mutations; any staff member may read)
   listOrganizations: () => call<S['StaffOrganizationDto'][]>('GET', '/organizations'),

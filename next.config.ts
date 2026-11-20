@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? '.next',
   output: 'standalone',
   poweredByHeader: false,
+  // Catalogue images come from our own API as pre-generated WebP widths (M4). No Next.js image optimizer and
+  // no remote image hosts: the custom loader only ever builds same-origin /api/v1/media URLs.
+  images: {
+    loader: 'custom',
+    loaderFile: './src/lib/image-loader.ts',
+    deviceSizes: [640, 960, 1280, 1920],
+    imageSizes: [320],
+  },
   // The browser calls same-origin /api/v1/*. In development Next proxies those calls to the API.
   // In production Nginx routes /api/v1 straight to the API, and this rewrite is only a fallback.
   async rewrites() {

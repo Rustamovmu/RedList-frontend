@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { AddToCompare } from '@/components/compare/AddToCompare';
 import { ProfileMap } from '@/components/map/ProfileMap';
+import { Photo } from '@/components/Photo';
 import { Cite, Missing, type SourceIndex } from '@/components/profile/Cite';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -54,6 +55,7 @@ export default async function SpeciesPage({ params }: Params) {
   const cited = (section: string) => p.citations.filter((c) => c.sectionKey === section).map((c) => c.sourceId);
   const headline = p.status.assessments.find((a) => a.scope === 'global') ?? p.status.assessments[0];
   const year = (d: string | null) => (d ? Number(d.slice(0, 4)) : undefined);
+  const photo = p.media.find((m) => m.role === 'primary') ?? p.media[0];
 
   return (
     <article className="mx-auto max-w-4xl px-4 pb-16">
@@ -63,8 +65,17 @@ export default async function SpeciesPage({ params }: Params) {
         <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{p.commonName ?? <i>{p.scientificName}</i>}</h1>
         {p.commonName ? <p className="mt-1 text-lg italic text-ink-muted">{p.scientificName}</p> : null}
 
-        <div className="mt-6 flex aspect-[16/7] w-full items-center justify-center rounded-lg border border-line bg-paper-deep text-center text-sm text-ink-muted" role="img" aria-label="No photograph available">
-          No licensed photograph yet
+        <div className="mt-6">
+          {photo ? (
+            <Photo
+              storageKey={photo.storageKey} altText={photo.altText} credit={photo.credit} license={photo.license} sourceUrl={photo.sourceUrl}
+              caption={photo.caption} sizes="(min-width: 896px) 864px, 100vw" priority aspect="aspect-[16/9] sm:aspect-[16/8]"
+            />
+          ) : (
+            <div className="flex aspect-[16/7] w-full items-center justify-center rounded-lg border border-line bg-paper-deep text-center text-sm text-ink-muted" role="img" aria-label="No photograph available">
+              No licensed photograph yet
+            </div>
+          )}
         </div>
 
         <dl className="mt-6 grid gap-4 rounded-lg border border-line bg-white/60 p-4 sm:grid-cols-3">
@@ -404,7 +415,8 @@ export default async function SpeciesPage({ params }: Params) {
             <ul className="mt-1 text-sm">
               {p.media.map((m) => (
                 <li key={m.storageKey}>
-                  {m.credit}, {m.license}
+                  {m.credit}
+                  {m.credit.toLowerCase().includes(m.license.toLowerCase()) ? '' : `, ${m.license}`}
                   {m.sourceUrl ? <> (<a href={m.sourceUrl} rel="noopener noreferrer" className="underline">source</a>)</> : null}
                 </li>
               ))}

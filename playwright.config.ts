@@ -40,6 +40,7 @@ export default defineConfig({
         WEB_ORIGIN: WEB,
         WEB_REVALIDATE_URL: `${WEB}/api/revalidate`,
         REVALIDATE_SECRET: SECRET,
+        MEDIA_DIR: './storage/media-e2e',
         NODE_ENV: 'development',
       },
     },
