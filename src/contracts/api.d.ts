@@ -36,6 +36,230 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuthController_whoami"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/species": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EditorialController_listSpecies"];
+        put?: never;
+        post: operations["EditorialController_createSpecies"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/species/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EditorialController_getSpecies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/species/{id}/identifiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_addIdentifier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/species/{id}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_createDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/revisions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EditorialController_getRevision"];
+        put: operations["EditorialController_saveDraft"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/revisions/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/revisions/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/revisions/{id}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EditorialController_requestChanges"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EditorialController_listSources"];
+        put?: never;
+        post: operations["EditorialController_createSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EditorialController_reference"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/species/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -49,6 +273,602 @@ export interface components {
             status: string;
             /** @example 3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1 */
             postgis: string;
+        };
+        LoginDto: {
+            email: string;
+            password: string;
+        };
+        StaffMeDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "editor" | "admin";
+        };
+        SessionDto: {
+            user: components["schemas"]["StaffMeDto"];
+            /** @description Send this back in the x-csrf-token header on every mutation. It is also set as a readable cookie. */
+            csrfToken: string;
+        };
+        OkDto: {
+            /** @example true */
+            ok: boolean;
+        };
+        IdentifierDto: {
+            /** Format: uuid */
+            id: string;
+            provider: string;
+            externalId: string;
+            sourceUrl: string | null;
+        };
+        RevisionSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            version: number;
+            /** @enum {string} */
+            state: "draft" | "submitted" | "changes_requested" | "published" | "withdrawn";
+            updatedAt: string;
+            publishedAt: string | null;
+            isPublished: boolean;
+        };
+        StaffSpeciesDto: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            acceptedScientificName: string;
+            /** @enum {string} */
+            rank: "species" | "subspecies";
+            /** @enum {string} */
+            locationSensitivity: "none" | "generalize_country" | "hide_regions";
+            /** Format: uuid */
+            publishedRevisionId: string | null;
+            identifiers: components["schemas"]["IdentifierDto"][];
+            revisions: components["schemas"]["RevisionSummaryDto"][];
+        };
+        CreateSpeciesDto: {
+            /** @example fictus-exemplaris */
+            slug: string;
+            /** @example Fictus exemplaris */
+            acceptedScientificName: string;
+            /** @enum {string} */
+            rank: "species" | "subspecies";
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @enum {string} */
+            locationSensitivity?: "none" | "generalize_country" | "hide_regions";
+        };
+        NameInput: {
+            /** @example en */
+            language: string;
+            name: string;
+            /** @enum {string} */
+            nameType: "common" | "synonym";
+            preferred: boolean;
+        };
+        AssessmentInput: {
+            providerAssessmentId?: string | null;
+            /** Format: uuid */
+            sourceId: string;
+            /** @enum {string} */
+            scope: "global" | "regional";
+            /** Format: uuid */
+            regionId?: string | null;
+            /** @enum {string} */
+            category: "EX" | "EW" | "CR" | "EN" | "VU" | "NT" | "LC" | "DD" | "NE";
+            /** @enum {string} */
+            trend: "increasing" | "decreasing" | "stable" | "unknown";
+            /** @example 2021-06-01 */
+            assessedOn?: string | null;
+            /** @example 2021-12-09 */
+            publishedOn?: string | null;
+            criteria?: string | null;
+        };
+        EstimateInput: {
+            /** @description Index into `assessments` of the same payload */
+            assessmentIndex?: number | null;
+            /** Format: uuid */
+            sourceId: string;
+            /** @enum {string} */
+            scope: "global" | "regional";
+            /** Format: uuid */
+            regionId?: string | null;
+            /** @enum {string} */
+            context: "wild" | "captive";
+            /** @enum {string} */
+            basis: "mature_individuals" | "breeding_pairs" | "individuals" | "other";
+            /** @enum {string} */
+            form: "exact" | "range" | "at_least" | "at_most" | "qualitative" | "unknown";
+            /**
+             * @description Count as a decimal string (bigint)
+             * @example 2500
+             */
+            pointValue?: string | null;
+            minValue?: string | null;
+            maxValue?: string | null;
+            qualitativeText?: string | null;
+            referenceStart?: string | null;
+            referenceEnd?: string | null;
+            method?: string | null;
+            uncertaintyNote?: string | null;
+        };
+        RegionPresenceInput: {
+            /** Format: uuid */
+            regionId: string;
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            /** @enum {string} */
+            origin: "native" | "reintroduced" | "introduced" | "vagrant" | "origin_uncertain";
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+            /** Format: uuid */
+            sourceId: string;
+        };
+        HabitatInput: {
+            /** Format: uuid */
+            habitatId: string;
+            suitability?: string | null;
+            /** @enum {string|null} */
+            seasonality?: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain" | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        ThreatInput: {
+            /** Format: uuid */
+            threatId: string;
+            severity?: string | null;
+            timing?: string | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        CitationInput: {
+            /** @enum {string} */
+            sectionKey: "overview" | "classification" | "status" | "population" | "geography" | "habitat" | "climate" | "diet" | "biology" | "threats" | "actions" | "media";
+            /** Format: uuid */
+            sourceId: string;
+            /** @description Page, table or section in the source */
+            locator?: string | null;
+            note?: string | null;
+        };
+        MediaInput: {
+            /** Format: uuid */
+            mediaId: string;
+            position: number;
+            /** @enum {string} */
+            role: "primary" | "gallery";
+            altText: string;
+            caption?: string | null;
+        };
+        SupportLinkInput: {
+            /** Format: uuid */
+            supportLinkId: string;
+            contextNote?: string | null;
+        };
+        RevisionContentDto: {
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Editorial JSON, validated by the versioned zod schema */
+            editorial: {
+                overview?: string;
+                taxonomy?: {
+                    kingdom?: string;
+                    phylum?: string;
+                    class?: string;
+                    order?: string;
+                    family?: string;
+                    genus?: string;
+                };
+                status?: {
+                    notAssessed: boolean;
+                };
+                population?: {
+                    unknown: boolean;
+                    note?: string;
+                };
+                diet?: {
+                    narrative?: string;
+                    tags?: string[];
+                    context?: string;
+                };
+                climate?: {
+                    narrative?: string;
+                    ranges?: {
+                        label: string;
+                        min?: number;
+                        max?: number;
+                        unit: string;
+                        context: string;
+                    }[];
+                };
+                measurements?: {
+                    label: string;
+                    value?: number;
+                    min?: number;
+                    max?: number;
+                    unit: string;
+                    context?: string;
+                }[];
+                biology?: string;
+                conservationActions?: string;
+            };
+            names: components["schemas"]["NameInput"][];
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            assessments: components["schemas"]["AssessmentInput"][];
+            populationEstimates: components["schemas"]["EstimateInput"][];
+            regions: components["schemas"]["RegionPresenceInput"][];
+            habitats: components["schemas"]["HabitatInput"][];
+            threats: components["schemas"]["ThreatInput"][];
+            citations: components["schemas"]["CitationInput"][];
+            media: components["schemas"]["MediaInput"][];
+            supportLinks: components["schemas"]["SupportLinkInput"][];
+        };
+        ChecklistItemDto: {
+            key: string;
+            ok: boolean;
+            message: string;
+        };
+        RevisionDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            speciesId: string;
+            speciesSlug: string;
+            version: number;
+            /** @enum {string} */
+            state: "draft" | "submitted" | "changes_requested" | "published" | "withdrawn";
+            schemaVersion: number;
+            /** Format: uuid */
+            baseRevisionId: string | null;
+            isPublished: boolean;
+            selfReviewed: boolean;
+            reviewNotes: string | null;
+            createdAt: string;
+            updatedAt: string;
+            submittedAt: string | null;
+            reviewedAt: string | null;
+            publishedAt: string | null;
+            content: components["schemas"]["RevisionContentDto"];
+            checklist: components["schemas"]["ChecklistItemDto"][];
+        };
+        AddIdentifierDto: {
+            /** @example gbif */
+            provider: string;
+            /** @example 2435099 */
+            externalId: string;
+            sourceUrl?: string | null;
+        };
+        SaveDraftDto: {
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Editorial JSON, validated by the versioned zod schema */
+            editorial: {
+                overview?: string;
+                taxonomy?: {
+                    kingdom?: string;
+                    phylum?: string;
+                    class?: string;
+                    order?: string;
+                    family?: string;
+                    genus?: string;
+                };
+                status?: {
+                    notAssessed: boolean;
+                };
+                population?: {
+                    unknown: boolean;
+                    note?: string;
+                };
+                diet?: {
+                    narrative?: string;
+                    tags?: string[];
+                    context?: string;
+                };
+                climate?: {
+                    narrative?: string;
+                    ranges?: {
+                        label: string;
+                        min?: number;
+                        max?: number;
+                        unit: string;
+                        context: string;
+                    }[];
+                };
+                measurements?: {
+                    label: string;
+                    value?: number;
+                    min?: number;
+                    max?: number;
+                    unit: string;
+                    context?: string;
+                }[];
+                biology?: string;
+                conservationActions?: string;
+            };
+            names: components["schemas"]["NameInput"][];
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            assessments: components["schemas"]["AssessmentInput"][];
+            populationEstimates: components["schemas"]["EstimateInput"][];
+            regions: components["schemas"]["RegionPresenceInput"][];
+            habitats: components["schemas"]["HabitatInput"][];
+            threats: components["schemas"]["ThreatInput"][];
+            citations: components["schemas"]["CitationInput"][];
+            media: components["schemas"]["MediaInput"][];
+            supportLinks: components["schemas"]["SupportLinkInput"][];
+            /** @description updatedAt from your last read. A mismatch means someone else saved first (409). */
+            expectedUpdatedAt: string;
+        };
+        RequestChangesDto: {
+            notes: string;
+        };
+        SourceDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            publisher: string | null;
+            authors: string | null;
+            url: string | null;
+            doi: string | null;
+            publishedOn: string | null;
+            accessedOn: string | null;
+            license: string | null;
+        };
+        CreateSourceDto: {
+            title: string;
+            publisher?: string | null;
+            authors?: string | null;
+            url?: string | null;
+            doi?: string | null;
+            publishedOn?: string | null;
+            accessedOn?: string | null;
+            license?: string | null;
+            permittedUseNote?: string | null;
+        };
+        RegionRefDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+        };
+        CodedRefDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            code: string;
+        };
+        MediaRefDto: {
+            /** Format: uuid */
+            id: string;
+            credit: string;
+            license: string;
+            /** @enum {string} */
+            reviewState: "pending" | "approved" | "rejected";
+        };
+        SupportLinkRefDto: {
+            /** Format: uuid */
+            id: string;
+            organizationName: string;
+            url: string;
+            /** @enum {string} */
+            editorialStatus: "pending" | "approved" | "disabled";
+        };
+        ReferenceListsDto: {
+            regions: components["schemas"]["RegionRefDto"][];
+            habitats: components["schemas"]["CodedRefDto"][];
+            threats: components["schemas"]["CodedRefDto"][];
+            media: components["schemas"]["MediaRefDto"][];
+            supportLinks: components["schemas"]["SupportLinkRefDto"][];
+        };
+        NameDto: {
+            language: string;
+            name: string;
+        };
+        TaxonomyDto: {
+            kingdom: string | null;
+            phylum: string | null;
+            class: string | null;
+            order: string | null;
+            family: string | null;
+            genus: string | null;
+        };
+        RegionLinkDto: {
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+        };
+        AssessmentDto: {
+            /** @enum {string} */
+            category: "EX" | "EW" | "CR" | "EN" | "VU" | "NT" | "LC" | "DD" | "NE";
+            /** @enum {string} */
+            scope: "global" | "regional";
+            region: components["schemas"]["RegionLinkDto"] | null;
+            /** @enum {string} */
+            trend: "increasing" | "decreasing" | "stable" | "unknown";
+            assessedOn: string | null;
+            publishedOn: string | null;
+            criteria: string | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        StatusSectionDto: {
+            assessments: components["schemas"]["AssessmentDto"][];
+            /** @description Explicitly marked "Not assessed" by an editor */
+            notAssessed: boolean;
+        };
+        EstimateDto: {
+            /** @enum {string} */
+            scope: "global" | "regional";
+            region: components["schemas"]["RegionLinkDto"] | null;
+            /** @enum {string} */
+            context: "wild" | "captive";
+            /** @enum {string} */
+            basis: "mature_individuals" | "breeding_pairs" | "individuals" | "other";
+            /** @enum {string} */
+            form: "exact" | "range" | "at_least" | "at_most" | "qualitative" | "unknown";
+            /** @description Counts are decimal strings (bigint). null is "not stated", never zero. */
+            pointValue: string | null;
+            minValue: string | null;
+            maxValue: string | null;
+            qualitativeText: string | null;
+            referenceStart: string | null;
+            referenceEnd: string | null;
+            method: string | null;
+            uncertaintyNote: string | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        PopulationSectionDto: {
+            estimates: components["schemas"]["EstimateDto"][];
+            /** @description Explicitly marked "Unknown" by an editor */
+            unknown: boolean;
+            unknownNote: string | null;
+        };
+        PresenceDto: {
+            region: components["schemas"]["RegionLinkDto"];
+            /** @enum {string} */
+            presence: "extant" | "probably_extant" | "possibly_extant" | "possibly_extinct" | "extinct" | "presence_uncertain";
+            /** @enum {string} */
+            origin: "native" | "reintroduced" | "introduced" | "vagrant" | "origin_uncertain";
+            /** @enum {string} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain";
+            /** Format: uuid */
+            sourceId: string;
+        };
+        HabitatDto: {
+            code: string;
+            name: string;
+            suitability: string | null;
+            /** @enum {string|null} */
+            seasonality: "resident" | "breeding" | "non_breeding" | "passage" | "seasonal_uncertain" | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        RangeValueDto: {
+            label: string;
+            value: number | null;
+            min: number | null;
+            max: number | null;
+            unit: string;
+            context: string | null;
+        };
+        ClimateDto: {
+            narrative: string | null;
+            ranges: components["schemas"]["RangeValueDto"][];
+        };
+        GeographySectionDto: {
+            environments: ("terrestrial" | "freshwater" | "marine" | "brackish" | "subterranean" | "aerial")[];
+            /** @description True when the species is location-sensitive and its regions are withheld */
+            locationWithheld: boolean;
+            regions: components["schemas"]["PresenceDto"][];
+            habitats: components["schemas"]["HabitatDto"][];
+            climate: components["schemas"]["ClimateDto"];
+        };
+        DietSectionDto: {
+            narrative: string | null;
+            tags: string[];
+            context: string | null;
+        };
+        ThreatDto: {
+            code: string;
+            name: string;
+            severity: string | null;
+            timing: string | null;
+            /** Format: uuid */
+            sourceId: string;
+        };
+        ThreatsSectionDto: {
+            threats: components["schemas"]["ThreatDto"][];
+            conservationActions: string | null;
+        };
+        BiologySectionDto: {
+            narrative: string | null;
+            measurements: components["schemas"]["RangeValueDto"][];
+        };
+        SupportLinkDto: {
+            organizationName: string;
+            organizationWebsite: string;
+            url: string;
+            /** @description Destination domain, shown next to the link */
+            domain: string;
+            /** @enum {string} */
+            actionType: "donate" | "volunteer" | "adopt" | "learn" | "advocate" | "other";
+            description: string;
+            contextNote: string | null;
+        };
+        MediaDto: {
+            storageKey: string;
+            width: number;
+            height: number;
+            /** @enum {string} */
+            role: "primary" | "gallery";
+            altText: string;
+            caption: string | null;
+            /** @description Credit as recorded when this revision was saved */
+            credit: string;
+            /** @description Licence as recorded when this revision was saved */
+            license: string;
+            sourceUrl: string | null;
+        };
+        SourceRefDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            publisher: string | null;
+            authors: string | null;
+            url: string | null;
+            doi: string | null;
+            /** @description Source publication date */
+            publishedOn: string | null;
+            /** @description Date the source was accessed (import date) */
+            accessedOn: string | null;
+            license: string | null;
+        };
+        CitationDto: {
+            sectionKey: string;
+            /** Format: uuid */
+            sourceId: string;
+            locator: string | null;
+            note: string | null;
+        };
+        ReviewDto: {
+            version: number;
+            publishedAt: string;
+            /** @description Editorial review date */
+            reviewedAt: string;
+            /**
+             * @description Role of the reviewer. Names are never published.
+             * @enum {string|null}
+             */
+            reviewerRole: "editor" | "admin" | null;
+            /** @description True when the author published their own revision. Never presented as independent review. */
+            selfReviewed: boolean;
+        };
+        SpeciesProfileDto: {
+            slug: string;
+            scientificName: string;
+            /** @enum {string} */
+            rank: "species" | "subspecies";
+            /** @enum {string} */
+            displayGroup: "mammal" | "bird" | "reptile" | "amphibian" | "fish" | "insect" | "arachnid" | "mollusc" | "crustacean" | "coral" | "other_invertebrate";
+            /** @description Preferred English common name */
+            commonName: string | null;
+            commonNames: components["schemas"]["NameDto"][];
+            synonyms: components["schemas"]["NameDto"][];
+            taxonomy: components["schemas"]["TaxonomyDto"];
+            overview: string | null;
+            status: components["schemas"]["StatusSectionDto"];
+            population: components["schemas"]["PopulationSectionDto"];
+            geography: components["schemas"]["GeographySectionDto"];
+            diet: components["schemas"]["DietSectionDto"];
+            threats: components["schemas"]["ThreatsSectionDto"];
+            biology: components["schemas"]["BiologySectionDto"];
+            support: components["schemas"]["SupportLinkDto"][];
+            media: components["schemas"]["MediaDto"][];
+            sources: components["schemas"]["SourceRefDto"][];
+            citations: components["schemas"]["CitationDto"][];
+            review: components["schemas"]["ReviewDto"];
         };
     };
     responses: never;
@@ -94,6 +914,422 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReadyDto"];
                 };
+            };
+        };
+    };
+    AuthController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    AuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    AuthController_whoami: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    EditorialController_listSpecies: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSpeciesDto"][];
+                };
+            };
+        };
+    };
+    EditorialController_createSpecies: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSpeciesDto"];
+            };
+        };
+        responses: {
+            /** @description The new species with its first draft (v1) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_getSpecies: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSpeciesDto"];
+                };
+            };
+        };
+    };
+    EditorialController_addIdentifier: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddIdentifierDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffSpeciesDto"];
+                };
+            };
+        };
+    };
+    EditorialController_createDraft: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A new draft copied from the published revision */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_getRevision: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_saveDraft: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_submit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_publish: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_requestChanges: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestChangesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionDetailDto"];
+                };
+            };
+        };
+    };
+    EditorialController_listSources: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceDto"][];
+                };
+            };
+        };
+    };
+    EditorialController_createSource: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSourceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceDto"];
+                };
+            };
+        };
+    };
+    EditorialController_reference: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT/DELETE */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pick lists for the editor: regions, habitats, threats, media, support links */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceListsDto"];
+                };
+            };
+        };
+    };
+    SpeciesController_profile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpeciesProfileDto"];
+                };
+            };
+            /** @description No published species with this slug */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

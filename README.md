@@ -16,6 +16,9 @@ npm run dev                   # http://localhost:3000
 
 The home page currently shows a system check. It should say **"API and database connected"**.
 
+- **Species profiles:** `/species/<slug>` (try `fictus-regionalis` after `npm run db:seed:fixtures` in the backend).
+- **Staff area:** `/admin`. Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.
+
 ## How it talks to the API
 - **Server components** call `API_INTERNAL_URL` through `src/lib/api.ts`. Calls are typed from `src/contracts/api.d.ts` and carry cache tags.
 - **The browser** calls same-origin `/api/v1/*`, which `next.config.ts` rewrites to the API.

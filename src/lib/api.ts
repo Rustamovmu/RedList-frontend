@@ -23,10 +23,21 @@ export class ApiError extends Error {
 
 export async function apiGet<P extends GetPath>(
   path: P,
-  opts: { tags?: string[]; query?: Record<string, string | undefined>; revalidate?: number | false } = {},
+  opts: {
+    tags?: string[];
+    /** Values for `{name}` placeholders in the path. They are URI-encoded. */
+    params?: Record<string, string>;
+    query?: Record<string, string | undefined>;
+    revalidate?: number | false;
+  } = {},
 ): Promise<JsonOk<P>> {
   const qs = new URLSearchParams(Object.entries(opts.query ?? {}).filter((e): e is [string, string] => e[1] !== undefined));
-  const url = `${API}${path}${qs.size ? `?${qs}` : ''}`;
+  const resolved = (path as string).replace(/\{(\w+)\}/g, (_, k: string) => {
+    const v = opts.params?.[k];
+    if (v === undefined) throw new Error(`Missing path parameter ${k} for ${path}`);
+    return encodeURIComponent(v);
+  });
+  const url = `${API}${resolved}${qs.size ? `?${qs}` : ''}`;
   const res = await fetch(url, {
     headers: { accept: 'application/json' },
     next: { tags: opts.tags ?? [], revalidate: opts.revalidate ?? false },

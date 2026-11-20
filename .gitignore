@@ -5,3 +5,7 @@ out
 .env.local
 *.tsbuildinfo
 next-env.d.ts
+
+# Shared agent skills (~/Developer/skills)
+.claude/skills
+.agents/skills
