@@ -13,8 +13,8 @@ export function Cite({ ids, index }: { ids: Array<string | null | undefined>; in
         .sort((a, b) => a.n - b.n)
         .map((s, i) => (
           <span key={s.n}>
-            {i > 0 ? ',' : null}
-            <a href={`#source-${s.n}`} className="text-forest-light underline underline-offset-2" aria-label={`Source ${s.n}: ${s.title}`}>
+            {i > 0 ? ', ' : null}
+            <a href={`#source-${s.n}`} className="inline-flex min-h-6 min-w-6 items-center justify-center text-forest-light underline underline-offset-2" aria-label={`Source ${s.n}: ${s.title}`}>
               [{s.n}]
             </a>
           </span>

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { connection } from 'next/server';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: '#1f3d2b' };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Every page renders per request so it gets the CSP nonce from src/proxy.ts (DECISIONS D-029).
+  // API data is still cached by tag, so this costs a render, not an API call.
+  await connection();
   return (
     <html lang="en">
       <body className="flex min-h-dvh flex-col">

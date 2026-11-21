@@ -33,8 +33,8 @@ export function StatusBadge({ category, year, scope = 'global', size = 'md' }: P
         {category}
       </abbr>
       <span>{label}</span>
-      {year ? <span className="opacity-90">· {year}</span> : null}
-      {scope === 'regional' ? <span className="opacity-90">· regional</span> : null}
+      {year ? <span>· {year}</span> : null}
+      {scope === 'regional' ? <span>· regional</span> : null}
     </span>
   );
 }

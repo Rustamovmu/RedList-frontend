@@ -320,7 +320,7 @@ export default async function SpeciesPage({ params }: Params) {
                 <ul className="mt-2 grid gap-2 sm:grid-cols-2">
                   {p.geography.regions.map((r, i) => (
                     <li key={i} className="rounded border border-line bg-white/60 px-3 py-2 text-sm">
-                      <Link href={`/regions/${r.region.slug}`} className="font-medium underline-offset-4 hover:underline">{r.region.name}</Link>
+                      <Link href={`/regions/${r.region.slug}`} className="inline-block py-0.5 font-medium underline-offset-4 hover:underline">{r.region.name}</Link>
                       <Cite ids={[r.sourceId]} index={index} />
                       <br />
                       <span className="text-ink-muted">

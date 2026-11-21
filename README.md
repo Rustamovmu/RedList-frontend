@@ -29,4 +29,11 @@ The map uses MapLibre GL JS with our own Natural Earth basemap from the API (no 
 ## Commands
 `npm run typecheck` · `npm run lint` · `npm run build` · `npm run contracts:generate` · `npm run test:e2e`
 
-`test:e2e` runs Playwright against its own stack (API :4110 on the `wild_e2e` database, web :3110 built into `.next-e2e`) using your installed Google Chrome. Docker PostGIS must be running. Your dev servers and dev database are not touched.
+## Security headers
+`src/proxy.ts` sets a Content Security Policy with a fresh nonce on every page (scripts: nonce + `'strict-dynamic'` only). The root layout calls `connection()` so every page renders per request and receives it. Other headers are in `next.config.ts`. Details: backend `docs/DECISIONS.md` D-029. Adding a third-party script or host means changing that policy on purpose.
+
+## Production image
+`Dockerfile` builds the standalone server. It is built by the backend's `deploy/docker-compose.prod.yml`, with `NEXT_PUBLIC_SITE_URL` as a build argument: see `../RedList-backent/docs/DEPLOYMENT.md`.
+
+## Tests
+`test:e2e` runs Playwright against its own stack (API :4110 on the `wild_e2e` database, web :3110 built into `.next-e2e`) using your installed Google Chrome. Docker PostGIS must be running. Your dev servers and dev database are not touched. Suites: `critical` (M2 journey), `geography` (map with tiles blocked), `content` (offline profiles), `pages` (info pages and SEO), and `release`: axe with no serious or critical violations on 18 core pages, the CSP checks, and a keyboard-only walkthrough. More in `../RedList-backent/docs/TESTING.md`.

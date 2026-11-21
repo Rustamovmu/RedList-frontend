@@ -1,0 +1,13 @@
+node_modules
+.next
+.next-e2e
+test-results
+playwright-report
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.git
+.claude
+.agents
+public/vendor

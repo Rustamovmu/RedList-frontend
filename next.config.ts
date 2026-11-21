@@ -6,7 +6,10 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  // The Content-Security-Policy header is set per request in src/proxy.ts (it carries a nonce).
+  // HSTS is set by Nginx, where TLS ends (deploy/nginx in the backend repo).
 ];
 
 const nextConfig: NextConfig = {
