@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from './e2e/staff';
 
 /**
  * Critical end-to-end suite (PLAN §12 M2 gate). Runs an isolated stack so it never touches your dev servers:
@@ -42,6 +43,8 @@ export default defineConfig({
         REVALIDATE_SECRET: SECRET,
         MEDIA_DIR: './storage/media-e2e',
         NODE_ENV: 'development',
+        E2E_ADMIN_EMAIL,
+        E2E_ADMIN_PASSWORD,
       },
     },
     {

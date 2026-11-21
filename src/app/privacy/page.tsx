@@ -38,7 +38,8 @@ export default function PrivacyPage() {
       <InfoSection id="staff" title="If you are an editor">
         <p>
           Staff sign-in uses a session cookie and a security (CSRF) cookie, both needed to keep editing secure. We store editors&apos; names, email
-          addresses and a securely hashed password, and an audit log of editorial actions.
+          addresses and a securely hashed password, an audit log of editorial actions, and, for each sign-in session, its start and expiry times and
+          the browser&apos;s user-agent string.
         </p>
       </InfoSection>
 

@@ -1,0 +1,90 @@
+# CI for the web app (PLAN §13): install, typecheck, lint, contracts drift check against the API's openapi.json,
+# build, then the Playwright critical suite. The API repo is checked out next to this one, as in local development.
+# Standard GitHub-hosted runners only: free for public repositories (backend DECISIONS D-033). No secrets are used.
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BACKEND_REPO: https://github.com/Rustamovmu/RedList.git
+
+jobs:
+  ci:
+    name: Typecheck, lint, contracts, build, Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      db:
+        image: imresamu/postgis:16-3.4 # the same image as the API's docker-compose.yml
+        env:
+          POSTGRES_USER: wild
+          POSTGRES_PASSWORD: wild
+          POSTGRES_DB: wild
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U wild -d wild"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: RedList-frontend
+      - name: Check out the API (same branch if it exists, otherwise its default branch)
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads "$BACKEND_REPO" "$BRANCH" >/dev/null; then
+            git clone --depth 1 --branch "$BRANCH" "$BACKEND_REPO" RedList-backent
+          else
+            git clone --depth 1 "$BACKEND_REPO" RedList-backent
+          fi
+          git -C RedList-backent log -1 --format='API at %h %s'
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: RedList-frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            RedList-frontend/package-lock.json
+            RedList-backent/package-lock.json
+      - run: npm ci
+        working-directory: RedList-frontend
+      - run: npm ci
+        working-directory: RedList-backent
+      - run: npm run typecheck
+        working-directory: RedList-frontend
+      - run: npm run lint
+        working-directory: RedList-frontend
+      - name: Contracts drift check (generated types must match the API's openapi.json)
+        working-directory: RedList-frontend
+        run: |
+          npm run contracts:generate
+          git diff --exit-code -- src/contracts/api.d.ts || { echo "::error::src/contracts/api.d.ts is out of date. Run npm run contracts:generate and commit it."; exit 1; }
+      - run: npm run build
+        working-directory: RedList-frontend
+      - name: Google Chrome (the suite uses channel 'chrome')
+        working-directory: RedList-frontend
+        run: google-chrome --version || npx playwright install --with-deps chrome
+      - name: Playwright (desktop + 360px, axe, CSP, keyboard)
+        working-directory: RedList-frontend
+        env:
+          CI: 'true'
+          E2E_DATABASE_URL: postgresql://wild:wild@localhost:5433/wild_e2e
+        run: npm run test:e2e
+      - name: Keep the failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: RedList-frontend/test-results
+          retention-days: 7
+          if-no-files-found: ignore

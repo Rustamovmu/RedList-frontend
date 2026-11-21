@@ -223,8 +223,8 @@ function ReferencePanel() {
       <label className="mt-2 block text-sm">Find a region, habitat, threat, image or support link
         <input value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 block w-full rounded border border-line bg-white px-2 py-1" />
       </label>
-      <ul className="mt-2 max-h-72 space-y-1 overflow-y-auto text-xs">
-        {rows.map((r) => (
+      {/* Scrollable, so it must take keyboard focus to be scrolled without a mouse (WCAG 2.1.1; axe scrollable-region-focusable). */}
+      <ul tabIndex={0} aria-label="Matching reference ids" className="mt-2 max-h-72 space-y-1 overflow-y-auto text-xs">        {rows.map((r) => (
           <li key={r.id}><code className="select-all">{r.id}</code> <span className="text-ink-muted">{r.kind}</span> {r.label}</li>
         ))}
       </ul>
