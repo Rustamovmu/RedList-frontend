@@ -123,6 +123,20 @@
     @apply mx-auto w-full max-w-[90rem] px-5 md:px-10;
   }
 
+  /*
+   * Species profile hero. The photo is shown whole (Photo `fit`), never taller than --photo-max-h.
+   * Stacked (below lg) it takes at most 45% of the screen height. Side by side (lg+) it fills what is left of the first
+   * screen under the lime bar (2.75rem) and nav (--nav-h), minus the top padding, credit line and a margin.
+   */
+  .profile-hero {
+    --photo-max-h: min(45svh, 40rem);
+  }
+  @media (min-width: 64rem) {
+    .profile-hero {
+      --photo-max-h: max(18rem, calc(100svh - var(--nav-h) - 10rem));
+    }
+  }
+
   .link {
     @apply text-lime underline decoration-1 underline-offset-4 hover:decoration-2;
   }

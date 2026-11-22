@@ -111,65 +111,68 @@ export default async function SpeciesPage({ params }: Params) {
   return (
     <article>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(p)) }} />
-      {/* ---------- title, photo and key facts ---------- */}
-      <header className="wrap pt-10 md:pt-16">
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
-          <div className="min-w-0">
+      {/* ---------- title, photo and key facts ----------
+          Stacked on small screens (title, photo, facts). From lg the title and facts sit beside the photo, so the
+          name and the whole, uncropped photo are both in the first screen (.profile-hero sets the photo's height cap). */}
+      <header className="profile-hero wrap pt-8 md:pt-10">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-y-6 md:gap-y-8 [grid-template-areas:'title''photo''facts'] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-rows-[auto_1fr] lg:gap-x-12 lg:[grid-template-areas:'title_photo''facts_photo'] xl:gap-x-16">
+          <div className="min-w-0 [grid-area:title]">
             <p className="kicker">
               {GROUP_LABEL[p.displayGroup]}
               {environments ? ` / ${environments}` : ''}
             </p>
             {p.commonName ? (
               <>
-                <h1 className="h-page mt-3 max-w-[15ch] text-[clamp(2.75rem,9vw,7.5rem)]">{p.commonName}</h1>
-                <p className="mt-4 font-mono text-lg italic text-fog sm:text-xl">{p.scientificName}</p>
+                <h1 className="h-page mt-3 max-w-[15ch] text-[clamp(2.75rem,9vw,5.5rem)] lg:text-[clamp(3rem,5.2vw,6rem)]">{p.commonName}</h1>
+                <p className="mt-3 font-mono text-lg italic text-fog sm:text-xl">{p.scientificName}</p>
               </>
             ) : (
-              <h1 className="mt-3 font-mono text-[clamp(2rem,5vw,3.5rem)] font-bold italic leading-tight text-lime">{p.scientificName}</h1>
+              <h1 className="mt-3 font-mono text-[clamp(2rem,5vw,3.5rem)] font-bold italic leading-tight text-lime lg:text-[clamp(2rem,3.4vw,3.25rem)]">{p.scientificName}</h1>
+            )}
+            <div className="mt-6">
+              <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
+            </div>
+          </div>
+
+          <div className="min-w-0 [grid-area:photo]">
+            {photo ? (
+              <Photo
+                storageKey={photo.storageKey} altText={photo.altText} credit={photo.credit} license={photo.license} sourceUrl={photo.sourceUrl}
+                caption={photo.caption} sizes="(min-width: 1024px) 760px, 100vw" priority
+                fit={{ width: photo.width, height: photo.height }} className="lg:ml-auto"
+              />
+            ) : (
+              <div className="grid-bg flex aspect-[4/3] max-h-[var(--photo-max-h)] w-full items-center justify-center border border-rule text-center font-mono text-xs uppercase tracking-[0.14em] text-muted sm:aspect-[21/9] sm:text-sm lg:aspect-[4/3]" role="img" aria-label="No photograph available">
+                No licensed photograph yet
+              </div>
             )}
           </div>
-          <div className="pb-1">
-            <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
-          </div>
-        </div>
 
-        <div className="mt-10">
-          {photo ? (
-            <Photo
-              storageKey={photo.storageKey} altText={photo.altText} credit={photo.credit} license={photo.license} sourceUrl={photo.sourceUrl}
-              caption={photo.caption} sizes="(min-width: 1440px) 1360px, 100vw" priority aspect="aspect-[4/3] sm:aspect-[21/9]"
-            />
-          ) : (
-            <div className="grid-bg flex aspect-[4/3] w-full items-center justify-center border border-rule text-center font-mono text-xs uppercase tracking-[0.14em] text-muted sm:aspect-[21/9] sm:text-sm" role="img" aria-label="No photograph available">
-              No licensed photograph yet
+          <dl className="grid self-end border border-rule bg-panel [grid-area:facts] sm:grid-cols-3 lg:grid-cols-1">
+            <div className="p-5 lg:flex lg:items-center lg:justify-between lg:gap-6 lg:py-4">
+              <dt className="label">Status</dt>
+              <dd className="mt-2 lg:mt-0 lg:text-right">
+                {headline ? (
+                  <StatusBadge category={headline.category} year={year(headline.assessedOn)} scope={headline.scope} />
+                ) : (
+                  <span className="font-mono text-white">{p.status.notAssessed ? 'Not assessed' : 'Unknown'}</span>
+                )}
+              </dd>
             </div>
-          )}
+            <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
+              <dt className="label">Population</dt>
+              <dd className="mt-2 font-mono text-white lg:mt-0 lg:text-right">
+                {p.population.estimates.length
+                  ? `${p.population.estimates.length} dated estimate${p.population.estimates.length > 1 ? 's' : ''}`
+                  : 'Unknown'}
+              </dd>
+            </div>
+            <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
+              <dt className="label">Environment</dt>
+              <dd className="mt-2 font-mono text-white lg:mt-0 lg:text-right">{environments || 'Unknown'}</dd>
+            </div>
+          </dl>
         </div>
-
-        <dl className="mt-6 grid border border-rule bg-panel sm:grid-cols-3">
-          <div className="p-5">
-            <dt className="label">Status</dt>
-            <dd className="mt-2">
-              {headline ? (
-                <StatusBadge category={headline.category} year={year(headline.assessedOn)} scope={headline.scope} />
-              ) : (
-                <span className="font-mono text-white">{p.status.notAssessed ? 'Not assessed' : 'Unknown'}</span>
-              )}
-            </dd>
-          </div>
-          <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l">
-            <dt className="label">Population</dt>
-            <dd className="mt-2 font-mono text-white">
-              {p.population.estimates.length
-                ? `${p.population.estimates.length} dated estimate${p.population.estimates.length > 1 ? 's' : ''}`
-                : 'Unknown'}
-            </dd>
-          </div>
-          <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l">
-            <dt className="label">Environment</dt>
-            <dd className="mt-2 font-mono text-white">{environments || 'Unknown'}</dd>
-          </div>
-        </dl>
       </header>
 
       <div className="wrap mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-16 md:mt-20 md:grid-cols-[13rem_minmax(0,1fr)] lg:grid-cols-[16rem_minmax(0,1fr)] xl:gap-x-24">

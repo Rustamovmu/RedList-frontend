@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { RisingLines } from '@/components/shell/RisingLines';
 
 const READ = [
   { href: '/methodology', label: 'Methodology' },
@@ -24,9 +25,15 @@ export function SiteFooter() {
         <FooterLinks title="Read" links={READ} />
         <FooterLinks title="Legal" links={LEGAL} />
       </div>
-      {/* The wordmark is decoration: cropped at the bottom edge, hidden from assistive technology. */}
-      <div aria-hidden className="wrap h-[0.68em] select-none overflow-hidden text-[21vw] 2xl:text-[19rem]">
-        <p className="type-display text-center leading-[0.8] text-lime">Wildward</p>
+      {/*
+        Decoration, hidden from assistive technology: the wordmark is cropped at the bottom edge, and lines of light
+        rise behind it from a glowing horizon (D-036). The top padding gives the lines room above the letters.
+      */}
+      <div aria-hidden className="relative select-none pt-[clamp(4rem,9vw,8rem)]">
+        <RisingLines className="pointer-events-none absolute inset-0 h-full w-full" />
+        <div className="wrap relative h-[0.68em] overflow-hidden text-[21vw] 2xl:text-[19rem]">
+          <p className="type-display text-center leading-[0.8] text-lime">Wildward</p>
+        </div>
       </div>
       <div className="wrap flex flex-wrap justify-between gap-x-6 gap-y-1 border-t border-rule py-4 font-mono text-xs text-muted">
         <p>built as an independent portfolio project</p>

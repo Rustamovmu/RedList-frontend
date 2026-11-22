@@ -1508,6 +1508,19 @@ export interface components {
             /** @description Up to 4 published species sharing group, threats or (non-sensitive) regions */
             related: components["schemas"]["SpeciesCardDto"][];
         };
+        GroupExampleDto: {
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+            /** @description The same photo the species card shows */
+            image: components["schemas"]["CardImageDto"];
+        };
+        GroupFacetDto: {
+            value: string;
+            count: number;
+            /** @description A published species of the group that has a photo. Photos at least 800 px wide first, then the species recorded in the most countries and seas (location-sensitive species count as none), then by name. Null when no species of the group has a photo. */
+            example: components["schemas"]["GroupExampleDto"] | null;
+        };
         RegionFacetDto: {
             slug: string;
             name: string;
@@ -1525,7 +1538,7 @@ export interface components {
             total: number;
             /** @description Published species whose headline category is CR, EN or VU */
             threatened: number;
-            groups: components["schemas"]["FacetDto"][];
+            groups: components["schemas"]["GroupFacetDto"][];
             environments: components["schemas"]["FacetDto"][];
             categories: components["schemas"]["FacetDto"][];
             trends: components["schemas"]["FacetDto"][];

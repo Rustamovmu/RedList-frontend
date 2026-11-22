@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
+import { GroupTile } from '@/components/GroupTile';
 import { SectionHead } from '@/components/SectionHead';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import { apiGet } from '@/lib/api';
-import { ENVIRONMENT_LABEL, GROUP_LABEL } from '@/lib/labels';
+import { ENVIRONMENT_LABEL } from '@/lib/labels';
 import { mediaSrc } from '@/lib/media';
 import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
 
@@ -122,18 +123,10 @@ export default async function Home() {
         {groups.length ? (
           <section aria-labelledby="by-group">
             <SectionHead id="by-group" title="Browse by animal group" />
-            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {groups.map((g) => (
                 <li key={g.value}>
-                  <Link href={`/species?group=${g.value}`} className="group flex aspect-square flex-col justify-between border border-rule bg-panel p-4 hover:border-lime hover:bg-raised">
-                    <span className="font-mono text-sm font-bold uppercase tracking-[0.08em] text-white">
-                      {GROUP_LABEL[g.value as keyof typeof GROUP_LABEL] ?? g.value}
-                    </span>
-                    <span className="flex items-baseline gap-2">
-                      <span className="type-display text-5xl leading-none text-lime">{g.count}</span>
-                      <span className="font-mono text-xs text-muted">species</span>
-                    </span>
-                  </Link>
+                  <GroupTile group={g} />
                 </li>
               ))}
             </ul>
