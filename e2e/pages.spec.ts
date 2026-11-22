@@ -40,6 +40,29 @@ test('the sources page lists cited sources with the species that cite them', asy
   await expect(page.getByText('Used for country, sea and ocean boundaries').first()).toBeVisible();
 });
 
+test('the Wildward logo, in the header or the footer, leads to the home hero, also from the home page itself (D-056)', async ({ page }) => {
+  const toBottom = () => page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  const headerLogo = page.getByRole('banner').getByRole('link', { name: 'Wildward', exact: true });
+  const footerLogo = page.getByRole('contentinfo').getByRole('link', { name: 'Wildward', exact: true });
+
+  await page.goto('/');
+  for (const logo of [footerLogo, headerLogo]) {
+    await toBottom();
+    await expect.poll(scrollY).toBeGreaterThan(0);
+    await logo.click();
+    await expect.poll(scrollY, { timeout: 5000 }).toBe(0);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(headerLogo).toBeFocused();
+  }
+
+  await page.goto('/species');
+  await toBottom();
+  await footerLogo.click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeInViewport();
+});
+
 test('the photo credits page gives each photo its creator, licence deed and species, linked from the footer (D-055)', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('contentinfo').getByRole('link', { name: 'Photo credits' }).click();

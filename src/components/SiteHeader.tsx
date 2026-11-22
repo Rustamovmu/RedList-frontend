@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { CompareCounter } from '@/components/shell/CompareCounter';
 import { HeaderBar } from '@/components/shell/HeaderBar';
+import { HomeLink } from '@/components/shell/HomeLink';
 import { Mark, Wordmark } from '@/components/shell/Mark';
 import { NavLinks } from '@/components/shell/NavLinks';
 
@@ -15,10 +15,11 @@ export function SiteHeader() {
   return (
     <HeaderBar>
       <div className="wrap grid min-h-[var(--nav-h)] grid-cols-[1fr_auto] content-center items-center gap-y-0.5 [grid-template-areas:'logo_count''nav_nav'] md:flex md:items-center md:justify-between md:gap-10">
-        <Link href="/" className="inline-flex min-h-11 items-center gap-3 justify-self-start text-white [grid-area:logo]">
+        {/* Home, or back up to the hero when already on the home page (D-056). */}
+        <HomeLink primary className="inline-flex min-h-11 items-center gap-3 justify-self-start text-white [grid-area:logo]">
           <Mark className="h-9 w-9 text-lime" />
           <Wordmark className="text-[1.5rem] leading-none" />
-        </Link>
+        </HomeLink>
         <div className="justify-self-end [grid-area:count] md:hidden">
           <CompareCounter />
         </div>

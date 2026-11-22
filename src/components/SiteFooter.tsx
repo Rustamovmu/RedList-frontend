@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { HomeLink } from '@/components/shell/HomeLink';
 import { Mark, Wordmark } from '@/components/shell/Mark';
 import { RisingLines } from '@/components/shell/RisingLines';
 
@@ -40,9 +41,12 @@ export function SiteFooter() {
       <div className="wrap grid gap-x-10 gap-y-12 pt-16 pb-6 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:pt-20">
         <section aria-labelledby="footer-about">
           <h2 id="footer-about" className="sr-only">About this site</h2>
-          <p aria-hidden className="flex items-center gap-3 text-white">
-            <Mark className="h-11 w-11 text-lime" />
-            <Wordmark className="text-[1.875rem] leading-none" />
+          {/* The logo links home, like the header's: on the home page it scrolls back up to the hero (D-056). */}
+          <p>
+            <HomeLink className="inline-flex min-h-11 items-center gap-3 text-white">
+              <Mark className="h-11 w-11 text-lime" />
+              <Wordmark className="text-[1.875rem] leading-none" />
+            </HomeLink>
           </p>
           <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-relaxed text-muted">
             Wildward is an independent educational catalogue. It is not affiliated with the IUCN or any organization listed on it.
