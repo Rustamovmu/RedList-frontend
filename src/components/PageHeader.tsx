@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { CornerArcs } from '@/components/shell/Curves';
 
 /** A fixed photo behind the header (not catalogue media). `position` is a Tailwind object-position class. */
-export type HeaderImage = { src: string; alt: string; position?: string; caption: string };
+export type HeaderImage = { src: string; alt: string; position?: string };
 
 /**
  * The top of an inner page, sliding up under the transparent main navigation (D-049): a navy band with a small kicker, the page's h1, an optional lead paragraph and optional
@@ -18,7 +18,7 @@ export function PageHeader({
   return (
     <header className={`relative isolate -mt-[var(--nav-h)] overflow-hidden border-b border-rule bg-panel ${image ? 'flex min-h-[max(34rem,80svh)] flex-col justify-end' : ''}`}>
       {image ? (
-        <figure className="absolute inset-0 -z-10 m-0">
+        <div className="absolute inset-0 -z-10">
           {/* A fixed file, not catalogue media, so the media loader does not apply (unoptimized). */}
           <Image
             src={image.src}
@@ -34,12 +34,7 @@ export function PageHeader({
           <div aria-hidden className="absolute inset-0 bg-linear-to-t from-black/85 via-black/60 via-55% to-black/15 md:from-black/80 md:via-black/45 md:via-40% md:to-transparent md:to-70%" />
           <div aria-hidden className="absolute inset-0 hidden bg-linear-to-r from-black/55 via-black/20 via-40% to-transparent to-65% md:block" />
           <div aria-hidden className="absolute inset-x-0 top-0 h-[calc(var(--nav-h)*1.75)] bg-linear-to-b from-black/50 to-transparent" />
-          <figcaption className="absolute inset-x-0 bottom-2">
-            <div className="wrap flex justify-end">
-              <p className="text-right text-[0.6875rem] leading-relaxed text-fog sm:text-xs">{image.caption}</p>
-            </div>
-          </figcaption>
-        </figure>
+        </div>
       ) : (
         <CornerArcs id="page-arcs" className="absolute -right-40 -bottom-10 -z-10 h-[22rem] w-[40rem] sm:-right-16 lg:right-0 lg:h-[26rem] lg:w-[46rem]" />
       )}

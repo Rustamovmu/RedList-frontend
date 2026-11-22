@@ -19,7 +19,7 @@ function contextLine(c: Card): string {
  * A species in a list (Explore, home, related, map, regions), laid out like an article card: the photo (whole, never
  * cropped: WholePhoto), the status as the card's tag, the name, then a muted context line. Without an approved photo
  * the slot shows the neutral no-photo state. `eager` is for cards in the first visible row, whose photo is usually the Largest Contentful Paint.
- * The whole card is the link (the name's ::after covers it); the credit sits above that overlay so it stays selectable.
+ * The whole card is the link (the name's ::after covers it). The photo's credit is on /credits and the profile (D-055).
  */
 export function SpeciesCard({
   card, headingLevel = 'h3', eager = false,
@@ -57,8 +57,6 @@ export function SpeciesCard({
         </H>
         {card.commonName ? <p className="mt-0.5 text-[0.9375rem] italic text-fog">{card.scientificName}</p> : null}
         <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">{contextLine(card)}</p>
-        {/* Attribution travels with the image wherever it is shown (CC BY / BY-SA). */}
-        {card.image ? <p className="relative mt-auto pt-3 text-xs leading-snug text-muted">{card.image.credit}</p> : null}
       </div>
     </article>
   );

@@ -146,8 +146,7 @@ export default async function SpeciesPage({ params }: Params) {
           <div className="min-w-0 [grid-area:photo]">
             {photo ? (
               <Photo
-                storageKey={photo.storageKey} altText={photo.altText} credit={photo.credit} license={photo.license} sourceUrl={photo.sourceUrl}
-                caption={photo.caption} sizes="(min-width: 1024px) 760px, 100vw" priority
+                storageKey={photo.storageKey} altText={photo.altText} caption={photo.caption} sizes="(min-width: 1024px) 760px, 100vw" priority
                 fit={{ width: photo.width, height: photo.height }} className="lg:ml-auto"
               />
             ) : (

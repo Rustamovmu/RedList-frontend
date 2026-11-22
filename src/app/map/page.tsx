@@ -17,12 +17,11 @@ const list = (v: string | string[] | undefined) =>
   [...new Set((Array.isArray(v) ? v : v ? [v] : []).flatMap((x) => x.split(',')).map((x) => x.trim()).filter(Boolean))].slice(0, 11);
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-050). */
+/** The header picture is the owner's choice; no caption is shown on it (DECISIONS D-050, D-055). */
 const HEADER_IMAGE: HeaderImage = {
   src: '/hero/world-animals.webp',
   alt: 'An illustrated world map with drawings of animals on each continent and in the oceans',
   position: 'object-[50%_45%]',
-  caption: 'Header image: credit and licence pending',
 };
 
 export default async function MapPage({ searchParams }: { searchParams: Promise<Raw> }) {

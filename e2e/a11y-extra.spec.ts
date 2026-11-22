@@ -26,6 +26,7 @@ const PAGES = [
   '/about',
   '/methodology',
   '/sources',
+  '/credits',
   '/privacy',
   '/terms',
   '/admin',

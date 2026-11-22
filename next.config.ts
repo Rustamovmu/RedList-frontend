@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? '.next',
   output: 'standalone',
   poweredByHeader: false,
+  // No Next.js dev-tools badge in the corner during `next dev` (D-055). Build errors still show as an overlay.
+  devIndicators: false,
   // Catalogue images come from our own API as pre-generated WebP widths (M4). No Next.js image optimizer and
   // no remote image hosts: the custom loader only ever builds same-origin /api/v1/media URLs.
   images: {

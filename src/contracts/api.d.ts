@@ -404,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SpeciesController_credits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sitemap": {
         parameters: {
             query?: never;
@@ -1583,6 +1599,17 @@ export interface components {
             usedForBoundaries: boolean;
             species: components["schemas"]["CitingSpeciesDto"][];
         };
+        PhotoCreditDto: {
+            /** @description The species whose profile shows the photo */
+            slug: string;
+            scientificName: string;
+            commonName: string | null;
+            /** @description Credit as recorded when the live revision was saved */
+            credit: string;
+            /** @description Licence as recorded when the live revision was saved */
+            license: string;
+            sourceUrl: string | null;
+        };
         SitemapSpeciesDto: {
             slug: string;
             /** @description When the live revision was published */
@@ -1705,7 +1732,7 @@ export interface components {
         MediaUploadDto: {
             /** @description Who made the image, as the source names them */
             creator: string;
-            /** @description The credit line shown under the image, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
+            /** @description The credit line shown on the profile and the photo credits page, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
             credit: string;
             /** @description Licence. Must be on the allow-list: CC0, PDM, CC BY, CC BY-SA (any version) */
             license: string;
@@ -1723,7 +1750,7 @@ export interface components {
         MediaMetadataDto: {
             /** @description Who made the image, as the source names them */
             creator: string;
-            /** @description The credit line shown under the image, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
+            /** @description The credit line shown on the profile and the photo credits page, e.g. "Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" */
             credit: string;
             /** @description Licence. Must be on the allow-list: CC0, PDM, CC BY, CC BY-SA (any version) */
             license: string;
@@ -2466,6 +2493,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicSourceDto"][];
+                };
+            };
+        };
+    };
+    SpeciesController_credits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoCreditDto"][];
                 };
             };
         };

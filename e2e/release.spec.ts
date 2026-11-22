@@ -21,6 +21,7 @@ const CORE_PAGES = [
   '/about',
   '/methodology',
   '/sources',
+  '/credits',
   '/privacy',
   '/terms',
   '/admin',

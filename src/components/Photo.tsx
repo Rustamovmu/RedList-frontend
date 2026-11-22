@@ -1,23 +1,20 @@
 import Image from 'next/image';
 import { WholePhoto } from '@/components/WholePhoto';
-import { licenceUrl, mediaSrc } from '@/lib/media';
+import { mediaSrc } from '@/lib/media';
 
 /**
- * A catalogue photograph with its attribution (PLAN §4 "photo with credit", §8). The credit and licence are
- * the snapshot stored with the published revision, so later edits to the image record never change this page.
+ * A catalogue photograph with its optional caption. Its attribution is not printed under the photo: the profile lists it
+ * under Sources ("Photographs") and /credits lists every photo's credit, licence and source (D-055).
  *
  * By default the photo sits whole inside a fixed `aspect` box (WholePhoto: never cropped). With `fit` (the photo's own pixel size)
  * the whole photo is shown uncropped at its own aspect ratio: as wide as its container allows, but never taller
- * than the CSS variable --photo-max-h, which the parent sets. The credit line then spans the photo's width.
+ * than the CSS variable --photo-max-h, which the parent sets. The caption then spans the photo's width.
  */
 export function Photo({
-  storageKey, altText, credit, license, sourceUrl, caption, sizes, priority = false, aspect = 'aspect-[16/9]', fit, className,
+  storageKey, altText, caption, sizes, priority = false, aspect = 'aspect-[16/9]', fit, className,
 }: {
   storageKey: string;
   altText: string;
-  credit: string;
-  license: string;
-  sourceUrl?: string | null;
   caption?: string | null;
   sizes: string;
   priority?: boolean;
@@ -25,8 +22,6 @@ export function Photo({
   fit?: { width: number; height: number };
   className?: string;
 }) {
-  const deed = licenceUrl(license);
-  const creditHasLicence = credit.toLowerCase().includes(license.toLowerCase());
   const natural = fit && fit.width > 0 && fit.height > 0 ? fit : null;
   return (
     <figure
@@ -44,26 +39,7 @@ export function Photo({
           <WholePhoto storageKey={storageKey} alt={altText} sizes={sizes} priority={priority} />
         )}
       </div>
-      <figcaption className="mt-2.5 text-[0.8125rem] leading-relaxed text-muted">
-        {caption ? <span className="mr-1 font-medium text-fog">{caption}</span> : null}
-        <span>{credit}</span>
-        {creditHasLicence && !deed ? null : (
-          <>
-            {' · '}
-            {deed ? (
-              <a href={deed} rel="noopener noreferrer license" className="text-lime underline underline-offset-2">{license}</a>
-            ) : (
-              license
-            )}
-          </>
-        )}
-        {sourceUrl ? (
-          <>
-            {' · '}
-            <a href={sourceUrl} rel="noopener noreferrer" className="text-lime underline underline-offset-2">Source</a>
-          </>
-        ) : null}
-      </figcaption>
+      {caption ? <figcaption className="mt-2.5 text-[0.8125rem] leading-relaxed font-medium text-fog">{caption}</figcaption> : null}
     </figure>
   );
 }

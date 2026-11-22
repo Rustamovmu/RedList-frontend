@@ -16,6 +16,7 @@ const COLUMNS = [
     links: [
       { href: '/methodology', label: 'Methodology' },
       { href: '/sources', label: 'Sources' },
+      { href: '/credits', label: 'Photo credits' },
       { href: '/support', label: 'Support directory' },
     ],
   },
@@ -58,7 +59,7 @@ export function SiteFooter() {
       </div>
       <div className="wrap flex flex-wrap justify-between gap-x-6 gap-y-2 py-6 text-sm text-muted">
         <p>Built as an independent portfolio project.</p>
-        <p>Boundaries: Natural Earth · Photos: credited on every image</p>
+        <p>Boundaries: Natural Earth</p>
       </div>
     </footer>
   );

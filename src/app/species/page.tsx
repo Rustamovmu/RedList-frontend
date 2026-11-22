@@ -21,14 +21,13 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 24;
 
 /**
- * The header photo is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-048).
+ * The header photo is the owner's choice; no caption is shown on it (DECISIONS D-048, D-055).
  * The crop sits low (80%) so the animals, not the sky, fill the short band.
  */
 const HEADER_IMAGE: HeaderImage = {
   src: '/hero/savanna.webp',
   alt: 'Savanna animals, among them an elephant, a giraffe, a lion, a zebra and a hippo, in front of a snow-capped mountain',
   position: 'object-[50%_80%]',
-  caption: 'Header image: credit and licence pending',
 };
 type Filters = components['schemas']['FiltersDto'];
 type Option = { value: string; label: string; count: number };

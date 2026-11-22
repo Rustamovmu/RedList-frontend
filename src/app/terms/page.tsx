@@ -21,7 +21,8 @@ export default function TermsPage() {
 
       <InfoSection id="photos" title="Photographs">
         <p>
-          Photographs belong to their creators and are used under the licence shown under each one (CC0, Public Domain Mark, CC BY or CC BY-SA). If
+          Photographs belong to their creators and are used under the licence listed for each one on the{' '}
+          <Link href="/credits" className="link">photo credits</Link> page and in each profile&apos;s sources (CC0, Public Domain Mark, CC BY or CC BY-SA). If
           you reuse a photograph, follow that licence: credit the creator, link the licence, and for CC BY-SA share your adaptation under the same
           licence. We resized and re-encoded each image.
         </p>

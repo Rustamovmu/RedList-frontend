@@ -128,7 +128,7 @@ function MetadataFields({ m }: { m?: Media }) {
         </select>
       </label>
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium">Credit line shown under the image</span>
+        <span className="text-sm font-medium">Credit line, shown on the profile and on Photo credits</span>
         <input name="credit" required minLength={3} maxLength={300} defaultValue={m?.credit} placeholder="Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" className={input} />
       </label>
       <label className="block">

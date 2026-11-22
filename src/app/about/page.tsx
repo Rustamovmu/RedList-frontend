@@ -11,12 +11,11 @@ export const metadata: Metadata = {
 
 const contact = process.env.NEXT_PUBLIC_CONTACT_URL;
 
-/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-052). */
+/** The header picture is the owner's choice; no caption is shown on it (DECISIONS D-052, D-055). */
 const HEADER_IMAGE: HeaderImage = {
   src: '/hero/about-turtles.webp',
   alt: 'Two cupped hands holding a handful of sea turtle hatchlings above deep blue water',
   position: 'object-[50%_55%]',
-  caption: 'Header image: credit and licence pending',
 };
 
 export default function AboutPage() {

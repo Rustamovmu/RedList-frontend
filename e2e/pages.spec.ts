@@ -13,6 +13,7 @@ const PAGES: Array<[string, string]> = [
   ['/about', 'About Wildward'],
   ['/methodology', 'How we source facts'],
   ['/sources', 'Sources'],
+  ['/credits', 'Photo credits'],
   ['/privacy', 'Privacy'],
   ['/terms', 'Terms of use'],
 ];
@@ -39,10 +40,23 @@ test('the sources page lists cited sources with the species that cite them', asy
   await expect(page.getByText('Used for country, sea and ocean boundaries').first()).toBeVisible();
 });
 
+test('the photo credits page gives each photo its creator, licence deed and species, linked from the footer (D-055)', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Photo credits' }).click();
+  await expect(page).toHaveURL(/\/credits$/);
+  const lizard = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Captive example lizard (fixture)' }) });
+  await expect(lizard).toContainText('Synthetic test pattern (generated, not a photograph), CC0');
+  await expect(lizard.getByRole('link', { name: 'CC0' })).toHaveAttribute('href', 'https://creativecommons.org/publicdomain/zero/1.0/');
+  await expect(lizard.getByRole('link', { name: 'CC0' })).toHaveAttribute('rel', /noopener noreferrer/);
+  // Species without a photo are not listed.
+  await expect(page.getByRole('link', { name: 'Example reef fish (fixture)' })).toHaveCount(0);
+});
+
 test('sitemap.xml lists published species and regions only; robots.txt keeps staff and API out', async ({ request }) => {
   const sitemap = await (await request.get('/sitemap.xml')).text();
   expect(sitemap).toContain('/species/fictus-captivus</loc>');
   expect(sitemap).toContain('/methodology</loc>');
+  expect(sitemap).toContain('/credits</loc>');
   expect(sitemap).toContain('/regions/kenya</loc>');
   expect(sitemap).not.toContain('/regions/peru</loc>'); // only the location-hidden species lives there
   expect(sitemap).not.toContain('/admin');

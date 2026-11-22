@@ -14,12 +14,11 @@ type Profile = components['schemas']['SpeciesProfileDto'];
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX = 3;
 
-/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-051). */
+/** The header picture is the owner's choice; no caption is shown on it (DECISIONS D-051, D-055). */
 const HEADER_IMAGE: HeaderImage = {
   src: '/hero/compare-friends.webp',
   alt: 'A painting of a robot facing a crow, a small striped animal, a zebra and a polar bear in an autumn forest',
   position: 'object-[50%_20%]',
-  caption: 'Header image: credit and licence pending',
 };
 
 const Unknown = ({ children = 'Unknown' }: { children?: React.ReactNode }) => <span className="missing">{children}</span>;

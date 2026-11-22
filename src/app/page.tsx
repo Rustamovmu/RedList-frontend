@@ -18,8 +18,8 @@ import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
 /**
  * Home (PLAN §4), laid out like the owner's reference site (D-038): a photo hero with the promise and a search box,
  * the catalogue in numbers, then photo-led sections. Every number comes from the database and says "in this catalogue",
- * never a global total. Below the hero every photo is a catalogue image with its credit. The hero image is the owner's
- * choice; its credit and licence are still pending, and the caption says so (DECISIONS D-041).
+ * never a global total. Below the hero every photo is a catalogue image, captioned with the species it shows; photographers
+ * and licences are listed on /credits, linked from the footer (D-055). The hero image is the owner's choice (DECISIONS D-041).
  */
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
@@ -124,18 +124,13 @@ export default async function Home() {
             sizes="100vw"
             className="hero-in object-cover object-[42%_50%] sm:object-center"
           />
-          {/* Scrims keep the nav, the headline and the caption readable over the faces. */}
+          {/* Scrims keep the nav and the headline readable over the faces. */}
           <div aria-hidden className="absolute inset-0 bg-black/25" />
           <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.6),transparent_28%,transparent_60%,rgb(0_0_0/0.7))]" />
           <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_67%,rgb(0_0_0/0.45),transparent)]" />
-          <figcaption className="absolute inset-x-0 bottom-[calc(var(--curve-h)+0.75rem)] z-20">
-            <div className="wrap flex justify-end">
-              <p className="text-right text-[0.6875rem] leading-relaxed text-fog sm:text-xs">Header image: credit and licence pending</p>
-            </div>
-          </figcaption>
         </figure>
 
-        {/* Anchored to the bottom, a fixed gap above the curve, so the promise and the search sit low and clear of the caption. */}
+        {/* Anchored to the bottom, a fixed gap above the curve, so the promise and the search sit low. */}
         <div className="relative z-10 flex flex-1 flex-col items-center justify-end px-5 pt-[calc(var(--nav-h)+2rem)] pb-[calc(var(--curve-h)+2.75rem)] text-center sm:pb-[calc(var(--curve-h)+3rem)] lg:pb-[calc(var(--curve-h)-2rem)]">
           {/* The three things the site does, one per line from md up, each verb in lime (D-054). The spans keep the
               spaces in the accessible name ("…a species, see where…"). */}
@@ -255,8 +250,6 @@ export default async function Home() {
                   <Link href={`/species/${comparePhoto.slug}`} className="font-semibold text-white underline decoration-white/50 underline-offset-4 hover:text-lime hover:decoration-lime">
                     {comparePhoto.commonName ?? <i>{comparePhoto.scientificName}</i>}
                   </Link>
-                  <span aria-hidden> · </span>
-                  <span>{comparePhoto.image.credit}</span>
                 </p>
               </div>
             </figcaption>
@@ -355,8 +348,6 @@ export default async function Home() {
             <Link href={`/species/${helpPhoto.slug}`} className="font-semibold text-fog underline decoration-muted underline-offset-4 hover:text-lime hover:decoration-lime">
               {helpPhoto.commonName ?? <i>{helpPhoto.scientificName}</i>}
             </Link>
-            <span aria-hidden> · </span>
-            {helpPhoto.image.credit}
           </p>
         ) : null}
       </section>
@@ -364,7 +355,7 @@ export default async function Home() {
   );
 }
 
-/** A section's photograph, with the species it shows and the credit underneath. */
+/** A section's photograph, with the species it shows underneath (the credit is on /credits, D-055). */
 function SectionPhoto({ card, sizes, frame, className = '' }: { card: Card; sizes: string; frame: string; className?: string }) {
   if (!card.image) return null;
   return (
@@ -376,8 +367,6 @@ function SectionPhoto({ card, sizes, frame, className = '' }: { card: Card; size
         <Link href={`/species/${card.slug}`} className="font-semibold text-fog underline decoration-muted underline-offset-4 hover:text-lime hover:decoration-lime">
           {card.commonName ?? <i>{card.scientificName}</i>}
         </Link>
-        <span aria-hidden> · </span>
-        {card.image.credit}
       </figcaption>
     </figure>
   );

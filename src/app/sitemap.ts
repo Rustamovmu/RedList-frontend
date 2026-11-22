@@ -5,7 +5,7 @@ import { absolute } from '@/lib/site';
 /** Regenerated hourly at most; also revalidated with the catalogue tag when something is published. */
 export const revalidate = 3600;
 
-const STATIC = ['/', '/species', '/map', '/support', '/sources', '/about', '/methodology', '/privacy', '/terms'];
+const STATIC = ['/', '/species', '/map', '/support', '/sources', '/credits', '/about', '/methodology', '/privacy', '/terms'];
 
 /** sitemap.xml: published content only (PLAN §4 SEO). Drafts never appear, because the API lists published species only. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

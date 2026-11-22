@@ -9,8 +9,8 @@ type Group = components['schemas']['GroupFacetDto'];
  * A home-page tile for one animal group: a photo of one of its species (the API picks it: a sharp photo of the group's
  * most widespread species) under a dark scrim, with the group name, its count and "See species" in the lower left.
  * The photo is decoration here, because the link says what the tile is. The caption under the tile names the species
- * shown, so the photo is never read as the whole group, and carries the credit, because attribution travels with the
- * image (CC BY / BY-SA). Without a photo the tile shows the faint grid.
+ * shown, so the photo is never read as the whole group. The photo's credit is on /credits (D-055). Without a photo the
+ * tile shows the faint grid.
  *
  * The photo sits at z -10 inside an isolated tile, so the link's text paints above it while the link's ::after
  * overlay makes the whole tile clickable.
@@ -50,7 +50,7 @@ export function GroupTile({ group }: { group: Group }) {
       </div>
       {ex ? (
         <p className="mt-2.5 text-xs leading-snug text-muted">
-          {ex.commonName ?? <i>{ex.scientificName}</i>} · {ex.image.credit}
+          {ex.commonName ?? <i>{ex.scientificName}</i>}
         </p>
       ) : null}
     </div>
