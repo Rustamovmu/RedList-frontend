@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mark } from '@/components/shell/Mark';
+import { Mark, Wordmark } from '@/components/shell/Mark';
 import { RisingLines } from '@/components/shell/RisingLines';
 
 const COLUMNS = [
@@ -41,7 +41,7 @@ export function SiteFooter() {
           <h2 id="footer-about" className="sr-only">About this site</h2>
           <p aria-hidden className="flex items-center gap-3 text-white">
             <Mark className="h-11 w-11 text-lime" />
-            <span className="text-2xl font-extrabold tracking-[-0.02em]">Wildward</span>
+            <Wordmark className="text-[1.875rem] leading-none" />
           </p>
           <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-relaxed text-muted">
             Wildward is an independent educational catalogue. It is not affiliated with the IUCN or any organization listed on it.

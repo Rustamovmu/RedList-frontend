@@ -1,3 +1,15 @@
+/**
+ * The name in the logo (D-043): rounded Quicksand, with both W's in lime and the rest in the surrounding text colour.
+ * The letters stay in one text run, so links and headings still read "Wildward".
+ */
+export function Wordmark({ className = '' }: { className?: string }) {
+  return (
+    <span className={`font-logo font-bold tracking-[0.01em] ${className}`}>
+      <span className="text-lime">W</span>ild<span className="text-lime">w</span>ard
+    </span>
+  );
+}
+
 /** The Wildward mark: a circle crossed by one curved leaf vein. Original line art, decorative only. */
 export function Mark({ className = 'h-7 w-7' }: { className?: string }) {
   return (

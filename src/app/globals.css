@@ -31,6 +31,8 @@
 
   /* Self-hosted from npm (@fontsource-variable/plus-jakarta-sans), SIL Open Font License. The CSP allows fonts from 'self' only. */
   --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* The wordmark only (D-043): Quicksand via @fontsource-variable/quicksand, SIL Open Font License, self-hosted. */
+  --font-logo: "Quicksand Variable", "Quicksand", ui-rounded, var(--font-sans);
 }
 
 /* Headings and big figures: bold, tight, sentence case. */

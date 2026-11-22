@@ -137,8 +137,11 @@ export function MapExplorer({
         </details>
       </form>
 
+      {/* On large screens the list scrolls inside its own box, exactly as tall as the map column (the box is taken out of
+          the flow, so the map column sets the row height). The page stays short: the footer is one scroll away instead
+          of below every card, and when the list reaches its end the wheel carries on to the page. Phones keep one flow. */}
       <div className="mt-6 grid gap-x-10 gap-y-12 lg:grid-cols-[1fr_24rem]">
-        <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+        <div className="min-w-0">
           <div className="relative h-[55vh] min-h-72 overflow-hidden border border-rule bg-panel lg:h-[70vh]">
             {mapFailed ? (
               <p role="status" className="notice m-4 text-[0.9375rem] text-fog">
@@ -172,30 +175,35 @@ export function MapExplorer({
           </div>
         </div>
 
-        <section aria-labelledby="results-h" className="min-w-0">
-          <h2 id="results-h" className="text-2xl font-bold tracking-[-0.02em] text-white">Species in this view</h2>
-          {listFailed ? (
-            <p role="alert" className="notice-error mt-3 text-sm">Species could not be loaded. This is a problem on our side; please try again.</p>
-          ) : (
-            <>
-              <p role="status" className="meta mt-2" data-testid="map-count">
-                {species.length} species in this catalogue match this view
-                {data?.truncated ? '. Zoom in to see all of them.' : ''}
-              </p>
-              {species.length === 0 ? (
-                <p className="missing mt-4">No species here match these filters. Move the map or remove a filter.</p>
-              ) : (
-                <ul className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-1">
-                  {species.map((s) => (
-                    <li key={s.slug}>
-                      <SpeciesCard card={s} />
-                      <p className="mt-2 border-t border-rule pt-2 text-[0.8125rem] text-muted">Shown on the map as: {LAYER_LABEL[s.layer]}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )}
+        <section aria-labelledby="results-h" className="min-w-0 lg:relative">
+          <div className="lg:absolute lg:inset-0 lg:flex lg:flex-col">
+            <h2 id="results-h" className="text-2xl font-bold tracking-[-0.02em] text-white">Species in this view</h2>
+            {listFailed ? (
+              <p role="alert" className="notice-error mt-3 text-sm">Species could not be loaded. This is a problem on our side; please try again.</p>
+            ) : (
+              <>
+                <p role="status" className="meta mt-2" data-testid="map-count">
+                  {species.length} species in this catalogue match this view
+                  {data?.truncated ? '. Zoom in to see all of them.' : ''}
+                </p>
+                {species.length === 0 ? (
+                  <p className="missing mt-4">No species here match these filters. Move the map or remove a filter.</p>
+                ) : (
+                  <ul
+                    data-testid="map-results"
+                    className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:border-t lg:border-rule lg:pt-6 lg:pr-3 lg:[scrollbar-color:var(--color-rule)_transparent] lg:[scrollbar-width:thin]"
+                  >
+                    {species.map((s) => (
+                      <li key={s.slug}>
+                        <SpeciesCard card={s} />
+                        <p className="mt-2 border-t border-rule pt-2 text-[0.8125rem] text-muted">Shown on the map as: {LAYER_LABEL[s.layer]}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
         </section>
       </div>
     </>
