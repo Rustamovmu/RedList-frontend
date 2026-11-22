@@ -22,17 +22,17 @@ export function Photo({
   const creditHasLicence = credit.toLowerCase().includes(license.toLowerCase());
   return (
     <figure>
-      <div className={`relative w-full overflow-hidden rounded-lg border border-line bg-paper-deep ${aspect}`}>
+      <div className={`relative w-full overflow-hidden bg-panel ${aspect}`}>
         <Image src={mediaSrc(storageKey)} alt={altText} fill sizes={sizes} priority={priority} className="object-cover" />
       </div>
-      <figcaption className="mt-1.5 text-xs text-ink-muted">
-        {caption ? <span className="mr-1 text-ink">{caption}</span> : null}
+      <figcaption className="mt-2 font-mono text-xs leading-relaxed text-muted">
+        {caption ? <span className="mr-1 text-fog">{caption}</span> : null}
         <span>{credit}</span>
         {creditHasLicence && !deed ? null : (
           <>
             {' · '}
             {deed ? (
-              <a href={deed} rel="noopener noreferrer license" className="underline underline-offset-2">{license}</a>
+              <a href={deed} rel="noopener noreferrer license" className="text-lime underline underline-offset-2">{license}</a>
             ) : (
               license
             )}
@@ -41,7 +41,7 @@ export function Photo({
         {sourceUrl ? (
           <>
             {' · '}
-            <a href={sourceUrl} rel="noopener noreferrer" className="underline underline-offset-2">Source</a>
+            <a href={sourceUrl} rel="noopener noreferrer" className="text-lime underline underline-offset-2">Source</a>
           </>
         ) : null}
       </figcaption>

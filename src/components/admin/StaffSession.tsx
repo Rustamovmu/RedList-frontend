@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { errorText, type S, StaffApiError, staffApi } from '@/lib/staff-api';
 
@@ -30,20 +31,16 @@ export function StaffSessionProvider({ children }: { children: React.ReactNode }
     setUser(null);
   }, []);
 
-  if (error) return <p role="alert" className="text-status-cr">{error}</p>;
-  if (user === undefined) return <p role="status">Loading…</p>;
+  if (error) return <p role="alert" className="text-alert">{error}</p>;
+  if (user === undefined) return <p role="status" className="meta">Loading…</p>;
   if (user === null) return <SignIn onSignedIn={setUser} />;
   return (
     <StaffCtx.Provider value={{ user, signOut }}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3 text-sm">
-        <nav aria-label="Staff" className="flex gap-4">
-          <Link href="/admin" className="font-semibold">Species</Link>
-          <Link href="/admin/media" className="font-semibold">Media</Link>
-          <Link href="/admin/support" className="font-semibold">Support directory</Link>
-        </nav>
-        <span>
-          {user.name} ({user.role}){' '}
-          <button onClick={signOut} className="ml-2 underline underline-offset-4">Sign out</button>
+      <div className="mb-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-rule">
+        <StaffNav />
+        <span className="flex items-center gap-3 pb-2 font-mono text-xs text-muted">
+          {user.name} ({user.role})
+          <button onClick={signOut} className="btn btn-sm btn-quiet">Sign out</button>
         </span>
       </div>
       {children}
@@ -71,20 +68,47 @@ function SignIn({ onSignedIn }: { onSignedIn: (u: S['StaffMeDto']) => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-sm space-y-4" aria-labelledby="signin-h">
-      <h1 id="signin-h" className="text-2xl font-semibold">Staff sign-in</h1>
+    <form onSubmit={submit} className="panel mx-auto mt-6 max-w-[380px] space-y-5 p-7" aria-labelledby="signin-h">
+      <h1 id="signin-h" className="type-display text-[2rem] text-lime">Staff sign-in</h1>
       <label className="block">
-        <span className="text-sm font-medium">Email</span>
-        <input name="email" type="email" autoComplete="username" required className="mt-1 w-full rounded border border-line bg-white px-3 py-2" />
+        <span className="label">Email</span>
+        <input name="email" type="email" autoComplete="username" required className="field mt-1.5" />
       </label>
       <label className="block">
-        <span className="text-sm font-medium">Password</span>
-        <input name="password" type="password" autoComplete="current-password" required className="mt-1 w-full rounded border border-line bg-white px-3 py-2" />
+        <span className="label">Password</span>
+        <input name="password" type="password" autoComplete="current-password" required className="field mt-1.5" />
       </label>
-      {error ? <p role="alert" className="whitespace-pre-line text-sm text-status-cr">{error}</p> : null}
-      <button disabled={busy} className="rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light disabled:opacity-60">
+      {error ? <p role="alert" className="whitespace-pre-line text-sm text-alert">{error}</p> : null}
+      <button disabled={busy} className="btn btn-primary w-full">
         {busy ? 'Signing in…' : 'Sign in'}
       </button>
     </form>
+  );
+}
+
+const STAFF_NAV = [
+  { href: '/admin', label: 'Species', match: (p: string) => p === '/admin' || p.startsWith('/admin/species') || p.startsWith('/admin/revisions') },
+  { href: '/admin/media', label: 'Media', match: (p: string) => p.startsWith('/admin/media') },
+  { href: '/admin/support', label: 'Support directory', match: (p: string) => p.startsWith('/admin/support') },
+];
+
+function StaffNav() {
+  const path = usePathname();
+  return (
+    <nav aria-label="Staff" className="flex flex-wrap gap-x-6">
+      {STAFF_NAV.map((n) => {
+        const current = n.match(path);
+        return (
+          <Link
+            key={n.href}
+            href={n.href}
+            aria-current={current ? 'page' : undefined}
+            className={`-mb-px inline-flex min-h-11 items-center border-b-2 font-mono text-[0.8125rem] font-bold uppercase tracking-[0.1em] ${current ? 'border-lime text-lime' : 'border-transparent text-fog hover:text-lime'}`}
+          >
+            {n.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

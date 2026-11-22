@@ -13,7 +13,7 @@ type Profile = components['schemas']['SpeciesProfileDto'];
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX = 3;
 
-const Unknown = ({ children = 'Unknown' }: { children?: React.ReactNode }) => <span className="italic text-ink-muted">{children}</span>;
+const Unknown = ({ children = 'Unknown' }: { children?: React.ReactNode }) => <span className="missing">{children}</span>;
 
 /** The rows of PLAN §4 Compare, in order. Each renders one species' cell. No scores, no totals, no charts. */
 const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.ReactNode }> = [
@@ -26,7 +26,7 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
           {p.status.assessments.map((a, i) => (
             <li key={i}>
               <StatusBadge category={a.category} year={a.assessedOn ? Number(a.assessedOn.slice(0, 4)) : undefined} scope={a.scope} size="sm" />
-              <div className="mt-1 text-xs text-ink-muted">
+              <div className="mt-1.5 font-mono text-xs text-muted">
                 {a.scope === 'global' ? 'Global' : (a.region?.name ?? 'Regional')} · {TREND_LABEL[a.trend]}
               </div>
             </li>
@@ -47,9 +47,9 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
             const period = referencePeriod(e.referenceStart, e.referenceEnd);
             return (
               <li key={i}>
-                <span className="font-semibold">{v ?? 'Unknown'}</span>
+                <span className="font-semibold text-white">{v ?? 'Unknown'}</span>
                 {v && e.form !== 'qualitative' ? ` ${BASIS_LABEL[e.basis]}` : ''}
-                <div className="text-xs text-ink-muted">
+                <div className="mt-0.5 font-mono text-xs text-muted">
                   {e.context === 'wild' ? 'Wild' : 'Captive'} · {e.scope === 'global' ? 'Global' : (e.region?.name ?? 'Regional')}
                   {period ? ` · ${period}` : ''}
                 </div>
@@ -79,7 +79,7 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
     cell: (p) => (
       <>
         <div>{p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ') || <Unknown />}</div>
-        <div className="text-xs text-ink-muted">
+        <div className="mt-1 font-mono text-xs text-muted">
           {p.geography.locationWithheld
             ? 'Locations withheld to protect this species'
             : p.geography.regions.length
@@ -108,7 +108,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   if (slugs === 'invalid') {
     return (
       <Shell>
-        <p role="alert" className="rounded border border-status-cr p-4">Compare takes 1 to {MAX} species. <Link href="/compare" className="underline">Start again</Link>.</p>
+        <p role="alert" className="notice-error">Compare takes 1 to {MAX} species. <Link href="/compare" className="underline underline-offset-4">Start again</Link>.</p>
       </Shell>
     );
   }
@@ -116,8 +116,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     return (
       <Shell>
         <CompareSync slugs={[]} />
-        <p>Pick up to {MAX} species to see them side by side. Use “Add to compare” on any species page.</p>
-        <p className="mt-3"><Link href="/species" className="text-forest-light underline underline-offset-4">Explore species</Link></p>
+        <div className="grid items-center gap-8 border-t border-rule pt-10 md:grid-cols-[auto_1fr] md:gap-16">
+          <p aria-hidden className="type-display text-[clamp(7rem,22vw,16rem)] leading-[0.85] text-rule">0/{MAX}</p>
+          <div>
+            <p className="max-w-[40ch] text-xl leading-snug text-white">Pick up to {MAX} species to see them side by side. Use “Add to compare” on any species page.</p>
+            <Link href="/species" className="btn btn-primary mt-8">Explore species</Link>
+          </div>
+        </div>
       </Shell>
     );
   }
@@ -128,11 +133,11 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   } catch (e) {
     return (
       <Shell>
-        <p role="alert" className="rounded border border-status-cr p-4">
+        <p role="alert" className="notice-error">
           {e instanceof ApiError && e.status === 404
             ? 'One or more of these species is not in the catalogue.'
             : 'The comparison could not be loaded. This is a problem on our side.'}{' '}
-          <Link href="/species" className="underline">Explore species</Link>.
+          <Link href="/species" className="underline underline-offset-4">Explore species</Link>.
         </p>
       </Shell>
     );
@@ -143,9 +148,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     return rest.length ? `/compare?species=${rest.join(',')}` : '/compare';
   };
   const name = (p: Profile) => p.commonName ?? p.scientificName;
+  const comparable = data.population.status === 'same_basis';
   const note = (
-    <p className={`rounded border p-3 text-sm ${data.population.status === 'same_basis' ? 'border-line bg-white/60' : 'border-status-vu bg-white/60'}`} data-testid="population-comparability">
-      <strong>Population: </strong>
+    <p
+      className={`px-5 py-4 text-[0.9375rem] leading-snug ${comparable ? 'notice text-fog' : 'on-lime bg-lime font-medium text-black'}`}
+      data-testid="population-comparability"
+    >
+      <strong className="mr-1 font-mono text-xs font-bold uppercase tracking-[0.1em]">Population: </strong>
       {data.population.message}
     </p>
   );
@@ -153,23 +162,20 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   return (
     <Shell>
       <CompareSync slugs={slugs} />
-      <p className="text-sm text-ink-muted">
-        Side by side, with no overall score. Figures with different units, places or dates are never combined.
-        {slugs.length < MAX ? <> You can add {MAX - slugs.length} more from any species page.</> : null}
-      </p>
+      {slugs.length < MAX ? <p className="meta -mt-4 mb-8">You can add {MAX - slugs.length} more from any species page.</p> : null}
 
       {/* Desktop: one column per species */}
-      <div className="mt-6 hidden md:block">
-        <table className="w-full table-fixed border-collapse text-sm">
+      <div className="hidden md:block">
+        <table className="w-full table-fixed border-collapse border border-rule text-[0.9375rem]">
           <caption className="sr-only">Comparison of {data.species.map(name).join(', ')}</caption>
           <thead>
             <tr>
-              <td className="w-36" />
+              <td className="w-44 border-b border-rule lg:w-52" />
               {data.species.map((p) => (
-                <th key={p.slug} scope="col" className="border-b border-line p-3 text-left align-bottom">
-                  <Link href={`/species/${p.slug}`} className="font-serif text-lg font-semibold hover:underline">{name(p)}</Link>
-                  {p.commonName ? <div className="text-sm font-normal italic text-ink-muted">{p.scientificName}</div> : null}
-                  <Link href={remove(p.slug)} className="mt-1 inline-block text-xs font-normal underline">Remove</Link>
+                <th key={p.slug} scope="col" className="border-b border-l border-rule bg-panel p-5 text-left align-top font-normal">
+                  <Link href={`/species/${p.slug}`} className="type-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[0.95] text-lime hover:underline">{name(p)}</Link>
+                  {p.commonName ? <div className="mt-2 italic text-muted">{p.scientificName}</div> : null}
+                  <Link href={remove(p.slug)} className="btn btn-sm btn-quiet mt-4">Remove</Link>
                 </th>
               ))}
             </tr>
@@ -177,16 +183,15 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
           <tbody>
             {ROWS.map((r) => (
               <Fragment key={r.key}>
-                <tr className="border-b border-line align-top">
-                  <th scope="row" className="p-3 text-left font-semibold">{r.label}</th>
+                <tr className="align-top">
+                  <th scope="row" className="border-b border-rule p-5 text-left font-mono text-xs font-normal uppercase tracking-[0.12em] text-muted">{r.label}</th>
                   {data.species.map((p) => (
-                    <td key={p.slug} className="p-3">{r.cell(p)}</td>
+                    <td key={p.slug} className="border-b border-l border-rule p-5 text-fog">{r.cell(p)}</td>
                   ))}
                 </tr>
                 {r.key === 'population' ? (
                   <tr>
-                    <td />
-                    <td colSpan={data.species.length} className="px-3 pb-3">{note}</td>
+                    <td colSpan={data.species.length + 1} className="border-b border-rule p-0">{note}</td>
                   </tr>
                 ) : null}
               </Fragment>
@@ -196,23 +201,23 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       </div>
 
       {/* Mobile: stacked, one card per species */}
-      <div className="mt-6 space-y-6 md:hidden">
+      <div className="space-y-6 md:hidden">
         {note}
         {data.species.map((p) => (
-          <section key={p.slug} aria-label={name(p)} className="rounded-lg border border-line bg-white/60 p-4">
-            <h2 className="font-serif text-xl font-semibold">
+          <section key={p.slug} aria-label={name(p)} className="panel p-5">
+            <h2 className="type-display text-4xl leading-[0.95] text-lime">
               <Link href={`/species/${p.slug}`} className="hover:underline">{name(p)}</Link>
             </h2>
-            {p.commonName ? <p className="text-sm italic text-ink-muted">{p.scientificName}</p> : null}
-            <dl className="mt-3 space-y-3 text-sm">
+            {p.commonName ? <p className="mt-1 italic text-muted">{p.scientificName}</p> : null}
+            <dl className="mt-5 border-t border-rule text-[0.9375rem]">
               {ROWS.map((r) => (
-                <div key={r.key}>
-                  <dt className="font-semibold">{r.label}</dt>
-                  <dd className="mt-1">{r.cell(p)}</dd>
+                <div key={r.key} className="border-b border-rule py-3">
+                  <dt className="label">{r.label}</dt>
+                  <dd className="mt-1.5 text-fog">{r.cell(p)}</dd>
                 </div>
               ))}
             </dl>
-            <Link href={remove(p.slug)} className="mt-3 inline-block text-sm underline">Remove from comparison</Link>
+            <Link href={remove(p.slug)} className="btn btn-sm btn-quiet mt-5 w-full">Remove from comparison</Link>
           </section>
         ))}
       </div>
@@ -222,8 +227,12 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-4 text-3xl font-semibold">Compare species</h1>
+    <div className="wrap pt-10 md:pt-16">
+      <p className="kicker">Side by side</p>
+      <h1 className="h-page mt-3">Compare species</h1>
+      <p className="prose-measure mt-6 mb-10 text-fog">
+        Side by side, with no overall score. Figures with different units, places or dates are never combined.
+      </p>
       {children}
     </div>
   );

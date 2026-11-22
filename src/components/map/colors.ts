@@ -1,9 +1,10 @@
 /** Map colours, shared by the map (WorldMap) and the legend so they never drift apart. */
 export const MAP_COLORS = {
-  water: '#d7e4e8',
-  land: '#efe9dc',
-  border: '#b9b09c',
-  presence: '#8fb37a', // "Country-level presence": solid fill with a forest outline
-  presenceLine: '#1f3d2b',
-  range: '#1f3d2b', // "Published range map": hatched fill with a dashed outline
+  water: '#0e1e32',
+  land: '#1e2733',
+  border: '#3a4757',
+  presence: '#d9fe8f', // "Country-level presence": lime fill at 55% with a lime outline
+  presenceOpacity: 0.55,
+  presenceLine: '#d9fe8f',
+  range: '#ffffff', // "Published range map": white diagonal hatch with a dashed white outline
 };

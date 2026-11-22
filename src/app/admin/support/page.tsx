@@ -7,7 +7,7 @@ import { errorText, type S, staffApi } from '@/lib/staff-api';
 
 const STATUS_LABEL = { pending: 'Pending review', approved: 'Approved (public)', disabled: 'Disabled (hidden)' } as const;
 const ACTIONS = Object.keys(ACTION_LABEL) as Array<S['CreateSupportLinkDto']['actionType']>;
-const input = 'mt-1 w-full rounded border border-line bg-white px-3 py-2';
+const input = 'field mt-1';
 
 /**
  * Support directory admin (PLAN §7, DECISIONS D-018). Admins create, edit, approve and disable; editors can only read.
@@ -51,28 +51,28 @@ export default function SupportAdmin() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Support directory</h1>
-      <p className="mt-1 text-sm text-ink-muted">
+      <h1 className="font-mono text-2xl font-bold text-lime">Support directory</h1>
+      <p className="mt-1 text-sm text-muted">
         Only approved organizations&apos; approved links are public. Editing anything sends it back to pending review. Disabling hides it everywhere at once.
         {isAdmin ? null : ' You can read the directory; only admins can change it.'}
       </p>
-      {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-status-cr">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-alert">{error}</p> : null}
       {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
       {orgs === null ? (
         <p role="status" className="mt-3">Loading…</p>
       ) : orgs.length === 0 ? (
-        <p className="mt-3 italic text-ink-muted">No organizations yet.</p>
+        <p className="mt-3 italic text-muted">No organizations yet.</p>
       ) : (
         <ul className="mt-4 space-y-6">
           {orgs.map((o) => (
-            <li key={o.id} className="rounded border border-line bg-white/60 p-4">
+            <li key={o.id} className="panel p-5">
               <OrganizationEditor org={o} isAdmin={isAdmin} run={run} />
-              <h3 className="mt-4 font-semibold">Links</h3>
-              {o.links.length === 0 ? <p className="text-sm italic text-ink-muted">No links yet.</p> : null}
+              <h3 className="mt-6 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Links</h3>
+              {o.links.length === 0 ? <p className="text-sm italic text-muted">No links yet.</p> : null}
               <ul className="mt-2 space-y-3">
                 {o.links.map((l) => (
-                  <li key={l.id} className="border-t border-line pt-3">
+                  <li key={l.id} className="border-t border-rule pt-3">
                     <LinkEditor link={l} isAdmin={isAdmin} run={run} />
                   </li>
                 ))}
@@ -84,13 +84,13 @@ export default function SupportAdmin() {
       )}
 
       {isAdmin ? (
-        <form onSubmit={createOrg} className="mt-8 grid gap-3 rounded border border-line bg-white/60 p-4 sm:grid-cols-2" aria-labelledby="new-org-h">
-          <h2 id="new-org-h" className="text-lg font-semibold sm:col-span-2">New organization</h2>
+        <form onSubmit={createOrg} className="panel mt-10 grid gap-4 p-5 sm:grid-cols-2" aria-labelledby="new-org-h">
+          <h2 id="new-org-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime sm:col-span-2">New organization</h2>
           <label className="block"><span className="text-sm font-medium">Name</span><input name="name" required minLength={2} className={input} /></label>
           <label className="block"><span className="text-sm font-medium">URL slug</span><input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={input} /></label>
           <label className="block sm:col-span-2"><span className="text-sm font-medium">Website (https)</span><input name="website" type="url" required pattern="https://.*" className={input} /></label>
           <label className="block sm:col-span-2"><span className="text-sm font-medium">Description</span><textarea name="description" required minLength={10} rows={3} className={input} /></label>
-          <div className="sm:col-span-2"><button className="rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light">Create organization</button></div>
+          <div className="sm:col-span-2"><button className="btn btn-primary">Create organization</button></div>
         </form>
       ) : null}
     </div>
@@ -102,12 +102,12 @@ type Run = (what: string, fn: () => Promise<unknown>) => Promise<void>;
 function StatusButtons({ status, isAdmin, onApprove, onDisable }: { status: keyof typeof STATUS_LABEL; isAdmin: boolean; onApprove: () => void; onDisable: () => void }) {
   return (
     <span className="flex flex-wrap items-center gap-2 text-sm">
-      <span className="rounded-full border border-line px-2 py-0.5">{STATUS_LABEL[status]}</span>
+      <span className="chip">{STATUS_LABEL[status]}</span>
       {isAdmin && status !== 'approved' ? (
-        <button type="button" onClick={onApprove} className="rounded bg-forest px-3 py-1 text-paper hover:bg-forest-light">Approve</button>
+        <button type="button" onClick={onApprove} className="btn btn-sm btn-primary">Approve</button>
       ) : null}
       {isAdmin && status !== 'disabled' ? (
-        <button type="button" onClick={onDisable} className="rounded border border-status-cr px-3 py-1 text-status-cr hover:bg-paper-deep">Disable</button>
+        <button type="button" onClick={onDisable} className="btn btn-sm btn-danger">Disable</button>
       ) : null}
     </span>
   );
@@ -126,7 +126,7 @@ function OrganizationEditor({ org, isAdmin, run }: { org: S['StaffOrganizationDt
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-serif text-lg font-semibold">{org.name}</h2>
+        <h2 className="font-mono text-lg font-bold text-white">{org.name}</h2>
         <StatusButtons
           status={org.reviewStatus}
           isAdmin={isAdmin}
@@ -140,13 +140,13 @@ function OrganizationEditor({ org, isAdmin, run }: { org: S['StaffOrganizationDt
           <label><span className="text-sm font-medium">Website (https)</span><input name="website" type="url" defaultValue={org.website} required pattern="https://.*" className={input} /></label>
           <label><span className="text-sm font-medium">Description</span><textarea name="description" defaultValue={org.description} required minLength={10} rows={3} className={input} /></label>
           <span className="flex gap-3">
-            <button className="rounded bg-forest px-3 py-1.5 text-paper">Save (needs review again)</button>
+            <button className="btn btn-sm btn-primary">Save (needs review again)</button>
             <button type="button" onClick={() => setEditing(false)} className="underline">Cancel</button>
           </span>
         </form>
       ) : (
         <>
-          <p className="text-sm text-ink-muted">{org.website}</p>
+          <p className="text-sm text-muted">{org.website}</p>
           <p className="mt-1 text-sm">{org.description}</p>
           {isAdmin ? <button type="button" onClick={() => setEditing(true)} className="mt-1 text-sm underline">Edit</button> : null}
         </>
@@ -183,7 +183,7 @@ function LinkEditor({ link, isAdmin, run }: { link: S['StaffSupportLinkDto']; is
       ) : (
         <>
           <p className="mt-1 text-sm">{link.description}</p>
-          <p className="text-xs text-ink-muted">Attach it to a species in the revision editor (support link id: {link.id}).</p>
+          <p className="text-xs text-muted">Attach it to a species in the revision editor (support link id: {link.id}).</p>
           {isAdmin ? <button type="button" onClick={() => setEditing(true)} className="mt-1 text-sm underline">Edit</button> : null}
         </>
       )}
@@ -205,7 +205,7 @@ function LinkFields({
       </label>
       <label className="sm:col-span-2"><span className="text-sm font-medium">Description</span><textarea name="description" defaultValue={link?.description} required minLength={10} rows={2} className={input} /></label>
       <span className="flex gap-3 sm:col-span-2">
-        <button className="rounded bg-forest px-3 py-1.5 text-paper">{submitLabel}</button>
+        <button className="btn btn-sm btn-primary">{submitLabel}</button>
         {onCancel ? <button type="button" onClick={onCancel} className="underline">Cancel</button> : null}
       </span>
     </form>

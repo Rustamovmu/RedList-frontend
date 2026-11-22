@@ -11,7 +11,17 @@ const contact = process.env.NEXT_PUBLIC_CONTACT_URL;
 
 export default function PrivacyPage() {
   return (
-    <InfoPage title="Privacy" lead="You can use all of Wildward without an account, and we do not track you." updated="21 November 2026">
+    <InfoPage
+      kicker="Legal"
+      title="Privacy"
+      lead="You can use all of Wildward without an account, and we do not track you."
+      updated="21 November 2026"
+      summary={
+        <p className="notice font-mono text-sm uppercase leading-relaxed tracking-[0.06em] text-white">
+          In short: no accounts · no tracking cookies · no analytics · your location never leaves your browser
+        </p>
+      }
+    >
       <InfoSection id="visitors" title="If you are a visitor">
         <ul>
           <li>No accounts, no sign-up and no newsletter.</li>

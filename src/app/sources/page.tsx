@@ -16,43 +16,47 @@ export default async function SourcesPage() {
   const sources = await apiGet('/api/v1/sources', { tags: ['catalogue'] }).catch(() => null);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-3xl font-semibold sm:text-4xl">Sources</h1>
-      <p className="mt-3 text-lg text-ink-muted">
+    <div className="wrap pt-10 md:pt-16">
+      <p className="kicker">Evidence</p>
+      <h1 className="h-page mt-3">Sources</h1>
+      <p className="lead mt-8">
         Every source cited by a published profile, with the date we read it. Notes say how a source may be used, and when a figure is second-hand.
-        See <Link href="/methodology" className="underline underline-offset-4">how we source facts</Link>.
+        See <Link href="/methodology" className="text-lime underline decoration-1 underline-offset-4 hover:decoration-2">how we source facts</Link>.
       </p>
       {sources === null ? (
-        <p role="alert" className="mt-6 rounded border border-status-cr p-4">The source list could not be loaded right now.</p>
+        <p role="alert" className="notice-error mt-10">The source list could not be loaded right now.</p>
       ) : sources.length === 0 ? (
-        <p className="mt-6 italic text-ink-muted">No sources yet.</p>
+        <p className="missing mt-10">No sources yet.</p>
       ) : (
-        <ol className="mt-8 space-y-5">
-          {sources.map((s) => (
-            <li key={s.id} className="rounded border border-line bg-white/60 p-4">
-              <p className="font-medium">
-                {s.url ? <a href={s.url} rel="noopener noreferrer" className="underline underline-offset-2">{s.title}</a> : s.title}
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
-                {[s.authors, s.publisher, s.publishedOn ? `published ${formatDate(s.publishedOn)}` : null, s.accessedOn ? `read ${formatDate(s.accessedOn)}` : null]
-                  .filter(Boolean)
-                  .join(' · ')}
-                {s.doi ? <> · DOI {s.doi}</> : null}
-                {s.license ? <> · Licence: {s.license}</> : null}
-              </p>
-              {s.note ? <p className="mt-2 text-sm">{s.note}</p> : null}
-              {s.usedForBoundaries ? <p className="mt-2 text-sm">Used for country, sea and ocean boundaries on maps and region pages.</p> : null}
-              {s.species.length ? (
-                <p className="mt-2 text-sm">
-                  Cited by:{' '}
-                  {s.species.map((sp, i) => (
-                    <span key={sp.slug}>
-                      {i ? ', ' : ''}
-                      <Link href={`/species/${sp.slug}`} className="underline underline-offset-2">{sp.commonName ?? <i>{sp.scientificName}</i>}</Link>
-                    </span>
-                  ))}
+        <ol className="mt-16 border-t border-lime">
+          {sources.map((s, i) => (
+            <li key={s.id} className="grid gap-x-8 gap-y-2 border-b border-rule py-6 sm:grid-cols-[5rem_1fr] md:grid-cols-[7rem_1fr]">
+              <span aria-hidden className="font-mono text-2xl text-lime md:text-3xl">{String(i + 1).padStart(3, '0')}</span>
+              <div className="min-w-0">
+                <p className="text-lg font-medium text-white">
+                  {s.url ? <a href={s.url} rel="noopener noreferrer" className="underline decoration-muted underline-offset-4 hover:text-lime hover:decoration-lime">{s.title}</a> : s.title}
                 </p>
-              ) : null}
+                <p className="meta mt-2 break-words">
+                  {[s.authors, s.publisher, s.publishedOn ? `published ${formatDate(s.publishedOn)}` : null, s.accessedOn ? `read ${formatDate(s.accessedOn)}` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  {s.doi ? <> · DOI {s.doi}</> : null}
+                  {s.license ? <> · Licence: {s.license}</> : null}
+                </p>
+                {s.note ? <p className="prose-measure mt-3 text-[0.9375rem] text-fog">{s.note}</p> : null}
+                {s.usedForBoundaries ? <p className="mt-3 text-[0.9375rem] text-fog">Used for country, sea and ocean boundaries on maps and region pages.</p> : null}
+                {s.species.length ? (
+                  <p className="mt-3 text-[0.9375rem] text-muted">
+                    Cited by:{' '}
+                    {s.species.map((sp, i) => (
+                      <span key={sp.slug}>
+                        {i ? ', ' : ''}
+                        <Link href={`/species/${sp.slug}`} className="text-lime underline underline-offset-2">{sp.commonName ?? <i>{sp.scientificName}</i>}</Link>
+                      </span>
+                    ))}
+                  </p>
+                ) : null}
+              </div>
             </li>
           ))}
         </ol>

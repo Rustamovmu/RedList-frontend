@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FilterDrawer } from '@/components/explore/FilterDrawer';
+import { Pagination } from '@/components/Pagination';
 import { SpeciesCard } from '@/components/SpeciesCard';
+import { STATUS_SWATCH } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { apiGet } from '@/lib/api';
 import { apiQuery, appliedCount, type ExploreState, exploreHref, LIST_KEYS, type ListKey, readExplore } from '@/lib/explore-params';
-import { IUCN_CATEGORIES, IUCN_LABEL } from '@/lib/iucn';
+import { IUCN_CATEGORIES, IUCN_LABEL, type IucnCategory } from '@/lib/iucn';
 import { ENVIRONMENT_LABEL, GROUP_LABEL, TREND_LABEL } from '@/lib/labels';
 
 export const metadata: Metadata = {
@@ -39,6 +41,8 @@ function labelFor(f: Filters | null, key: ListKey, value: string): string {
   return options(f, key, [value]).find((o) => o.value === value)?.label ?? value;
 }
 
+const CHIP = 'inline-flex min-h-9 items-center gap-2 border border-lime px-3 font-mono text-xs uppercase tracking-[0.08em] text-lime hover:bg-lime hover:text-black';
+
 export default async function ExplorePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const state = readExplore(await searchParams);
   const [list, filters] = await Promise.all([
@@ -49,108 +53,108 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const chips = LIST_KEYS.flatMap((k) => state[k].map((v) => ({ key: k, value: v })));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Explore species</h1>
+    <div className="wrap pt-10 md:pt-16">
+      <p className="kicker">Catalogue</p>
+      <h1 className="h-page mt-3">Explore species</h1>
 
-      <form method="get" action="/species" role="search" aria-label="Search and filter species" className="mt-4 grid gap-6 md:grid-cols-[16rem_1fr]">
+      <form method="get" action="/species" role="search" aria-label="Search and filter species" className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-[15rem_1fr] lg:grid-cols-[17rem_1fr]">
         {/* search + sort span the top */}
-        <div className="flex flex-wrap items-end gap-3 md:col-span-2">
-          <label className="min-w-0 flex-1 basis-56">
-            <span className="text-sm font-medium">Search names</span>
-            <input name="q" type="search" defaultValue={state.q} placeholder="Common or scientific name" className="mt-1 w-full rounded border border-line bg-white px-3 py-2" />
+        <div className="grid items-end gap-x-6 gap-y-5 sm:grid-cols-[1fr_auto_auto] md:col-span-2">
+          <label className="block min-w-0">
+            <span className="label">Search names</span>
+            <input name="q" type="search" defaultValue={state.q} placeholder="Common or scientific name" className="field-search mt-1" />
           </label>
-          <label>
-            <span className="text-sm font-medium">Sort by</span>
-            <select name="sort" defaultValue={state.sort} className="mt-1 block rounded border border-line bg-white px-3 py-2">
+          <label className="block">
+            <span className="label">Sort by</span>
+            <select name="sort" defaultValue={state.sort} className="field mt-2 min-h-11 font-mono text-sm">
               <option value="name">Name</option>
               <option value="status">Most threatened first</option>
               <option value="reviewed">Recently reviewed</option>
             </select>
           </label>
-          <button className="rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light">Search</button>
+          <button className="btn btn-primary">Search</button>
         </div>
 
         <div className="md:row-start-2">
           <FilterDrawer appliedCount={appliedCount(state) - (state.q ? 1 : 0)}>
             {filters ? (
-              <div className="space-y-5">
+              <div>
                 {LIST_KEYS.map((key) => {
                   const opts = options(filters, key, state[key]);
                   if (!opts.length) return null;
                   return (
-                    <fieldset key={key}>
-                      <legend className="font-semibold">{KEY_LABEL[key]}</legend>
-                      <ul className={`mt-1 space-y-1 ${opts.length > 8 ? 'max-h-56 overflow-y-auto pr-1' : ''}`}>
-                        {opts.map((o) => (
-                          <li key={o.value}>
-                            <label className="flex items-center gap-2 text-sm">
-                              <input type="checkbox" name={key} value={o.value} defaultChecked={state[key].includes(o.value)} className="h-4 w-4 accent-forest" />
-                              <span>{o.label}</span>
-                              <span className="text-ink-muted">({o.count})</span>
-                            </label>
-                          </li>
-                        ))}
-                      </ul>
-                    </fieldset>
+                    <div key={key} className="border-t border-rule py-5 first:border-t-0 first:pt-0 md:first:border-t md:first:pt-5">
+                      <fieldset>
+                        <legend className="kicker">{KEY_LABEL[key]}</legend>
+                        <ul className={`mt-3 space-y-0.5 ${opts.length > 8 ? 'max-h-60 overflow-y-auto border border-rule p-2' : ''}`}>
+                          {opts.map((o) => (
+                            <li key={o.value}>
+                              <label className="flex min-h-8 cursor-pointer items-center gap-3 text-[0.9375rem] hover:text-white">
+                                <input type="checkbox" name={key} value={o.value} defaultChecked={state[key].includes(o.value)} className="h-4 w-4 shrink-0 accent-lime" />
+                                {key === 'category' ? <span aria-hidden className={`h-2.5 w-2.5 shrink-0 ${STATUS_SWATCH[o.value as IucnCategory]}`} /> : null}
+                                <span>{o.label}</span>
+                                <span className="ml-auto font-mono text-xs text-muted">({o.count})</span>
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      </fieldset>
+                    </div>
                   );
                 })}
-                <button className="w-full rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light">Apply filters</button>
+                <div className="sticky bottom-0 -mx-5 border-t border-rule bg-black px-5 py-4 md:mx-0 md:px-0">
+                  <button className="btn btn-primary w-full">Apply filters</button>
+                </div>
               </div>
             ) : (
-              <p className="text-sm text-ink-muted">Filters are unavailable right now.</p>
+              <p className="missing text-sm">Filters are unavailable right now.</p>
             )}
           </FilterDrawer>
         </div>
 
-        <div className="md:col-start-2 md:row-start-2">
+        <div className="min-w-0 md:col-start-2 md:row-start-2">
           {chips.length || state.q ? (
-            <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Applied filters">
+            <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Applied filters">
               {state.q ? (
-                <Link href={exploreHref({ ...state, q: '', page: 1 })} className="rounded-full border border-forest px-3 py-1 text-sm text-forest hover:bg-paper-deep">
+                <Link href={exploreHref({ ...state, q: '', page: 1 })} className={CHIP}>
                   “{state.q}” <span aria-hidden>×</span><span className="sr-only">remove search</span>
                 </Link>
               ) : null}
               {chips.map((c) => (
-                <Link key={`${c.key}:${c.value}`} href={exploreHref(without(c.key, c.value))} className="rounded-full border border-forest px-3 py-1 text-sm text-forest hover:bg-paper-deep">
+                <Link key={`${c.key}:${c.value}`} href={exploreHref(without(c.key, c.value))} className={CHIP}>
                   {KEY_LABEL[c.key]}: {labelFor(filters, c.key, c.value)} <span aria-hidden>×</span>
                   <span className="sr-only">remove this filter</span>
                 </Link>
               ))}
-              <Link href="/species" className="text-sm underline underline-offset-4">Reset all</Link>
+              <Link href="/species" className="ml-2 inline-flex min-h-9 items-center text-sm text-fog underline underline-offset-4 hover:text-lime">Reset all</Link>
             </div>
           ) : null}
 
           {list === null ? (
-            <div role="alert" className="rounded border border-status-cr p-4">
-              <p className="font-semibold">Species could not be loaded.</p>
-              <p className="mt-1 text-sm">This is a problem on our side. <Link href={exploreHref(state)} className="underline">Try again</Link>.</p>
+            <div role="alert" className="notice-error">
+              <p className="font-bold">Species could not be loaded.</p>
+              <p className="mt-1 text-sm">This is a problem on our side. <Link href={exploreHref(state)} className="underline underline-offset-4">Try again</Link>.</p>
             </div>
           ) : list.items.length === 0 ? (
-            <div className="rounded border border-line bg-white/60 p-6">
-              <p className="font-semibold">No species match {chips.length || state.q ? 'these filters' : 'yet'}.</p>
+            <div className="panel px-6 py-10">
+              <p className="font-mono text-lg font-bold text-white">No species match {chips.length || state.q ? 'these filters' : 'yet'}.</p>
               {chips.length || state.q ? (
-                <p className="mt-1 text-sm">Try removing a filter, or <Link href="/species" className="underline">reset all filters</Link>.</p>
+                <p className="mt-2 text-fog">Try removing a filter, or <Link href="/species" className="link">reset all filters</Link>.</p>
               ) : null}
             </div>
           ) : (
             <>
-              <p className="mb-3 text-sm text-ink-muted" role="status">
-                {list.total} {list.total === 1 ? 'species' : 'species'} in this catalogue match
+              <p className="meta mb-5" role="status">
+                {list.total} species in this catalogue match
               </p>
-              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                 {list.items.map((c, i) => (
                   <li key={c.slug}>
                     <SpeciesCard card={c} headingLevel="h2" eager={i < 3} />
                   </li>
                 ))}
               </ul>
-              {list.totalPages > 1 ? (
-                <nav aria-label="Pages" className="mt-6 flex items-center justify-between text-sm">
-                  {state.page > 1 ? <Link href={exploreHref({ ...state, page: state.page - 1 })} className="underline" rel="prev">Previous</Link> : <span />}
-                  <span>Page {list.page} of {list.totalPages}</span>
-                  {state.page < list.totalPages ? <Link href={exploreHref({ ...state, page: state.page + 1 })} className="underline" rel="next">Next</Link> : <span />}
-                </nav>
-              ) : null}
+              <Pagination page={list.page} totalPages={list.totalPages} href={(page) => exploreHref({ ...state, page })} />
             </>
           )}
         </div>
@@ -158,4 +162,3 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     </div>
   );
 }
-

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <InfoPage title="Terms of use" lead="Wildward is an educational portfolio project, offered as is." updated="21 November 2026">
+    <InfoPage kicker="Legal" title="Terms of use" lead="Wildward is an educational portfolio project, offered as is." updated="21 November 2026">
       <InfoSection id="use" title="Using the site">
         <ul>
           <li>Wildward is for learning and general information. It is not scientific, legal or professional advice. For decisions that matter, check the primary sources each profile cites.</li>

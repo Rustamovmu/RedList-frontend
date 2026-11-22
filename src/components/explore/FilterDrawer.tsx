@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
 /**
- * On small screens the filters open as a drawer; on md+ they are a normal sidebar.
+ * On small screens the filters open as a full-screen drawer; on md+ they are a normal sidebar.
  * The filter controls are rendered once (as children), so the form never submits duplicate fields.
  */
 export function FilterDrawer({ appliedCount, children }: { appliedCount: number; children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export function FilterDrawer({ appliedCount, children }: { appliedCount: number;
 
   useEffect(() => {
     if (!open) return;
-    panelRef.current?.querySelector<HTMLElement>('input, select, button')?.focus();
+    panelRef.current?.querySelector<HTMLElement>('input, select')?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setOpen(false);
@@ -33,7 +33,7 @@ export function FilterDrawer({ appliedCount, children }: { appliedCount: number;
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(true)}
-        className="rounded border border-forest px-4 py-2 text-forest md:hidden"
+        className="btn btn-quiet w-full md:hidden"
       >
         Filters{appliedCount ? ` (${appliedCount} applied)` : ''}
       </button>
@@ -43,17 +43,17 @@ export function FilterDrawer({ appliedCount, children }: { appliedCount: number;
         role={open ? 'dialog' : undefined}
         aria-modal={open ? true : undefined}
         aria-label={open ? 'Filters' : undefined}
-        className={`${open ? 'fixed inset-0 z-40 overflow-y-auto bg-paper p-4' : 'hidden'} md:static md:block md:bg-transparent md:p-0`}
+        className={`${open ? 'fixed inset-0 z-40 overflow-y-auto bg-black px-5 pt-5' : 'hidden'} md:static md:block md:bg-transparent md:p-0`}
       >
-        <div className="mb-4 flex items-center justify-between md:hidden">
-          <h2 className="text-xl font-semibold">Filters</h2>
+        <div className="mb-6 flex items-center justify-between border-b border-lime pb-4 md:hidden">
+          <h2 className="type-display text-4xl text-lime">Filters</h2>
           <button
             type="button"
             onClick={() => {
               setOpen(false);
               buttonRef.current?.focus();
             }}
-            className="rounded px-3 py-1 underline underline-offset-4"
+            className="btn btn-sm btn-quiet"
           >
             Close
           </button>

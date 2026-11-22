@@ -6,8 +6,13 @@ export const metadata: Metadata = { title: 'Staff', robots: { index: false, foll
 /** Staff area. Every action is authorized by the API (StaffGuard); this UI only hides what you cannot do. */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <StaffSessionProvider>{children}</StaffSessionProvider>
+    <div>
+      <p className="border-y border-rule bg-panel">
+        <span className="wrap block py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-lime">Staff area</span>
+      </p>
+      <div className="wrap max-w-6xl pt-8 text-[0.9375rem]">
+        <StaffSessionProvider>{children}</StaffSessionProvider>
+      </div>
     </div>
   );
 }

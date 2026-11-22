@@ -100,7 +100,8 @@ async function tabTo(page: Page, matches: (el: Focused) => boolean, max = 60) {
     await page.keyboard.press('Tab');
     const el = await page.evaluate(() => {
       const a = document.activeElement as HTMLElement | null;
-      return { tag: a?.tagName ?? '', text: (a?.innerText ?? '').trim(), name: a?.getAttribute('name') ?? null, value: a?.getAttribute('value') ?? null };
+      // textContent, not innerText: innerText applies CSS text-transform (the nav and buttons are uppercase).
+      return { tag: a?.tagName ?? '', text: (a?.textContent ?? '').replace(/\s+/g, ' ').trim(), name: a?.getAttribute('name') ?? null, value: a?.getAttribute('value') ?? null };
     });
     if (matches(el)) return;
   }

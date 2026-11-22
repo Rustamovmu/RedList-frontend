@@ -40,9 +40,10 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-semibold">Map</h1>
-      <p className="mt-2 max-w-3xl text-ink-muted">
+    <div className="wrap pt-10 md:pt-16">
+      <p className="kicker">Catalogue / Map</p>
+      <h1 className="h-page mt-3">Map</h1>
+      <p className="prose-measure mt-6 text-fog">
         Where the species in this catalogue live. When only the countries or seas are known, whole areas are shaded and labelled
         &ldquo;Country-level presence&rdquo;. A range is drawn only where a cited source publishes one. Species whose locations are withheld for their protection never appear here.
       </p>

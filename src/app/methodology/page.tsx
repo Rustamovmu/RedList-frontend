@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/InfoPage';
+import { StatusBadge } from '@/components/StatusBadge';
+import { IUCN_CATEGORIES } from '@/lib/iucn';
 
 export const metadata: Metadata = {
   title: 'Methodology',
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <InfoPage
+      kicker="Methodology"
       title="How we source facts"
       lead="Every status, number and photograph on Wildward is tied to a source you can check. These are the rules we follow."
       updated="21 November 2026"
@@ -25,6 +28,12 @@ export default function MethodologyPage() {
       </InfoSection>
 
       <InfoSection id="status" title="Conservation status">
+        <ul className="plain flex flex-wrap gap-2 pb-2" aria-label="The nine categories">
+          {IUCN_CATEGORIES.map((c) => (
+            <li key={c}><StatusBadge category={c} /></li>
+          ))}
+        </ul>
+        <p className="font-mono text-sm font-bold uppercase tracking-[0.06em] text-lime">Data Deficient and Not Evaluated are not low risk.</p>
         <ul>
           <li>Categories follow the IUCN Red List: Extinct, Extinct in the Wild, Critically Endangered, Endangered, Vulnerable, Near Threatened, Least Concern, Data Deficient and Not Evaluated.</li>
           <li>Each status shows its scope (global or regional) and, when known, the assessment date. A regional status is never shown as the global one.</li>

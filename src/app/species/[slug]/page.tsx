@@ -6,7 +6,8 @@ import { ProfileMap } from '@/components/map/ProfileMap';
 import { Photo } from '@/components/Photo';
 import { Cite, Missing, type SourceIndex } from '@/components/profile/Cite';
 import { SpeciesCard } from '@/components/SpeciesCard';
-import { StatusBadge } from '@/components/StatusBadge';
+import { SectionHead } from '@/components/SectionHead';
+import { STATUS_EDGE, StatusBadge } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
 import { mediaSrc } from '@/lib/media';
@@ -105,386 +106,415 @@ export default async function SpeciesPage({ params }: Params) {
   const headline = p.status.assessments.find((a) => a.scope === 'global') ?? p.status.assessments[0];
   const year = (d: string | null) => (d ? Number(d.slice(0, 4)) : undefined);
   const photo = primaryPhoto(p);
+  const environments = p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ');
 
   return (
-    <article className="mx-auto max-w-4xl px-4 pb-16">
+    <article>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(p)) }} />
-      {/* ---------- header and key facts ---------- */}
-      <header className="pt-8">
-        <p className="text-sm font-medium uppercase tracking-wider text-forest-light">{GROUP_LABEL[p.displayGroup]}</p>
-        <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{p.commonName ?? <i>{p.scientificName}</i>}</h1>
-        {p.commonName ? <p className="mt-1 text-lg italic text-ink-muted">{p.scientificName}</p> : null}
+      {/* ---------- title, photo and key facts ---------- */}
+      <header className="wrap pt-10 md:pt-16">
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+          <div className="min-w-0">
+            <p className="kicker">
+              {GROUP_LABEL[p.displayGroup]}
+              {environments ? ` / ${environments}` : ''}
+            </p>
+            {p.commonName ? (
+              <>
+                <h1 className="h-page mt-3 max-w-[15ch] text-[clamp(2.75rem,9vw,7.5rem)]">{p.commonName}</h1>
+                <p className="mt-4 font-mono text-lg italic text-fog sm:text-xl">{p.scientificName}</p>
+              </>
+            ) : (
+              <h1 className="mt-3 font-mono text-[clamp(2rem,5vw,3.5rem)] font-bold italic leading-tight text-lime">{p.scientificName}</h1>
+            )}
+          </div>
+          <div className="pb-1">
+            <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
+          </div>
+        </div>
 
-        <div className="mt-6">
+        <div className="mt-10">
           {photo ? (
             <Photo
               storageKey={photo.storageKey} altText={photo.altText} credit={photo.credit} license={photo.license} sourceUrl={photo.sourceUrl}
-              caption={photo.caption} sizes="(min-width: 896px) 864px, 100vw" priority aspect="aspect-[16/9] sm:aspect-[16/8]"
+              caption={photo.caption} sizes="(min-width: 1440px) 1360px, 100vw" priority aspect="aspect-[4/3] sm:aspect-[21/9]"
             />
           ) : (
-            <div className="flex aspect-[16/7] w-full items-center justify-center rounded-lg border border-line bg-paper-deep text-center text-sm text-ink-muted" role="img" aria-label="No photograph available">
+            <div className="grid-bg flex aspect-[4/3] w-full items-center justify-center border border-rule text-center font-mono text-xs uppercase tracking-[0.14em] text-muted sm:aspect-[21/9] sm:text-sm" role="img" aria-label="No photograph available">
               No licensed photograph yet
             </div>
           )}
         </div>
 
-        <dl className="mt-6 grid gap-4 rounded-lg border border-line bg-white/60 p-4 sm:grid-cols-3">
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">Status</dt>
-            <dd className="mt-1">
+        <dl className="mt-6 grid border border-rule bg-panel sm:grid-cols-3">
+          <div className="p-5">
+            <dt className="label">Status</dt>
+            <dd className="mt-2">
               {headline ? (
-                <StatusBadge category={headline.category} year={year(headline.assessedOn)} scope={headline.scope} size="sm" />
-              ) : p.status.notAssessed ? (
-                'Not assessed'
+                <StatusBadge category={headline.category} year={year(headline.assessedOn)} scope={headline.scope} />
               ) : (
-                'Unknown'
+                <span className="font-mono text-white">{p.status.notAssessed ? 'Not assessed' : 'Unknown'}</span>
               )}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">Population</dt>
-            <dd className="mt-1">
+          <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l">
+            <dt className="label">Population</dt>
+            <dd className="mt-2 font-mono text-white">
               {p.population.estimates.length
                 ? `${p.population.estimates.length} dated estimate${p.population.estimates.length > 1 ? 's' : ''}`
                 : 'Unknown'}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">Environment</dt>
-            <dd className="mt-1">{p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ') || 'Unknown'}</dd>
+          <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l">
+            <dt className="label">Environment</dt>
+            <dd className="mt-2 font-mono text-white">{environments || 'Unknown'}</dd>
           </div>
         </dl>
-        <div className="mt-4">
-          <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
-        </div>
       </header>
 
-      {/* ---------- in-page navigation (sticky on small screens) ---------- */}
-      <nav aria-label="On this page" className="sticky top-0 z-10 -mx-4 mt-6 border-b border-line bg-paper/95 px-4 py-2 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:px-0">
-        <ul className="flex gap-x-4 gap-y-1 overflow-x-auto whitespace-nowrap text-sm md:flex-wrap md:overflow-visible">
-          {SECTIONS.map((s) => (
-            <li key={s.id}>
-              <a href={`#${s.id}`} className="text-forest-light underline-offset-4 hover:underline">
-                {s.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* 1 ---------- What is it? ---------- */}
-      <Section id="what" title="What is it?">
-        {p.overview ? (
-          <p className="leading-relaxed">
-            {p.overview}
-            <Cite ids={cited('overview')} index={index} />
-          </p>
-        ) : (
-          <Missing>Not yet documented.</Missing>
-        )}
-        {p.commonNames.length > 1 || p.synonyms.length ? (
-          <p className="mt-3 text-sm text-ink-muted">
-            {p.commonNames.length > 1 ? <>Also called {p.commonNames.filter((n) => n.name !== p.commonName).map((n) => `${n.name} (${n.language})`).join(', ')}. </> : null}
-            {p.synonyms.length ? <>Synonyms: {p.synonyms.map((n) => <i key={n.name}>{n.name}</i>).reduce<React.ReactNode[]>((a, x, i) => (i ? [...a, ', ', x] : [x]), [])}.</> : null}
-          </p>
-        ) : null}
-        <details className="mt-4 rounded border border-line bg-white/50 p-3">
-          <summary className="cursor-pointer font-medium">Classification and biology</summary>
-          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-            {(['kingdom', 'phylum', 'class', 'order', 'family', 'genus'] as const).map((rank) => (
-              <div key={rank} className="contents">
-                <dt className="capitalize text-ink-muted">{rank}</dt>
-                <dd className={rank === 'genus' && p.taxonomy[rank] ? 'italic' : ''}>{p.taxonomy[rank] ?? 'Not recorded'}</dd>
-              </div>
-            ))}
-            <dt className="text-ink-muted">Rank</dt>
-            <dd className="capitalize">{p.rank}</dd>
-          </dl>
-          {p.biology.narrative ? <p className="mt-3 text-sm">{p.biology.narrative}<Cite ids={cited('biology')} index={index} /></p> : null}
-          {p.biology.measurements.length ? (
-            <ul className="mt-3 space-y-1 text-sm">
-              {p.biology.measurements.map((m, i) => (
-                <li key={i}>
-                  {m.label}: {m.value ?? [m.min, m.max].filter((x) => x !== null).join('–')} {m.unit}
-                  {m.context ? <span className="text-ink-muted"> ({m.context})</span> : null}
-                  <Cite ids={cited('biology')} index={index} />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </details>
-      </Section>
-
-      {/* 2 ---------- How threatened is it? ---------- */}
-      <Section id="status" title="How threatened is it?">
-        {p.status.assessments.length ? (
-          <ul className="space-y-3">
-            {p.status.assessments.map((a, i) => (
-              <li key={i} className="rounded border border-line bg-white/60 p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge category={a.category} year={year(a.assessedOn)} scope={a.scope} />
-                  <Cite ids={[a.sourceId]} index={index} />
-                </div>
-                <p className="mt-2 text-sm text-ink-muted">
-                  {a.scope === 'global' ? 'Global assessment' : `Regional assessment: ${a.region?.name ?? 'region not recorded'}`}
-                  {' · '}
-                  {TREND_LABEL[a.trend]}
-                  {a.assessedOn ? ` · assessed ${formatDate(a.assessedOn)}` : ''}
-                  {a.publishedOn ? ` · published ${formatDate(a.publishedOn)}` : ''}
-                  {a.criteria ? ` · criteria ${a.criteria}` : ''}
-                </p>
+      <div className="wrap mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-16 md:mt-20 md:grid-cols-[13rem_minmax(0,1fr)] lg:grid-cols-[16rem_minmax(0,1fr)] xl:gap-x-24">
+        {/* ---------- in-page navigation: a sticky side list, or a sticky scrolling bar on small screens ---------- */}
+        <nav aria-label="On this page" className="sticky top-0 z-20 -mx-5 border-y border-rule bg-black px-5 md:top-8 md:mx-0 md:self-start md:border-0 md:bg-transparent md:px-0">
+          <ol className="flex gap-x-5 overflow-x-auto whitespace-nowrap md:block md:space-y-0 md:whitespace-normal">
+            {SECTIONS.map((s, i) => (
+              <li key={s.id} className="md:border-b md:border-rule">
+                <a href={`#${s.id}`} className="flex min-h-11 items-center gap-3 font-mono text-xs uppercase tracking-[0.08em] text-fog hover:text-lime md:py-2">
+                  <span className="text-lime">{String(i + 1).padStart(2, '0')}</span>
+                  {s.title}
+                </a>
               </li>
             ))}
-          </ul>
-        ) : p.status.notAssessed ? (
-          <Missing>Not assessed. No conservation assessment has been made for this species in our sources.</Missing>
-        ) : (
-          <Missing>Unknown.</Missing>
-        )}
-      </Section>
+          </ol>
+        </nav>
 
-      {/* 3 ---------- How many remain? ---------- */}
-      <Section id="population" title="How many remain?">
-        {p.population.estimates.length ? (
-          <>
-            <ul className="space-y-3">
-              {p.population.estimates.map((e, i) => {
-                const value = estimateValue(e);
-                const period = referencePeriod(e.referenceStart, e.referenceEnd);
-                return (
-                  <li key={i} className="rounded border border-line bg-white/60 p-3">
-                    <p className="text-lg font-semibold">
-                      {value ?? 'Unknown'}{' '}
-                      {value && e.form !== 'qualitative' ? <span className="text-base font-normal">{BASIS_LABEL[e.basis]}</span> : null}
-                      <Cite ids={[e.sourceId]} index={index} />
-                    </p>
-                    <p className="mt-1 text-sm text-ink-muted">
-                      {e.context === 'wild' ? 'Wild' : 'Captive'}
-                      {' · '}
-                      {e.scope === 'global' ? 'Global' : (e.region?.name ?? 'Regional')}
-                      {period ? ` · ${period}` : ' · date not stated'}
-                      {e.method ? ` · ${e.method}` : ''}
-                    </p>
-                    {e.uncertaintyNote ? <p className="mt-1 text-sm">Uncertainty: {e.uncertaintyNote}</p> : null}
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="mt-3 text-sm text-ink-muted">
-              Estimates with different units, places or dates are listed separately. They are never added together or compared as one number.
-            </p>
-          </>
-        ) : (
-          <div>
-            <p className="text-lg font-semibold">Unknown</p>
-            <p className="mt-1 text-ink-muted">
-              {p.population.unknownNote ?? 'Our sources give no reliable population estimate for this species.'} Unknown does not mean zero.
-            </p>
-          </div>
-        )}
-      </Section>
-
-      {/* 4 ---------- Where does it live? ---------- */}
-      <Section id="where" title="Where does it live?">
-        {p.geography.locationWithheld ? (
-          <Missing>Locations are withheld to protect this species from collection or disturbance.</Missing>
-        ) : (
-          <>
-            {p.geography.regions.length || p.geography.ranges.length ? <ProfileMap slug={p.slug} name={p.commonName ?? p.scientificName} /> : null}
-            {p.geography.locationGeneralized ? (
-              <p className="mb-3 text-sm">
-                <strong>Generalized to whole countries or seas</strong> to protect this species. Its precise locations are not published.
+        <div className="min-w-0 space-y-24 pt-12 md:pt-0">
+          {/* 1 ---------- What is it? ---------- */}
+          <Section n={1} id="what" title="What is it?">
+            {p.overview ? (
+              <p className="prose-measure text-lg leading-relaxed text-fog">
+                {p.overview}
+                <Cite ids={cited('overview')} index={index} />
+              </p>
+            ) : (
+              <Missing>Not yet documented.</Missing>
+            )}
+            {p.commonNames.length > 1 || p.synonyms.length ? (
+              <p className="prose-measure mt-4 text-[0.9375rem] text-muted">
+                {p.commonNames.length > 1 ? <>Also called {p.commonNames.filter((n) => n.name !== p.commonName).map((n) => `${n.name} (${n.language})`).join(', ')}. </> : null}
+                {p.synonyms.length ? <>Synonyms: {p.synonyms.map((n) => <i key={n.name}>{n.name}</i>).reduce<React.ReactNode[]>((a, x, i) => (i ? [...a, ', ', x] : [x]), [])}.</> : null}
               </p>
             ) : null}
+            <details className="disclosure mt-8 border border-rule bg-panel">
+              <summary className="flex min-h-14 items-center px-5 font-mono text-sm font-bold uppercase tracking-[0.1em] text-white">Classification and biology</summary>
+              <div className="border-t border-rule px-5 pt-4 pb-6">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-10 text-[0.9375rem]">
+                  {(['kingdom', 'phylum', 'class', 'order', 'family', 'genus'] as const).map((rank) => (
+                    <div key={rank} className="contents">
+                      <dt className="border-b border-rule py-2 font-mono text-xs uppercase tracking-[0.1em] text-muted">{rank}</dt>
+                      <dd className={`border-b border-rule py-2 text-white ${rank === 'genus' && p.taxonomy[rank] ? 'italic' : ''}`}>{p.taxonomy[rank] ?? 'Not recorded'}</dd>
+                    </div>
+                  ))}
+                  <dt className="py-2 font-mono text-xs uppercase tracking-[0.1em] text-muted">Rank</dt>
+                  <dd className="py-2 capitalize text-white">{p.rank}</dd>
+                </dl>
+                {p.biology.narrative ? <p className="prose-measure mt-4 text-[0.9375rem]">{p.biology.narrative}<Cite ids={cited('biology')} index={index} /></p> : null}
+                {p.biology.measurements.length ? (
+                  <ul className="mt-4 space-y-1 text-[0.9375rem]">
+                    {p.biology.measurements.map((m, i) => (
+                      <li key={i}>
+                        {m.label}: {m.value ?? [m.min, m.max].filter((x) => x !== null).join('–')} {m.unit}
+                        {m.context ? <span className="text-muted"> ({m.context})</span> : null}
+                        <Cite ids={cited('biology')} index={index} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </details>
+          </Section>
 
-            <h3 className="font-semibold">Range maps</h3>
-            {p.geography.ranges.length ? (
-              <ul className="mt-2 space-y-1 text-sm">
-                {p.geography.ranges.map((r, i) => (
-                  <li key={i}>
-                    Published range map: {PRESENCE_LABEL[r.presence]} · {SEASON_LABEL[r.seasonality]}
-                    {r.datasetVersion ? <> · dataset {r.datasetVersion}</> : null}
-                    <Cite ids={[r.sourceId]} index={index} />
-                    {r.generalizationNote ? <span className="block text-ink-muted">{r.generalizationNote}</span> : null}
+          {/* 2 ---------- How threatened is it? ---------- */}
+          <Section n={2} id="status" title="How threatened is it?">
+            {p.status.assessments.length ? (
+              <ul className="space-y-3">
+                {p.status.assessments.map((a, i) => (
+                  <li key={i} className={`border border-l-4 border-rule bg-panel px-5 py-4 ${STATUS_EDGE[a.category]}`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge category={a.category} year={year(a.assessedOn)} scope={a.scope} />
+                      <Cite ids={[a.sourceId]} index={index} />
+                    </div>
+                    <p className="meta mt-3">
+                      {a.scope === 'global' ? 'Global assessment' : `Regional assessment: ${a.region?.name ?? 'region not recorded'}`}
+                      {' · '}
+                      {TREND_LABEL[a.trend]}
+                      {a.assessedOn ? ` · assessed ${formatDate(a.assessedOn)}` : ''}
+                      {a.publishedOn ? ` · published ${formatDate(a.publishedOn)}` : ''}
+                      {a.criteria ? ` · criteria ${a.criteria}` : ''}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : p.status.notAssessed ? (
+              <Missing>Not assessed. No conservation assessment has been made for this species in our sources.</Missing>
+            ) : (
+              <Missing>Unknown.</Missing>
+            )}
+          </Section>
+
+          {/* 3 ---------- How many remain? ---------- */}
+          <Section n={3} id="population" title="How many remain?">
+            {p.population.estimates.length ? (
+              <>
+                <ul className="grid gap-4 xl:grid-cols-2">
+                  {p.population.estimates.map((e, i) => {
+                    const value = estimateValue(e);
+                    const period = referencePeriod(e.referenceStart, e.referenceEnd);
+                    const words = e.form === 'qualitative';
+                    return (
+                      <li key={i} className="panel flex flex-col px-6 py-6">
+                        <p className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
+                          {value === null ? (
+                            <span className="type-display text-5xl leading-none text-muted">Unknown</span>
+                          ) : words ? (
+                            <span className="text-xl font-medium leading-snug text-white">{value}</span>
+                          ) : (
+                            <span className="type-display text-[clamp(2.75rem,5vw,4.25rem)] leading-none text-lime">{value}</span>
+                          )}
+                          {value && !words ? <span className="font-mono text-sm text-fog">{BASIS_LABEL[e.basis]}</span> : null}
+                          <Cite ids={[e.sourceId]} index={index} />
+                        </p>
+                        <p className="mt-5 flex flex-wrap gap-2" aria-label="Context of this estimate">
+                          <span className="chip">{e.context === 'wild' ? 'Wild' : 'Captive'}</span>
+                          <span className="chip">{e.scope === 'global' ? 'Global' : (e.region?.name ?? 'Regional')}</span>
+                          <span className="chip">{period ?? 'date not stated'}</span>
+                          {e.method ? <span className="chip">{e.method}</span> : null}
+                        </p>
+                        {e.uncertaintyNote ? <p className="mt-4 text-[0.9375rem] text-fog">Uncertainty: {e.uncertaintyNote}</p> : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="notice prose-measure mt-6 text-[0.9375rem] text-fog">
+                  Estimates with different units, places or dates are listed separately. They are never added together or compared as one number.
+                </p>
+              </>
+            ) : (
+              <div>
+                <p className="type-display text-[clamp(3.5rem,8vw,6rem)] text-muted">Unknown</p>
+                <p className="prose-measure mt-3 text-fog">
+                  {p.population.unknownNote ?? 'Our sources give no reliable population estimate for this species.'} Unknown does not mean zero.
+                </p>
+              </div>
+            )}
+          </Section>
+
+          {/* 4 ---------- Where does it live? ---------- */}
+          <Section n={4} id="where" title="Where does it live?">
+            {p.geography.locationWithheld ? (
+              <p className="notice prose-measure text-fog">Locations are withheld to protect this species from collection or disturbance.</p>
+            ) : (
+              <>
+                {p.geography.regions.length || p.geography.ranges.length ? <ProfileMap slug={p.slug} name={p.commonName ?? p.scientificName} /> : null}
+                {p.geography.locationGeneralized ? (
+                  <p className="notice prose-measure mb-6 text-[0.9375rem] text-fog">
+                    <strong className="text-white">Generalized to whole countries or seas</strong> to protect this species. Its precise locations are not published.
+                  </p>
+                ) : null}
+
+                <SubHead>Range maps</SubHead>
+                {p.geography.ranges.length ? (
+                  <ul className="mt-3 space-y-2 text-[0.9375rem]">
+                    {p.geography.ranges.map((r, i) => (
+                      <li key={i}>
+                        Published range map: {PRESENCE_LABEL[r.presence]} · {SEASON_LABEL[r.seasonality]}
+                        {r.datasetVersion ? <> · dataset {r.datasetVersion}</> : null}
+                        <Cite ids={[r.sourceId]} index={index} />
+                        {r.generalizationNote ? <span className="block text-muted">{r.generalizationNote}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="mt-3"><Missing>No published range map. Only country-level presence is shown; we never draw a range a source has not published.</Missing></div>
+                )}
+
+                <SubHead>Countries, seas and oceans</SubHead>
+                {p.geography.regions.length ? (
+                  <>
+                    <p className="mt-2 text-[0.9375rem] text-muted">Country-level presence: the species is recorded somewhere in each place, not everywhere in it.</p>
+                    <ul className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {p.geography.regions.map((r, i) => (
+                        <li key={i} className="panel px-4 py-3">
+                          <Link href={`/regions/${r.region.slug}`} className="inline-flex min-h-6 items-center font-medium text-lime underline-offset-4 hover:underline">{r.region.name}</Link>
+                          <Cite ids={[r.sourceId]} index={index} />
+                          <span className="mt-1 block font-mono text-xs text-muted">
+                            {PRESENCE_LABEL[r.presence]} · {ORIGIN_LABEL[r.origin]} · {SEASON_LABEL[r.seasonality]}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <div className="mt-3"><Missing>Not yet documented.</Missing></div>
+                )}
+              </>
+            )}
+
+            <SubHead>Habitats</SubHead>
+            {p.geography.habitats.length ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {p.geography.habitats.map((h) => (
+                  <li key={h.code} className="chip">
+                    {h.name}
+                    {h.suitability ? ` (${h.suitability})` : ''}
+                    <Cite ids={[h.sourceId]} index={index} />
                   </li>
                 ))}
               </ul>
             ) : (
-              <Missing>No published range map. Only country-level presence is shown; we never draw a range a source has not published.</Missing>
+              <div className="mt-3"><Missing>Not yet documented.</Missing></div>
             )}
 
-            <h3 className="mt-6 font-semibold">Countries, seas and oceans</h3>
-            {p.geography.regions.length ? (
+            <SubHead>Climate</SubHead>
+            {p.geography.climate.narrative || p.geography.climate.ranges.length ? (
               <>
-                <p className="text-sm text-ink-muted">Country-level presence: the species is recorded somewhere in each place, not everywhere in it.</p>
-                <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {p.geography.regions.map((r, i) => (
-                    <li key={i} className="rounded border border-line bg-white/60 px-3 py-2 text-sm">
-                      <Link href={`/regions/${r.region.slug}`} className="inline-block py-0.5 font-medium underline-offset-4 hover:underline">{r.region.name}</Link>
-                      <Cite ids={[r.sourceId]} index={index} />
-                      <br />
-                      <span className="text-ink-muted">
-                        {PRESENCE_LABEL[r.presence]} · {ORIGIN_LABEL[r.origin]} · {SEASON_LABEL[r.seasonality]}
-                      </span>
+                {p.geography.climate.narrative ? <p className="prose-measure mt-3">{p.geography.climate.narrative}<Cite ids={cited('climate')} index={index} /></p> : null}
+                <ul className="mt-2 text-[0.9375rem]">
+                  {p.geography.climate.ranges.map((r, i) => (
+                    <li key={i}>
+                      {r.label}: {[r.min, r.max].filter((x) => x !== null).join('–')} {r.unit} <span className="text-muted">({r.context})</span>
+                      <Cite ids={cited('climate')} index={index} />
                     </li>
                   ))}
                 </ul>
               </>
             ) : (
+              <div className="mt-3"><Missing>Not yet documented.</Missing></div>
+            )}
+          </Section>
+
+          {/* 5 ---------- What does it eat? ---------- */}
+          <Section n={5} id="diet" title="What does it eat?">
+            {p.diet.narrative || p.diet.tags.length ? (
+              <>
+                {p.diet.narrative ? <p className="prose-measure text-lg leading-relaxed">{p.diet.narrative}<Cite ids={cited('diet')} index={index} /></p> : null}
+                {p.diet.context ? <p className="prose-measure mt-3 text-[0.9375rem] text-muted">{p.diet.context}</p> : null}
+                {p.diet.tags.length ? (
+                  <ul className="mt-5 flex flex-wrap gap-2">
+                    {p.diet.tags.map((t) => (
+                      <li key={t} className="chip">{t}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </>
+            ) : (
               <Missing>Not yet documented.</Missing>
             )}
-          </>
-        )}
+          </Section>
 
-        <h3 className="mt-6 font-semibold">Habitats</h3>
-        {p.geography.habitats.length ? (
-          <ul className="mt-1 list-inside list-disc text-sm">
-            {p.geography.habitats.map((h) => (
-              <li key={h.code}>
-                {h.name}
-                {h.suitability ? ` (${h.suitability})` : ''}
-                <Cite ids={[h.sourceId]} index={index} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Missing>Not yet documented.</Missing>
-        )}
-
-        <h3 className="mt-6 font-semibold">Climate</h3>
-        {p.geography.climate.narrative || p.geography.climate.ranges.length ? (
-          <>
-            {p.geography.climate.narrative ? <p className="text-sm">{p.geography.climate.narrative}<Cite ids={cited('climate')} index={index} /></p> : null}
-            <ul className="mt-1 text-sm">
-              {p.geography.climate.ranges.map((r, i) => (
-                <li key={i}>
-                  {r.label}: {[r.min, r.max].filter((x) => x !== null).join('–')} {r.unit} <span className="text-ink-muted">({r.context})</span>
-                  <Cite ids={cited('climate')} index={index} />
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <Missing>Not yet documented.</Missing>
-        )}
-      </Section>
-
-      {/* 5 ---------- What does it eat? ---------- */}
-      <Section id="diet" title="What does it eat?">
-        {p.diet.narrative || p.diet.tags.length ? (
-          <>
-            {p.diet.narrative ? <p>{p.diet.narrative}<Cite ids={cited('diet')} index={index} /></p> : null}
-            {p.diet.context ? <p className="mt-2 text-sm text-ink-muted">{p.diet.context}</p> : null}
-            {p.diet.tags.length ? (
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {p.diet.tags.map((t) => (
-                  <li key={t} className="rounded-full border border-line px-3 py-0.5 text-sm">{t}</li>
+          {/* 6 ---------- Why is it threatened? ---------- */}
+          <Section n={6} id="threats" title="Why is it threatened?">
+            {p.threats.threats.length ? (
+              <ul className="border-t border-rule">
+                {p.threats.threats.map((t) => (
+                  <li key={t.code} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-rule py-3">
+                    <span className="text-white">
+                      {t.name}
+                      <Cite ids={[t.sourceId]} index={index} />
+                    </span>
+                    {t.severity || t.timing ? <span className="font-mono text-xs text-muted">({[t.severity, t.timing].filter(Boolean).join(', ')})</span> : null}
+                  </li>
                 ))}
               </ul>
+            ) : (
+              <Missing>No specific threats documented yet.</Missing>
+            )}
+            <SubHead>Conservation actions</SubHead>
+            {p.threats.conservationActions ? (
+              <p className="prose-measure mt-3">{p.threats.conservationActions}<Cite ids={cited('actions')} index={index} /></p>
+            ) : (
+              <div className="mt-3"><Missing>Not yet documented.</Missing></div>
+            )}
+          </Section>
+
+          {/* 7 ---------- How can I help? ---------- */}
+          <Section n={7} id="help" title="How can I help?">
+            {p.support.length ? (
+              <ul className="grid gap-4 xl:grid-cols-2">
+                {p.support.map((l, i) => (
+                  <li key={i} className="panel px-6 py-5">
+                    <p className="kicker">{ACTION_LABEL[l.actionType]}</p>
+                    <a href={l.url} rel="noopener noreferrer" className="mt-2 inline-block text-lg font-medium text-lime underline decoration-1 underline-offset-4 hover:decoration-2">
+                      {ACTION_LABEL[l.actionType]}: {l.organizationName}<span aria-hidden> ↗</span>
+                    </a>
+                    <span className="mt-1 block font-mono text-xs text-muted">(goes to {l.domain})</span>
+                    <p className="mt-3 text-[0.9375rem]">{l.description}</p>
+                    {l.contextNote ? <p className="mt-2 text-[0.9375rem] text-muted">{l.contextNote}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Missing>No reviewed support links for this species yet.</Missing>
+            )}
+            <p className="prose-measure mt-5 text-[0.9375rem] text-muted">
+              Links go to independent organizations. Our review does not certify how effective an organization is, and a click is not a donation.{' '}
+              <Link href="/support" className="link">See the support directory and how we review links</Link>.
+            </p>
+          </Section>
+
+          {/* 8 ---------- How do we know? ---------- */}
+          <Section n={8} id="sources" title="How do we know?">
+            {p.sources.length ? (
+              <ol className="border-t border-rule">
+                {p.sources.map((s, i) => (
+                  <li key={s.id} id={`source-${i + 1}`} className="grid scroll-mt-24 grid-cols-[3rem_1fr] gap-x-3 border-b border-rule py-4 text-[0.9375rem]">
+                    <span className="font-mono text-sm text-lime">[{i + 1}]</span>
+                    <span>
+                      {s.authors ? `${s.authors}. ` : ''}
+                      {s.url ? (
+                        <a href={s.url} rel="noopener noreferrer" className="link">{s.title}</a>
+                      ) : (
+                        <span className="text-white">{s.title}</span>
+                      )}
+                      {s.publisher ? `. ${s.publisher}` : ''}
+                      {s.publishedOn ? `, ${s.publishedOn.slice(0, 4)}` : ''}.
+                      {s.doi ? <> DOI {s.doi}.</> : null}
+                      {s.accessedOn ? <span className="text-muted"> Accessed {formatDate(s.accessedOn)}.</span> : null}
+                      {s.license ? <span className="text-muted"> Licence: {s.license}.</span> : null}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <Missing>No sources recorded.</Missing>
+            )}
+            {p.media.length ? (
+              <>
+                <SubHead>Photographs</SubHead>
+                <ul className="mt-3 space-y-1 text-[0.9375rem]">
+                  {p.media.map((m) => (
+                    <li key={m.storageKey}>
+                      {m.credit}
+                      {m.credit.toLowerCase().includes(m.license.toLowerCase()) ? '' : `, ${m.license}`}
+                      {m.sourceUrl ? <> (<a href={m.sourceUrl} rel="noopener noreferrer" className="link">source</a>)</> : null}
+                    </li>
+                  ))}
+                </ul>
+              </>
             ) : null}
-          </>
-        ) : (
-          <Missing>Not yet documented.</Missing>
-        )}
-      </Section>
-
-      {/* 6 ---------- Why is it threatened? ---------- */}
-      <Section id="threats" title="Why is it threatened?">
-        {p.threats.threats.length ? (
-          <ul className="list-inside list-disc">
-            {p.threats.threats.map((t) => (
-              <li key={t.code}>
-                {t.name}
-                {t.severity || t.timing ? <span className="text-ink-muted"> ({[t.severity, t.timing].filter(Boolean).join(', ')})</span> : null}
-                <Cite ids={[t.sourceId]} index={index} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Missing>No specific threats documented yet.</Missing>
-        )}
-        <h3 className="mt-6 font-semibold">Conservation actions</h3>
-        {p.threats.conservationActions ? (
-          <p>{p.threats.conservationActions}<Cite ids={cited('actions')} index={index} /></p>
-        ) : (
-          <Missing>Not yet documented.</Missing>
-        )}
-      </Section>
-
-      {/* 7 ---------- How can I help? ---------- */}
-      <Section id="help" title="How can I help?">
-        {p.support.length ? (
-          <ul className="space-y-3">
-            {p.support.map((l, i) => (
-              <li key={i} className="rounded border border-line bg-white/60 p-3">
-                <a href={l.url} rel="noopener noreferrer" className="font-medium text-forest-light underline underline-offset-4">
-                  {ACTION_LABEL[l.actionType]}: {l.organizationName}
-                </a>
-                <span className="ml-2 text-sm text-ink-muted">(goes to {l.domain})</span>
-                <p className="mt-1 text-sm">{l.description}</p>
-                {l.contextNote ? <p className="mt-1 text-sm text-ink-muted">{l.contextNote}</p> : null}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Missing>No reviewed support links for this species yet.</Missing>
-        )}
-        <p className="mt-3 text-sm text-ink-muted">
-          Links go to independent organizations. Our review does not certify how effective an organization is, and a click is not a donation.{' '}
-          <Link href="/support" className="underline underline-offset-4">See the support directory and how we review links</Link>.
-        </p>
-      </Section>
-
-      {/* 8 ---------- How do we know? ---------- */}
-      <Section id="sources" title="How do we know?">
-        {p.sources.length ? (
-          <ol className="space-y-2 text-sm">
-            {p.sources.map((s, i) => (
-              <li key={s.id} id={`source-${i + 1}`} className="scroll-mt-16">
-                <span className="font-medium">[{i + 1}]</span>{' '}
-                {s.authors ? `${s.authors}. ` : ''}
-                {s.url ? (
-                  <a href={s.url} rel="noopener noreferrer" className="text-forest-light underline underline-offset-2">{s.title}</a>
-                ) : (
-                  s.title
-                )}
-                {s.publisher ? `. ${s.publisher}` : ''}
-                {s.publishedOn ? `, ${s.publishedOn.slice(0, 4)}` : ''}.
-                {s.doi ? <> DOI {s.doi}.</> : null}
-                {s.accessedOn ? <span className="text-ink-muted"> Accessed {formatDate(s.accessedOn)}.</span> : null}
-                {s.license ? <span className="text-ink-muted"> Licence: {s.license}.</span> : null}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <Missing>No sources recorded.</Missing>
-        )}
-        {p.media.length ? (
-          <>
-            <h3 className="mt-6 font-semibold">Photographs</h3>
-            <ul className="mt-1 text-sm">
-              {p.media.map((m) => (
-                <li key={m.storageKey}>
-                  {m.credit}
-                  {m.credit.toLowerCase().includes(m.license.toLowerCase()) ? '' : `, ${m.license}`}
-                  {m.sourceUrl ? <> (<a href={m.sourceUrl} rel="noopener noreferrer" className="underline">source</a>)</> : null}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : null}
-        <p className="mt-6 text-sm text-ink-muted">
-          Version {p.review.version}, reviewed {formatDate(p.review.reviewedAt)}
-          {p.review.reviewerRole ? ` by an ${p.review.reviewerRole === 'admin' ? 'administrator' : 'editor'}` : ''}
-          {p.review.selfReviewed ? ' (self-reviewed: the author published their own edit, with no independent review)' : ''}.
-        </p>
-      </Section>
+            <p className="panel mt-8 px-5 py-4 font-mono text-sm text-fog">
+              Version {p.review.version}, reviewed {formatDate(p.review.reviewedAt)}
+              {p.review.reviewerRole ? ` by an ${p.review.reviewerRole === 'admin' ? 'administrator' : 'editor'}` : ''}
+              {p.review.selfReviewed ? ' (self-reviewed: the author published their own edit, with no independent review)' : ''}.
+            </p>
+          </Section>
+        </div>
+      </div>
 
       {p.related.length ? (
-        <section aria-labelledby="related-h" className="mt-12 border-t border-line pt-8">
-          <h2 id="related-h" className="text-2xl font-semibold">Related species</h2>
-          <p className="mt-1 text-sm text-ink-muted">Chosen because they share an animal group, threats or places.</p>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section aria-labelledby="related-h" className="wrap mt-28">
+          <SectionHead id="related-h" title="Related species" />
+          <p className="mt-4 text-muted">Chosen because they share an animal group, threats or places.</p>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {p.related.map((c) => (
               <li key={c.slug}>
                 <SpeciesCard card={c} />
@@ -497,13 +527,15 @@ export default async function SpeciesPage({ params }: Params) {
   );
 }
 
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+function Section({ n, id, title, children }: { n: number; id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="mt-10 scroll-mt-16">
-      <h2 id={`${id}-h`} className="mb-3 text-2xl font-semibold">
-        {title}
-      </h2>
-      {children}
+    <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-20 md:scroll-mt-8">
+      <SectionHead id={`${id}-h`} n={String(n).padStart(2, '0')} title={title} />
+      <div className="mt-8">{children}</div>
     </section>
   );
+}
+
+function SubHead({ children }: { children: React.ReactNode }) {
+  return <h3 className="mt-10 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime first:mt-0">{children}</h3>;
 }

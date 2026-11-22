@@ -11,20 +11,20 @@ export function AddToCompare({ slug, name }: { slug: string; name: string }) {
   const full = !added && selected.length >= MAX_COMPARE;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <button
         type="button"
         aria-pressed={added}
         disabled={full}
         onClick={() => writeCompare(added ? selected.filter((s) => s !== slug) : [...selected, slug])}
-        className="rounded border border-forest px-4 py-2 text-forest hover:bg-paper-deep disabled:cursor-not-allowed disabled:opacity-50"
+        className={`btn ${added ? 'btn-primary' : 'btn-secondary'}`}
       >
         {added ? 'Remove from compare' : 'Add to compare'}
       </button>
-      <span aria-live="polite" className="text-sm text-ink-muted">
+      <span aria-live="polite" className="max-w-[36ch] font-mono text-xs leading-relaxed text-muted">
         {added ? `${name} is in your comparison. ` : full ? `Compare holds ${MAX_COMPARE} species. Remove one first. ` : null}
         {selected.length ? (
-          <Link href={compareHref(selected)} className="text-forest-light underline underline-offset-4">
+          <Link href={compareHref(selected)} className="inline-flex min-h-6 items-center text-lime underline underline-offset-4">
             Compare ({selected.length} of {MAX_COMPARE})
           </Link>
         ) : null}

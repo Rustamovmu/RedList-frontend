@@ -10,7 +10,7 @@ type State = Media['reviewState'];
 const STATE_LABEL: Record<State, string> = { pending: 'Pending review', approved: 'Approved', rejected: 'Rejected (hidden)' };
 // The allow-list (AGENTS.md, PLAN §8). The API enforces it too; this list only helps staff pick a valid value.
 const LICENCES = ['CC0', 'PDM', 'CC BY 4.0', 'CC BY 3.0', 'CC BY 2.0', 'CC BY-SA 4.0', 'CC BY-SA 3.0', 'CC BY-SA 2.0'];
-const input = 'mt-1 w-full rounded border border-line bg-white px-3 py-2';
+const input = 'field mt-1';
 
 /**
  * Media upload and review queue (PLAN §7, §9; DECISIONS D-022). Any staff member uploads and edits; only admins
@@ -61,32 +61,32 @@ export default function MediaAdmin() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Media</h1>
-      <p className="mt-1 max-w-3xl text-sm text-ink-muted">
+      <h1 className="font-mono text-2xl font-bold text-lime">Media</h1>
+      <p className="mt-1 max-w-3xl text-sm text-muted">
         Only allow-listed licences are accepted: CC0, Public Domain Mark, CC BY and CC BY-SA. Check the licence on the source page of each file
         before uploading. Images are resized and re-encoded, which removes embedded metadata such as camera details and GPS position.
         {isAdmin ? null : ' Only admins can approve or reject images.'}
       </p>
-      {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-status-cr">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-alert">{error}</p> : null}
       {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
-      <form onSubmit={onUpload} className="mt-6 grid gap-3 rounded border border-line bg-white/60 p-4 sm:grid-cols-2" aria-labelledby="upload-h">
-        <h2 id="upload-h" className="text-lg font-semibold sm:col-span-2">Upload an image</h2>
+      <form onSubmit={onUpload} className="panel mt-6 grid gap-4 p-5 sm:grid-cols-2" aria-labelledby="upload-h">
+        <h2 id="upload-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime sm:col-span-2">Upload an image</h2>
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Image file (JPEG, PNG or WebP, at least 200 pixels wide)</span>
           <input name="file" type="file" required accept="image/jpeg,image/png,image/webp" className="mt-1 block w-full text-sm" />
         </label>
         <MetadataFields />
         <div className="sm:col-span-2">
-          <button disabled={busy} className="rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light disabled:opacity-60">Upload</button>
+          <button disabled={busy} className="btn btn-primary">Upload</button>
         </div>
       </form>
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
-        <h2 className="text-lg font-semibold">Images</h2>
+        <h2 className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Images</h2>
         <label className="text-sm">
           Show{' '}
-          <select value={filter} onChange={(e) => setFilter(e.target.value as State | 'all')} className="rounded border border-line bg-white px-2 py-1">
+          <select value={filter} onChange={(e) => setFilter(e.target.value as State | 'all')} className="field mt-1 inline-block w-auto py-1.5 text-sm">
             <option value="pending">Pending review</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
@@ -97,7 +97,7 @@ export default function MediaAdmin() {
       {items === null ? (
         <p role="status" className="mt-3">Loading…</p>
       ) : items.length === 0 ? (
-        <p className="mt-3 italic text-ink-muted">No images here.</p>
+        <p className="mt-3 italic text-muted">No images here.</p>
       ) : (
         <ul className="mt-4 space-y-4">
           {items.map((m) => (
@@ -171,15 +171,15 @@ function MediaItem({ m, isAdmin, busy, run }: { m: Media; isAdmin: boolean; busy
   }
 
   return (
-    <article className="grid gap-4 rounded border border-line bg-white/60 p-4 sm:grid-cols-[200px_1fr]" aria-label={`Image by ${m.creator}`}>
+    <article className="panel grid gap-5 p-5 sm:grid-cols-[200px_1fr]" aria-label={`Image by ${m.creator}`}>
       {/* A plain img on purpose: the staff preview needs the session cookie and must never go through the public image loader. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={staffApi.mediaPreviewUrl(m.id, 320)} alt="" width={200} height={Math.round((200 * m.height) / m.width)} className="h-auto w-full rounded border border-line bg-paper-deep" />
+      <img src={staffApi.mediaPreviewUrl(m.id, 320)} alt="" width={200} height={Math.round((200 * m.height) / m.width)} className="h-auto w-full border border-rule bg-black" />
       <div className="min-w-0 text-sm">
         <p className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-line px-2 py-0.5">{STATE_LABEL[m.reviewState]}</span>
-          {m.licenseAllowed ? null : <span className="font-medium text-status-cr">Licence not on the allow-list</span>}
-          <span className="text-ink-muted">
+          <span className="chip">{STATE_LABEL[m.reviewState]}</span>
+          {m.licenseAllowed ? null : <span className="font-medium text-alert">Licence not on the allow-list</span>}
+          <span className="text-muted">
             {m.width}×{m.height}px · {m.variants.join(', ')}px · used by {m.usedByRevisions} revision{m.usedByRevisions === 1 ? '' : 's'}
           </span>
         </p>
@@ -188,31 +188,31 @@ function MediaItem({ m, isAdmin, busy, run }: { m: Media; isAdmin: boolean; busy
         {m.sourceUrl ? (
           <p className="break-all"><span className="font-medium">Source:</span> <a href={m.sourceUrl} rel="noopener noreferrer" className="underline">{m.sourceUrl}</a></p>
         ) : (
-          <p className="text-status-cr">No source page recorded</p>
+          <p className="text-alert">No source page recorded</p>
         )}
-        {m.modifications ? <p className="text-ink-muted">Changes: {m.modifications}</p> : null}
-        {m.reviewNote ? <p className="text-ink-muted">Review note: {m.reviewNote}</p> : null}
-        <p className="mt-1 font-mono text-xs text-ink-muted">id {m.id}</p>
+        {m.modifications ? <p className="text-muted">Changes: {m.modifications}</p> : null}
+        {m.reviewNote ? <p className="text-muted">Review note: {m.reviewNote}</p> : null}
+        <p className="mt-1 font-mono text-xs text-muted">id {m.id}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {isAdmin && m.reviewState !== 'approved' && m.licenseAllowed ? (
-            <button type="button" disabled={busy} onClick={() => void run('Approved. The image can now be published.', () => staffApi.approveMedia(m.id))} className="rounded bg-forest px-3 py-1 text-paper hover:bg-forest-light disabled:opacity-60">
+            <button type="button" disabled={busy} onClick={() => void run('Approved. The image can now be published.', () => staffApi.approveMedia(m.id))} className="btn btn-sm btn-primary">
               Approve
             </button>
           ) : null}
           {isAdmin && m.reviewState !== 'rejected' ? (
-            <button type="button" disabled={busy} onClick={reject} className="rounded border border-status-cr px-3 py-1 text-status-cr hover:bg-paper-deep disabled:opacity-60">
+            <button type="button" disabled={busy} onClick={reject} className="btn btn-sm btn-danger">
               Reject
             </button>
           ) : null}
-          <button type="button" onClick={() => setEditing((v) => !v)} aria-expanded={editing} className="rounded border border-line px-3 py-1 hover:bg-paper-deep">
+          <button type="button" onClick={() => setEditing((v) => !v)} aria-expanded={editing} className="btn btn-sm btn-quiet">
             {editing ? 'Cancel edit' : 'Edit credit or licence'}
           </button>
         </div>
         {editing ? (
-          <form onSubmit={save} className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-2">
+          <form onSubmit={save} className="mt-3 grid gap-3 border-t border-rule pt-3 sm:grid-cols-2">
             <MetadataFields m={m} />
             <div className="sm:col-span-2">
-              <button disabled={busy} className="rounded bg-forest px-4 py-2 text-paper hover:bg-forest-light disabled:opacity-60">Save (sends back to review)</button>
+              <button disabled={busy} className="btn btn-primary">Save (sends back to review)</button>
             </div>
           </form>
         ) : null}

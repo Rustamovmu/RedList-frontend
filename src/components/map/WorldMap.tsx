@@ -21,7 +21,7 @@ function hatch(): { width: number; height: number; data: Uint8Array } {
     for (let x = 0; x < size; x++) {
       const on = (x + y) % size === 0 || (x + y) % size === 1;
       const i = (y * size + x) * 4;
-      data.set(on ? [31, 61, 43, 200] : [31, 61, 43, 30], i);
+      data.set(on ? [255, 255, 255, 230] : [255, 255, 255, 28], i);
     }
   }
   return { width: size, height: size, data };
@@ -81,8 +81,8 @@ export default function WorldMap({
               { id: 'water', type: 'background', paint: { 'background-color': MAP_COLORS.water } },
               { id: 'land', type: 'fill', source: 'basemap', filter: ['==', ['get', 'kind'], 'country'], paint: { 'fill-color': MAP_COLORS.land } },
               { id: 'land-border', type: 'line', source: 'basemap', filter: ['==', ['get', 'kind'], 'country'], paint: { 'line-color': MAP_COLORS.border, 'line-width': 0.6 } },
-              { id: 'presence', type: 'fill', source: 'basemap', filter: ['in', ['get', 'slug'], ['literal', []]], paint: { 'fill-color': MAP_COLORS.presence, 'fill-opacity': 0.75 } },
-              { id: 'presence-line', type: 'line', source: 'basemap', filter: ['in', ['get', 'slug'], ['literal', []]], paint: { 'line-color': MAP_COLORS.presenceLine, 'line-width': 1.2 } },
+              { id: 'presence', type: 'fill', source: 'basemap', filter: ['in', ['get', 'slug'], ['literal', []]], paint: { 'fill-color': MAP_COLORS.presence, 'fill-opacity': MAP_COLORS.presenceOpacity } },
+              { id: 'presence-line', type: 'line', source: 'basemap', filter: ['in', ['get', 'slug'], ['literal', []]], paint: { 'line-color': MAP_COLORS.presenceLine, 'line-width': 1 } },
               { id: 'range', type: 'fill', source: 'ranges', paint: { 'fill-pattern': 'hatch' } },
               { id: 'range-line', type: 'line', source: 'ranges', paint: { 'line-color': MAP_COLORS.range, 'line-width': 1.5, 'line-dasharray': [2, 1] } },
             ],

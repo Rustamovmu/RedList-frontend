@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 /*
- * Design tokens: a calm nature-editorial look (docs/PLAN.md §4).
- * Status colours are never the only signal. Every badge also carries a text label.
+ * Design tokens: the "Signal" look (DECISIONS D-034, replaces PLAN §4's nature-editorial style).
+ * Black canvas, navy panels, one acid-lime signal colour, square corners, no shadows.
+ * Status colours are never the only signal. Every badge also carries its code and label as text.
+ * Contrast on black: fog 15.3:1, muted 8.3:1, lime 18.5:1, alert 9.2:1 (muted on navy 6.7:1). Text on lime is always black.
  */
 @theme {
-  --color-paper: #f8f5ee;
-  --color-paper-deep: #efe9dc;
-  --color-ink: #1f2a24;
-  --color-ink-muted: #55615a;
-  --color-forest: #1f3d2b;
-  --color-forest-light: #2f5a40;
-  --color-moss: #6b8f4e;
-  --color-line: #d9d2c3;
+  --color-canvas: #000000;
+  --color-panel: #0e1e32;
+  --color-raised: #15283f;
+  --color-rule: #2a3b52;
+  --color-lime: #d9fe8f;
+  --color-fog: #dcdcdc;
+  --color-muted: #9aa4b2;
+  --color-alert: #ff8a80;
 
-  /* IUCN categories: text on these backgrounds meets WCAG AA (checked in docs/DECISIONS.md) */
+  /* IUCN categories: white text on these backgrounds meets WCAG AA (checked in docs/DECISIONS.md) */
   --color-status-ex: #000000;
   --color-status-ew: #3d1a46;
   --color-status-cr: #b3261e;
@@ -25,30 +27,246 @@
   --color-status-dd: #5b6470;
   --color-status-ne: #ffffff;
 
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans KR", sans-serif;
+  /* Self-hosted from npm (@fontsource), SIL Open Font License. The CSP allows fonts from 'self' only. */
+  --font-display: "Anton", Impact, "Arial Narrow Bold", sans-serif;
+  --font-mono: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Anton has one weight, so the browser must never fake a bold. */
+@utility type-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: 0.002em;
+  overflow-wrap: break-word;
 }
 
 @layer base {
+  :root {
+    /* Height of the header's nav row. The home hero slides under it. */
+    --nav-h: 6.75rem;
+    color-scheme: dark;
+  }
+  @media (min-width: 768px) {
+    :root {
+      --nav-h: 4.5rem;
+    }
+  }
   html {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-canvas);
+    color: var(--color-fog);
     font-family: var(--font-sans);
     -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 {
-    font-family: var(--font-serif);
-    letter-spacing: -0.01em;
+  body {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+  ::selection {
+    background: var(--color-lime);
+    color: #000;
   }
   :focus-visible {
-    outline: 3px solid var(--color-moss);
-    outline-offset: 2px;
+    outline: 3px solid var(--color-lime);
+    outline-offset: 3px;
+  }
+  /* On lime surfaces a lime ring would vanish, so the ring turns black there. */
+  .on-lime :focus-visible {
+    outline-color: #000;
+  }
+  summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  .h-page {
+    @apply type-display text-lime;
+    font-size: clamp(3rem, 10.5vw, 8.5rem);
+  }
+  .h-section {
+    @apply type-display text-fog;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+  }
+  .kicker {
+    @apply font-mono text-xs uppercase tracking-[0.14em] text-lime;
+  }
+  .label {
+    @apply font-mono text-xs uppercase tracking-[0.1em] text-muted;
+  }
+  .meta {
+    @apply font-mono text-[0.8125rem] leading-relaxed text-muted;
+  }
+  .lead {
+    @apply max-w-[44ch] text-xl leading-snug text-white sm:text-2xl;
+  }
+  .prose-measure {
+    max-width: 68ch;
+  }
+  .wrap {
+    @apply mx-auto w-full max-w-[90rem] px-5 md:px-10;
+  }
+
+  .link {
+    @apply text-lime underline decoration-1 underline-offset-4 hover:decoration-2;
+  }
+  .link-quiet {
+    @apply underline decoration-muted decoration-1 underline-offset-4 hover:text-lime hover:decoration-lime;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 border-2 px-5 py-2 text-center font-mono text-[0.8125rem] font-bold uppercase leading-tight tracking-[0.08em] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-sm {
+    @apply min-h-9 px-3 py-1 text-xs;
+  }
+  .btn-primary {
+    @apply border-lime bg-lime text-black hover:border-white hover:bg-white disabled:hover:border-lime disabled:hover:bg-lime;
+  }
+  .btn-secondary {
+    @apply border-lime text-lime hover:bg-lime hover:text-black disabled:hover:bg-transparent disabled:hover:text-lime;
+  }
+  .btn-quiet {
+    @apply border-muted text-fog hover:border-fog hover:text-white;
+  }
+  .btn-danger {
+    @apply border-alert text-alert hover:bg-alert hover:text-black;
+  }
+
+  .field {
+    @apply block w-full border border-muted bg-black px-3 py-2.5 text-base text-fog placeholder:text-muted focus:border-lime;
+  }
+  .field-search {
+    @apply block w-full border-0 border-b-2 border-lime bg-transparent px-0 py-3 text-xl text-white placeholder:text-muted;
+  }
+
+  .panel {
+    @apply border border-rule bg-panel;
+  }
+  .chip {
+    @apply inline-flex items-center gap-2 border border-rule px-3 py-1.5 font-mono text-xs uppercase tracking-[0.08em] text-fog;
+  }
+  .notice {
+    @apply border-l-2 border-lime bg-panel px-4 py-3;
+  }
+  .notice-error {
+    @apply border border-alert bg-panel px-4 py-3 text-alert;
+  }
+  .missing {
+    @apply italic text-muted;
+  }
+
+  /* A faint navy grid, used where there is no photograph. */
+  .grid-bg {
+    background-color: #000;
+    background-image:
+      linear-gradient(to right, rgb(42 59 82 / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(42 59 82 / 0.5) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* "+" / "−" on disclosure bars, drawn in CSS so it never enters the accessible name. */
+  .disclosure > summary::after {
+    content: "+";
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-lime);
+    margin-left: auto;
+    padding-left: 1rem;
+  }
+  .disclosure[open] > summary::after {
+    content: "\2212";
+  }
+}
+
+/* MapLibre controls in the Signal style: square, black, lime outline, light icons. */
+.maplibregl-ctrl-group:not(:empty) {
+  background: #000 !important;
+  border: 1px solid var(--color-lime);
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--color-rule) !important;
+}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+.maplibregl-ctrl-attrib {
+  background: rgb(0 0 0 / 0.8) !important;
+  color: var(--color-muted) !important;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-radius: 0 !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-lime) !important;
+}
+.maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+/* Body text of the information pages: lime links, square bullets. A list marked .plain keeps its own layout. */
+@layer components {
+  .info-body {
+    @apply space-y-4 leading-relaxed text-fog;
+    max-width: 68ch;
+  }
+  .info-body a {
+    @apply text-lime underline decoration-1 underline-offset-4 hover:decoration-2;
+  }
+  .info-body ul:not(.plain) {
+    @apply space-y-3;
+  }
+  .info-body ul:not(.plain) > li {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  .info-body ul:not(.plain) > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 0.45rem;
+    height: 0.45rem;
+    background: var(--color-lime);
+  }
+}
+
+/* The one orchestrated moment: the hero name rises into place on load. Reduced motion skips it (base layer rule). */
+@keyframes hero-rise {
+  from {
+    transform: translateY(0.18em);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@layer components {
+  .hero-word {
+    display: block;
+    animation: hero-rise 900ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  }
+  .hero-word-late {
+    animation-delay: 140ms;
   }
 }

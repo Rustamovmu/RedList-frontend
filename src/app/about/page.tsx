@@ -13,6 +13,7 @@ const contact = process.env.NEXT_PUBLIC_CONTACT_URL;
 export default function AboutPage() {
   return (
     <InfoPage
+      kicker="About"
       title="About Wildward"
       lead="Wildward helps curious people understand a species, see where it lives, and find a credible way to help. Every fact on it links to the source it came from."
       updated="21 November 2026"
