@@ -12,6 +12,7 @@ import { WholePhoto } from '@/components/WholePhoto';
 import type { components } from '@/contracts/api';
 import { apiGet } from '@/lib/api';
 import { ENVIRONMENT_LABEL } from '@/lib/labels';
+import { mediaSrc } from '@/lib/media';
 import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
 
 /**
@@ -315,7 +316,7 @@ export default async function Home() {
 
       {/* ---------- how to help: a lime panel whose photo has a curved edge ---------- */}
       <section aria-labelledby="help-h" className="wrap pb-24 lg:pb-32">
-        <div className="on-lime relative isolate grid overflow-hidden bg-lime text-black lg:grid-cols-[1.2fr_1fr]">
+        <div className="on-lime relative isolate grid overflow-hidden bg-lime text-black lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
           <div className="relative z-10 px-6 py-12 sm:px-10 sm:py-14 lg:px-16 lg:py-20">
             <h2 id="help-h" className="type-display text-[clamp(1.875rem,3.2vw,2.75rem)]">Find a credible way to help</h2>
             <p className="mt-5 max-w-[46ch] text-lg font-medium leading-relaxed">
@@ -325,9 +326,16 @@ export default async function Home() {
             <Link href="/support" className="btn btn-dark go mt-8">See the support directory</Link>
           </div>
           {helpPhoto?.image ? (
-            <div className="relative min-h-64 sm:min-h-80 lg:min-h-0">
+            <div className="relative h-80 sm:h-96 lg:h-auto">
+              {/* The photo fills the curved shape with no blurred fill (D-042), so it is cropped a little, anchored above the middle where heads usually are. */}
               <div className="absolute inset-0 [clip-path:ellipse(85%_100%_at_50%_100%)] lg:[clip-path:ellipse(100%_85%_at_100%_50%)]">
-                <WholePhoto storageKey={helpPhoto.image.storageKey} alt={helpPhoto.image.altText} sizes="(min-width: 1024px) 40vw, 100vw" />
+                <Image
+                  src={mediaSrc(helpPhoto.image.storageKey)}
+                  alt={helpPhoto.image.altText}
+                  fill
+                  sizes="(min-width: 1024px) 28rem, 100vw"
+                  className="object-cover object-[50%_30%]"
+                />
               </div>
               {/* A thin black arc beside the photo's curved edge. Decorative. */}
               <svg aria-hidden focusable="false" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" fill="none">
