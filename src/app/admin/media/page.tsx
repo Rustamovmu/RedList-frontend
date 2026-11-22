@@ -115,11 +115,11 @@ function MetadataFields({ m }: { m?: Media }) {
   return (
     <>
       <label className="block">
-        <span className="text-sm font-medium">Creator</span>
+        <span className="text-sm font-medium">Creator<span className="text-lime"> *</span></span>
         <input name="creator" required defaultValue={m?.creator} maxLength={200} className={input} />
       </label>
       <label className="block">
-        <span className="text-sm font-medium">Licence</span>
+        <span className="text-sm font-medium">Licence<span className="text-lime"> *</span></span>
         <select name="license" required defaultValue={m?.license ?? ''} className={input}>
           <option value="" disabled>Choose…</option>
           {[...new Set([...LICENCES, ...(m ? [m.license] : [])])].map((l) => (
@@ -128,19 +128,20 @@ function MetadataFields({ m }: { m?: Media }) {
         </select>
       </label>
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium">Credit line, shown on the profile and on Photo credits</span>
+        <span className="text-sm font-medium">Credit line, shown on Photo credits<span className="text-lime"> *</span></span>
+        <span className="mt-0.5 block text-[0.8125rem] text-muted">Required by the licence itself: CC BY and CC BY-SA ask for the creator to be named.</span>
         <input name="credit" required minLength={3} maxLength={300} defaultValue={m?.credit} placeholder="Photo: Jane Doe, CC BY 4.0, via Wikimedia Commons" className={input} />
       </label>
       <label className="block">
-        <span className="text-sm font-medium">Source page (https)</span>
+        <span className="text-sm font-medium">Source page (https) <span className="text-muted">(optional)</span></span>
         <input name="sourceUrl" type="url" pattern="https://.*" defaultValue={m?.sourceUrl ?? ''} className={input} />
       </label>
       <label className="block">
-        <span className="text-sm font-medium">Licence deed URL (optional)</span>
+        <span className="text-sm font-medium">Licence deed URL <span className="text-muted">(optional)</span></span>
         <input name="licenseUrl" type="url" pattern="https://.*" defaultValue={m?.licenseUrl ?? ''} className={input} />
       </label>
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium">Your changes before upload, e.g. cropping (optional)</span>
+        <span className="text-sm font-medium">Your changes before upload, e.g. cropping <span className="text-muted">(optional)</span></span>
         <input name="modifications" maxLength={500} className={input} />
       </label>
     </>
@@ -188,7 +189,7 @@ function MediaItem({ m, isAdmin, busy, run }: { m: Media; isAdmin: boolean; busy
         {m.sourceUrl ? (
           <p className="break-all"><span className="font-medium">Source:</span> <a href={m.sourceUrl} rel="noopener noreferrer" className="underline">{m.sourceUrl}</a></p>
         ) : (
-          <p className="text-alert">No source page recorded</p>
+          <p className="text-muted">No source page recorded (optional)</p>
         )}
         {m.modifications ? <p className="text-muted">Changes: {m.modifications}</p> : null}
         {m.reviewNote ? <p className="text-muted">Review note: {m.reviewNote}</p> : null}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { StaffThumb } from '@/components/admin/StaffThumb';
 import { GROUP_LABEL } from '@/lib/labels';
 import { errorText, type S, staffApi } from '@/lib/staff-api';
 
@@ -47,9 +48,12 @@ export default function AdminHome() {
             const latest = sp.revisions.at(-1);
             return (
               <li key={sp.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-                <Link href={`/admin/species/${sp.id}`} className="font-medium italic text-lime underline-offset-4 hover:underline">
-                  {sp.acceptedScientificName}
-                </Link>
+                <span className="flex min-w-0 items-center gap-3">
+                  <StaffThumb photo={sp.publishedPhotos[0]} />
+                  <Link href={`/admin/species/${sp.id}`} className="font-medium italic text-lime underline-offset-4 hover:underline">
+                    {sp.acceptedScientificName}
+                  </Link>
+                </span>
                 <span className="flex flex-wrap items-center gap-3">
                   <span className={`chip ${sp.publishedRevisionId ? 'border-lime text-lime' : 'text-muted'}`}>{sp.publishedRevisionId ? 'Published' : 'Not published'}</span>
                   {latest ? <span className="text-[0.8125rem] text-muted">latest v{latest.version} {latest.state}</span> : null}

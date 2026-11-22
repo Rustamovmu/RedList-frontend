@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useStaff } from '@/components/admin/StaffSession';
+import { StaffThumb } from '@/components/admin/StaffThumb';
 import { errorText, type S, staffApi } from '@/lib/staff-api';
 
 export default function AdminSpecies() {
@@ -69,6 +70,41 @@ export default function AdminSpecies() {
       {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-alert">{error}</p> : null}
       {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
+      <h2 className="mt-10 text-lg font-bold text-white">Photos on the live version</h2>
+      {sp.publishedPhotos.length === 0 ? (
+        <p className="mt-2 text-sm italic text-muted">
+          {sp.publishedRevisionId
+            ? 'The live version has no photo, so the public pages show the neutral “no photo” state.'
+            : 'Nothing is published yet.'}{' '}
+          Photos are attached in a draft; the <Link href="/admin/media" className="underline">Media</Link> page holds the images.
+        </p>
+      ) : (
+        <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+          {sp.publishedPhotos.map((p, i) => (
+            <li key={p.mediaId} className="panel flex gap-4 p-4">
+              <StaffThumb photo={p} width={110} />
+              <div className="min-w-0 text-sm">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className={`chip ${i === 0 ? 'border-lime text-lime' : 'text-muted'}`}>{i === 0 ? 'Main photo' : `Photo ${i + 1}`}</span>
+                  {p.reviewState === 'approved' ? null : (
+                    <span className="font-medium text-alert">
+                      {p.reviewState === 'rejected' ? 'Rejected: hidden from public pages now' : 'Back in review'}
+                    </span>
+                  )}
+                </p>
+                <p className="mt-2 break-words">{p.altText}</p>
+                {p.caption ? <p className="mt-1 break-words text-muted">{p.caption}</p> : null}
+                <p className="mt-1 break-words text-[0.8125rem] text-muted">{p.credit} · {p.license}</p>
+                <p className="mt-2 text-[0.8125rem]">
+                  <Link href="/admin/media" className="underline underline-offset-4">Edit the credit or licence</Link>
+                  {' · '}alt text, caption and order: in a draft
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <h2 className="mt-10 text-lg font-bold text-white">Revisions</h2>
       <ul className="panel mt-3 divide-y divide-rule">
         {[...sp.revisions].reverse().map((r) => (
@@ -92,7 +128,7 @@ export default function AdminSpecies() {
         New draft{sp.publishedRevisionId ? ' from the published version' : ''}
       </button>
 
-      <h2 className="mt-10 text-lg font-bold text-white">Provider identifiers</h2>
+      <h2 className="mt-10 text-lg font-bold text-white">Provider identifiers <span className="text-sm font-normal text-muted">(optional)</span></h2>
       {sp.identifiers.length ? (
         <ul className="mt-2 text-sm">
           {sp.identifiers.map((i) => (
@@ -100,7 +136,10 @@ export default function AdminSpecies() {
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm italic text-muted">None yet. At least one is required to publish.</p>
+        <p className="mt-2 text-sm italic text-muted">
+          None yet. A species can be published without one. Adding one (a GBIF taxon key, an IUCN taxon id) is what lets an
+          import find this species again later, so it is worth filling in when you know it.
+        </p>
       )}
       <form onSubmit={addIdentifier} className="mt-3 flex flex-wrap items-end gap-2">
         <label className="block text-sm">Provider

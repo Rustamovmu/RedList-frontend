@@ -890,6 +890,26 @@ export interface components {
             publishedAt: string | null;
             isPublished: boolean;
         };
+        RevisionPhotoDto: {
+            /** Format: uuid */
+            mediaId: string;
+            /** @enum {string} */
+            role: "primary" | "gallery";
+            position: number;
+            altText: string;
+            caption: string | null;
+            /** @description The credit recorded when this revision was saved */
+            credit: string;
+            /** @description The licence recorded when this revision was saved */
+            license: string;
+            /**
+             * @description The asset's review state now
+             * @enum {string}
+             */
+            reviewState: "pending" | "approved" | "rejected";
+            width: number;
+            height: number;
+        };
         StaffSpeciesDto: {
             /** Format: uuid */
             id: string;
@@ -903,6 +923,8 @@ export interface components {
             publishedRevisionId: string | null;
             identifiers: components["schemas"]["IdentifierDto"][];
             revisions: components["schemas"]["RevisionSummaryDto"][];
+            /** @description The photos on the published revision, in order. Empty when nothing is published. */
+            publishedPhotos: components["schemas"]["RevisionPhotoDto"][];
         };
         CreateSpeciesDto: {
             /** @example fictus-exemplaris */
@@ -1103,6 +1125,8 @@ export interface components {
         ChecklistItemDto: {
             key: string;
             ok: boolean;
+            /** @description A failing blocking item stops submit and publish; a failing non-blocking item is advice only */
+            blocking: boolean;
             message: string;
         };
         RevisionDetailDto: {

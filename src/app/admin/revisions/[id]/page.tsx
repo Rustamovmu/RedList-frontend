@@ -4,30 +4,45 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStaff } from '@/components/admin/StaffSession';
+import { cleanContent, ContentForm } from '@/components/admin/editor/ContentForm';
 import { errorText, type S, staffApi } from '@/lib/staff-api';
 
+type Content = S['RevisionContentDto'];
+
 /**
- * Revision screen. In M1 the content is edited as structured JSON validated by the API (DECISIONS D-011);
- * the side panels give the ids of sources and reference rows to paste in. The form-based editor with live
- * preview and a diff against the published version is still to come (see docs/ARCHITECTURE.md).
+ * Revision screen. The photos, names, written sections, diet tags and numbers are edited in a form
+ * (`ContentForm`). The rows that each need a source id — assessments, population estimates, places,
+ * habitats, threats, citations and support links — are still edited as JSON under "Advanced", with the
+ * source and reference panels below giving the ids to paste in (DECISIONS D-011, D-057). The live preview
+ * and the diff against the published version are still to come (see docs/ARCHITECTURE.md).
  */
 export default function RevisionPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useStaff();
   const [rev, setRev] = useState<S['RevisionDetailDto'] | null>(null);
-  const [text, setText] = useState('');
+  const [content, setContent] = useState<Content | null>(null);
+  const [json, setJson] = useState('');
+  const [media, setMedia] = useState<S['StaffMediaDto'][]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const show = useCallback((r: S['RevisionDetailDto']) => {
     setRev(r);
-    setText(JSON.stringify(r.content, null, 2));
+    setContent(r.content);
+    setJson(JSON.stringify(r.content, null, 2));
   }, []);
 
   useEffect(() => {
     staffApi.getRevision(id).then(show).catch((e) => setError(errorText(e)));
   }, [id, show]);
+
+  // Every image, so an attached photo that is pending or rejected can be named as such. Newest 200.
+  useEffect(() => {
+    staffApi.listMedia().then(setMedia).catch(() => setMedia([]));
+  }, []);
+
+  const dirty = useMemo(() => Boolean(rev && content) && JSON.stringify(content) !== JSON.stringify(rev?.content), [content, rev]);
 
   async function run(label: string, fn: () => Promise<S['RevisionDetailDto']>) {
     setBusy(true);
@@ -44,19 +59,34 @@ export default function RevisionPage() {
   }
 
   function save() {
-    let content: S['RevisionContentDto'];
+    if (!content || !rev) return;
+    const body = cleanContent(content);
+    const missingAlt = body.media.findIndex((m) => m.altText.trim() === '');
+    if (missingAlt >= 0) {
+      setNotice(null);
+      setError(`Photo ${missingAlt + 1} has no alt text. Describe what the picture shows, so the profile works for people who cannot see it.`);
+      return;
+    }
+    void run('Draft saved.', () => staffApi.saveDraft(id, { ...body, expectedUpdatedAt: rev.updatedAt }));
+  }
+
+  function applyJson() {
+    let parsed: Content;
     try {
-      content = JSON.parse(text);
+      parsed = JSON.parse(json);
     } catch {
       setError('The content is not valid JSON.');
       return;
     }
-    run('Draft saved.', () => staffApi.saveDraft(id, { ...content, expectedUpdatedAt: rev!.updatedAt }));
+    setError(null);
+    setNotice('JSON applied to the form. Nothing is saved until you choose "Save draft".');
+    setContent(parsed);
   }
 
-  if (!rev) return error ? <p role="alert" className="text-alert">{error}</p> : <p role="status">Loading…</p>;
+  if (!rev || !content) return error ? <p role="alert" className="text-alert">{error}</p> : <p role="status">Loading…</p>;
   const editable = rev.state === 'draft';
-  const ready = rev.checklist.every((c) => c.ok);
+  const blockers = rev.checklist.filter((c) => !c.ok && c.blocking);
+  const ready = blockers.length === 0;
 
   return (
     <div>
@@ -82,46 +112,80 @@ export default function RevisionPage() {
         <ul className="mt-3 space-y-1.5 text-sm">
           {rev.checklist.map((c) => (
             <li key={c.key}>
-              <span aria-hidden className={`font-bold ${c.ok ? 'text-lime' : 'text-alert'}`}>{c.ok ? '✓' : '✗'}</span> <span className="sr-only">{c.ok ? 'Done:' : 'Missing:'}</span> {c.message}
+              <span aria-hidden className={`font-bold ${c.ok ? 'text-lime' : c.blocking ? 'text-alert' : 'text-fog'}`}>{c.ok ? '✓' : c.blocking ? '✗' : '!'}</span>{' '}
+              <span className="sr-only">{c.ok ? 'Done:' : c.blocking ? 'Missing:' : 'Recommended:'}</span>
+              {c.message}
+              {!c.ok && !c.blocking ? <span className="chip ml-2 text-muted">recommended, does not block</span> : null}
             </li>
           ))}
         </ul>
         <div className="mt-4 flex flex-wrap gap-2">
           {editable ? (
-            <button disabled={busy || !ready} onClick={() => run('Submitted for review.', () => staffApi.submit(id))} className="btn btn-primary">
+            <button disabled={busy || !ready || dirty} onClick={() => void run('Submitted for review.', () => staffApi.submit(id))} className="btn btn-primary">
               Submit for review
             </button>
           ) : null}
           {rev.state === 'submitted' && user.role === 'admin' ? (
             <>
-              <button disabled={busy} onClick={() => run('Published.', () => staffApi.publish(id))} className="btn btn-primary">
+              <button disabled={busy} onClick={() => void run('Published.', () => staffApi.publish(id))} className="btn btn-primary">
                 Publish
               </button>
-              <RequestChanges disabled={busy} onSubmit={(notes) => run('Changes requested.', () => staffApi.requestChanges(id, notes))} />
+              <RequestChanges disabled={busy} onSubmit={(notes) => void run('Changes requested.', () => staffApi.requestChanges(id, notes))} />
             </>
           ) : null}
         </div>
+        {editable && dirty ? <p className="mt-2 text-[0.8125rem] text-muted">Save your changes first; the checklist above describes the last saved version.</p> : null}
       </section>
 
-      <section aria-labelledby="content-h" className="mt-6">
+      <section aria-labelledby="content-h" className="mt-8">
         <h2 id="content-h" className="text-lg font-bold text-white">Content</h2>
-        <p className="text-sm text-muted">
-          {editable ? 'Edit the JSON and save. The API validates every field.' : 'This revision is not a draft, so it is read-only. Create a new draft from the species page to edit.'}
+        <p className="mt-1 text-sm text-muted">
+          {editable
+            ? 'Change what you need and save. The API validates every field, so nothing invalid can be stored.'
+            : 'This revision is not a draft, so it is read-only. Create a new draft from the species page to edit.'}
         </p>
-        <label htmlFor="content-json" className="sr-only">Revision content as JSON</label>
-        <textarea
-          id="content-json"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          readOnly={!editable}
-          spellCheck={false}
-          rows={28}
-          className="field mt-3 p-4 font-mono text-xs leading-relaxed"
-        />
+
+        <div className="mt-4">
+          <ContentForm content={content} media={media} onChange={setContent} disabled={!editable || busy} />
+        </div>
+
+        <details className="panel mt-5 p-5">
+          <summary className="cursor-pointer text-base font-bold text-white">
+            Advanced: status, population, places, habitats, threats, citations and support links (JSON)
+          </summary>
+          <p className="mt-2 text-sm text-muted">
+            These rows each need a source id, so they are edited here for now. Use the panels below to find ids. Applying JSON
+            replaces everything in the form above, including the photos.
+          </p>
+          <label htmlFor="content-json" className="sr-only">Revision content as JSON</label>
+          <textarea
+            id="content-json"
+            value={json}
+            onChange={(e) => setJson(e.target.value)}
+            readOnly={!editable}
+            spellCheck={false}
+            rows={22}
+            className="field mt-3 p-4 font-mono text-xs leading-relaxed"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            {editable ? (
+              <button type="button" disabled={busy} onClick={applyJson} className="btn btn-sm btn-secondary">
+                Apply this JSON to the form
+              </button>
+            ) : null}
+            <button type="button" onClick={() => setJson(JSON.stringify(content, null, 2))} className="btn btn-sm btn-quiet">
+              Show the form&rsquo;s current content
+            </button>
+          </div>
+        </details>
+
         {editable ? (
-          <button disabled={busy} onClick={save} className="btn btn-primary mt-3">
-            Save draft
-          </button>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button disabled={busy} onClick={save} className="btn btn-primary">
+              Save draft
+            </button>
+            {dirty ? <span className="text-sm text-fog">Unsaved changes</span> : <span className="text-sm text-muted">Saved</span>}
+          </div>
         ) : null}
       </section>
 
