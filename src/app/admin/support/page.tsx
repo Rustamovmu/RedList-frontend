@@ -51,7 +51,7 @@ export default function SupportAdmin() {
 
   return (
     <div>
-      <h1 className="font-mono text-2xl font-bold text-lime">Support directory</h1>
+      <h1 className="text-3xl font-bold tracking-[-0.02em] text-white">Support directory</h1>
       <p className="mt-1 text-sm text-muted">
         Only approved organizations&apos; approved links are public. Editing anything sends it back to pending review. Disabling hides it everywhere at once.
         {isAdmin ? null : ' You can read the directory; only admins can change it.'}
@@ -68,7 +68,7 @@ export default function SupportAdmin() {
           {orgs.map((o) => (
             <li key={o.id} className="panel p-5">
               <OrganizationEditor org={o} isAdmin={isAdmin} run={run} />
-              <h3 className="mt-6 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Links</h3>
+              <h3 className="mt-6 text-lg font-bold text-white">Links</h3>
               {o.links.length === 0 ? <p className="text-sm italic text-muted">No links yet.</p> : null}
               <ul className="mt-2 space-y-3">
                 {o.links.map((l) => (
@@ -85,7 +85,7 @@ export default function SupportAdmin() {
 
       {isAdmin ? (
         <form onSubmit={createOrg} className="panel mt-10 grid gap-4 p-5 sm:grid-cols-2" aria-labelledby="new-org-h">
-          <h2 id="new-org-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime sm:col-span-2">New organization</h2>
+          <h2 id="new-org-h" className="text-lg font-bold text-white sm:col-span-2">New organization</h2>
           <label className="block"><span className="text-sm font-medium">Name</span><input name="name" required minLength={2} className={input} /></label>
           <label className="block"><span className="text-sm font-medium">URL slug</span><input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={input} /></label>
           <label className="block sm:col-span-2"><span className="text-sm font-medium">Website (https)</span><input name="website" type="url" required pattern="https://.*" className={input} /></label>
@@ -126,7 +126,7 @@ function OrganizationEditor({ org, isAdmin, run }: { org: S['StaffOrganizationDt
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-mono text-lg font-bold text-white">{org.name}</h2>
+        <h2 className="text-xl font-bold tracking-[-0.01em] text-white">{org.name}</h2>
         <StatusButtons
           status={org.reviewStatus}
           isAdmin={isAdmin}

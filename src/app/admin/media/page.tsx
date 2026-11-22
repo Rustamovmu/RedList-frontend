@@ -61,7 +61,7 @@ export default function MediaAdmin() {
 
   return (
     <div>
-      <h1 className="font-mono text-2xl font-bold text-lime">Media</h1>
+      <h1 className="text-3xl font-bold tracking-[-0.02em] text-white">Media</h1>
       <p className="mt-1 max-w-3xl text-sm text-muted">
         Only allow-listed licences are accepted: CC0, Public Domain Mark, CC BY and CC BY-SA. Check the licence on the source page of each file
         before uploading. Images are resized and re-encoded, which removes embedded metadata such as camera details and GPS position.
@@ -71,7 +71,7 @@ export default function MediaAdmin() {
       {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
       <form onSubmit={onUpload} className="panel mt-6 grid gap-4 p-5 sm:grid-cols-2" aria-labelledby="upload-h">
-        <h2 id="upload-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime sm:col-span-2">Upload an image</h2>
+        <h2 id="upload-h" className="text-lg font-bold text-white sm:col-span-2">Upload an image</h2>
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Image file (JPEG, PNG or WebP, at least 200 pixels wide)</span>
           <input name="file" type="file" required accept="image/jpeg,image/png,image/webp" className="mt-1 block w-full text-sm" />
@@ -83,7 +83,7 @@ export default function MediaAdmin() {
       </form>
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
-        <h2 className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Images</h2>
+        <h2 className="text-lg font-bold text-white">Images</h2>
         <label className="text-sm">
           Show{' '}
           <select value={filter} onChange={(e) => setFilter(e.target.value as State | 'all')} className="field mt-1 inline-block w-auto py-1.5 text-sm">

@@ -35,7 +35,7 @@ export default function AdminHome() {
 
   return (
     <div>
-      <h1 className="font-mono text-2xl font-bold text-lime">Species</h1>
+      <h1 className="text-3xl font-bold tracking-[-0.02em] text-white">Species</h1>
       {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-alert">{error}</p> : null}
       {species === null ? (
         <p role="status" className="mt-3">Loading…</p>
@@ -52,7 +52,7 @@ export default function AdminHome() {
                 </Link>
                 <span className="flex flex-wrap items-center gap-3">
                   <span className={`chip ${sp.publishedRevisionId ? 'border-lime text-lime' : 'text-muted'}`}>{sp.publishedRevisionId ? 'Published' : 'Not published'}</span>
-                  {latest ? <span className="font-mono text-xs text-muted">latest v{latest.version} {latest.state}</span> : null}
+                  {latest ? <span className="text-[0.8125rem] text-muted">latest v{latest.version} {latest.state}</span> : null}
                 </span>
               </li>
             );
@@ -61,7 +61,7 @@ export default function AdminHome() {
       )}
 
       <form onSubmit={create} className="panel mt-10 grid gap-4 p-5 sm:grid-cols-2" aria-labelledby="new-h">
-        <h2 id="new-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime sm:col-span-2">New species</h2>
+        <h2 id="new-h" className="text-lg font-bold text-white sm:col-span-2">New species</h2>
         <label className="block">
           <span className="text-sm font-medium">Accepted scientific name</span>
           <input name="name" required minLength={3} className="field mt-1" />

@@ -61,7 +61,7 @@ export default function AdminSpecies() {
   return (
     <div>
       <p className="text-sm"><Link href="/admin" className="underline underline-offset-4">All species</Link></p>
-      <h1 className="mt-3 font-mono text-2xl font-bold italic text-lime">{sp.acceptedScientificName}</h1>
+      <h1 className="mt-3 text-3xl font-bold italic tracking-[-0.02em] text-white">{sp.acceptedScientificName}</h1>
       <p className="text-sm text-muted">
         /{sp.slug} · location sensitivity: {sp.locationSensitivity}
         {sp.publishedRevisionId ? <> · <Link href={`/species/${sp.slug}`} className="underline">public page</Link></> : ' · not published'}
@@ -69,14 +69,14 @@ export default function AdminSpecies() {
       {error ? <p role="alert" className="mt-3 whitespace-pre-line text-sm text-alert">{error}</p> : null}
       {notice ? <p role="status" className="mt-3 text-sm">{notice}</p> : null}
 
-      <h2 className="mt-10 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Revisions</h2>
+      <h2 className="mt-10 text-lg font-bold text-white">Revisions</h2>
       <ul className="panel mt-3 divide-y divide-rule">
         {[...sp.revisions].reverse().map((r) => (
           <li key={r.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-            <Link href={`/admin/revisions/${r.id}`} className="font-mono font-bold text-white underline-offset-4 hover:text-lime hover:underline">Version {r.version}</Link>
+            <Link href={`/admin/revisions/${r.id}`} className="font-bold text-white underline-offset-4 hover:text-lime hover:underline">Version {r.version}</Link>
             <span className="flex flex-wrap items-center gap-3 text-sm text-muted">
               <StateChip state={r.state} />
-              <span className="font-mono text-xs">
+              <span className="text-[0.8125rem]">
                 {r.isPublished ? <strong className="text-lime">live · </strong> : null}updated {new Date(r.updatedAt).toLocaleString()}
               </span>
               {user.role === 'admin' && r.state === 'published' && !r.isPublished && sp.publishedRevisionId ? (
@@ -92,7 +92,7 @@ export default function AdminSpecies() {
         New draft{sp.publishedRevisionId ? ' from the published version' : ''}
       </button>
 
-      <h2 className="mt-10 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Provider identifiers</h2>
+      <h2 className="mt-10 text-lg font-bold text-white">Provider identifiers</h2>
       {sp.identifiers.length ? (
         <ul className="mt-2 text-sm">
           {sp.identifiers.map((i) => (

@@ -9,6 +9,12 @@ export const GROUP_LABEL: Record<Profile['displayGroup'], string> = {
   arachnid: 'Arachnid', mollusc: 'Mollusc', crustacean: 'Crustacean', coral: 'Coral', other_invertebrate: 'Other invertebrate',
 };
 
+/** Plural group names, for headings and tiles ("Mammals", "Fish"). */
+export const GROUP_PLURAL: Record<Profile['displayGroup'], string> = {
+  mammal: 'Mammals', bird: 'Birds', reptile: 'Reptiles', amphibian: 'Amphibians', fish: 'Fish', insect: 'Insects',
+  arachnid: 'Arachnids', mollusc: 'Molluscs', crustacean: 'Crustaceans', coral: 'Corals', other_invertebrate: 'Other invertebrates',
+};
+
 export const ENVIRONMENT_LABEL: Record<string, string> = {
   terrestrial: 'Land', freshwater: 'Freshwater', marine: 'Marine', brackish: 'Brackish water', subterranean: 'Underground', aerial: 'Air',
 };

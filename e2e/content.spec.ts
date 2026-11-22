@@ -68,9 +68,15 @@ test('every profile renders with outbound network blocked, with or without a pho
 test('cards and the home hero show the photo with its credit, same-origin only', async ({ page }) => {
   const { leaked } = await blockOutbound(page);
   await page.goto('/');
+  // The hero is the owner's header image (D-041), a same-origin file whose credit is still pending, and says so.
   const hero = page.locator('figure').first();
-  await expect(hero.getByRole('img', { name: PHOTO_ALT })).toBeVisible();
-  await expect(hero).toContainText(CREDIT);
+  await expectImageLoaded(hero, 'Close-ups of eight animal faces side by side');
+  await expect(hero).toContainText('Header image: credit and licence pending');
+  // A catalogue photo on the home page carries its credit.
+  const homeCard = page.getByRole('article').filter({ has: page.getByRole('img', { name: PHOTO_ALT }) }).first();
+  await homeCard.scrollIntoViewIfNeeded(); // card photos load lazily, below the fold on phones
+  await expectImageLoaded(homeCard, PHOTO_ALT);
+  await expect(homeCard).toContainText(CREDIT);
   await expectNoHorizontalOverflow(page);
 
   await page.goto('/species');

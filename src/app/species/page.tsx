@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FilterDrawer } from '@/components/explore/FilterDrawer';
+import { PageHeader } from '@/components/PageHeader';
+import { SearchIcon } from '@/components/shell/Icons';
 import { Pagination } from '@/components/Pagination';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import { STATUS_SWATCH } from '@/components/StatusBadge';
@@ -41,7 +43,7 @@ function labelFor(f: Filters | null, key: ListKey, value: string): string {
   return options(f, key, [value]).find((o) => o.value === value)?.label ?? value;
 }
 
-const CHIP = 'inline-flex min-h-9 items-center gap-2 border border-lime px-3 font-mono text-xs uppercase tracking-[0.08em] text-lime hover:bg-lime hover:text-black';
+const CHIP = 'inline-flex min-h-9 items-center gap-2 border border-lime px-3 text-[0.8125rem] font-semibold text-lime hover:bg-lime hover:text-black';
 
 export default async function ExplorePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const state = readExplore(await searchParams);
@@ -53,29 +55,34 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const chips = LIST_KEYS.flatMap((k) => state[k].map((v) => ({ key: k, value: v })));
 
   return (
-    <div className="wrap pt-10 md:pt-16">
-      <p className="kicker">Catalogue</p>
-      <h1 className="h-page mt-3">Explore species</h1>
-
-      <form method="get" action="/species" role="search" aria-label="Search and filter species" className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-[15rem_1fr] lg:grid-cols-[17rem_1fr]">
-        {/* search + sort span the top */}
-        <div className="grid items-end gap-x-6 gap-y-5 sm:grid-cols-[1fr_auto_auto] md:col-span-2">
-          <label className="block min-w-0">
-            <span className="label">Search names</span>
-            <input name="q" type="search" defaultValue={state.q} placeholder="Common or scientific name" className="field-search mt-1" />
-          </label>
-          <label className="block">
-            <span className="label">Sort by</span>
-            <select name="sort" defaultValue={state.sort} className="field mt-2 min-h-11 font-mono text-sm">
+    <form method="get" action="/species" role="search" aria-label="Search and filter species">
+      <PageHeader
+        kicker="Catalogue"
+        title="Explore species"
+        lead={`${filters ? `${filters.total} species in this catalogue. ` : ''}Search by name, or filter by group, environment, status, place, habitat and trend.`}
+      >
+        <div className="mt-8 grid max-w-[64rem] gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="searchbox h-14">
+            <label htmlFor="explore-q" className="sr-only">Search names</label>
+            <input id="explore-q" name="q" type="search" defaultValue={state.q} placeholder="Common or scientific name" />
+            <button type="submit">
+              <span className="sr-only">Search</span>
+              <SearchIcon />
+            </button>
+          </div>
+          <label className="flex items-center gap-3">
+            <span className="shrink-0 text-sm font-semibold text-fog">Sort by</span>
+            <select name="sort" defaultValue={state.sort} className="field h-14 min-w-0 flex-1 bg-black text-[0.9375rem] font-medium sm:w-56 sm:flex-none">
               <option value="name">Name</option>
               <option value="status">Most threatened first</option>
               <option value="reviewed">Recently reviewed</option>
             </select>
           </label>
-          <button className="btn btn-primary">Search</button>
         </div>
+      </PageHeader>
 
-        <div className="md:row-start-2">
+      <div className="wrap grid gap-x-12 gap-y-8 pt-10 md:grid-cols-[15rem_minmax(0,1fr)] md:pt-14 lg:grid-cols-[17rem_minmax(0,1fr)]">
+        <div>
           <FilterDrawer appliedCount={appliedCount(state) - (state.q ? 1 : 0)}>
             {filters ? (
               <div>
@@ -83,17 +90,17 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
                   const opts = options(filters, key, state[key]);
                   if (!opts.length) return null;
                   return (
-                    <div key={key} className="border-t border-rule py-5 first:border-t-0 first:pt-0 md:first:border-t md:first:pt-5">
+                    <div key={key} className="border-t border-rule py-5 first:border-t-0 first:pt-0">
                       <fieldset>
-                        <legend className="kicker">{KEY_LABEL[key]}</legend>
+                        <legend className="text-[0.9375rem] font-bold text-white">{KEY_LABEL[key]}</legend>
                         <ul className={`mt-3 space-y-0.5 ${opts.length > 8 ? 'max-h-60 overflow-y-auto border border-rule p-2' : ''}`}>
                           {opts.map((o) => (
                             <li key={o.value}>
-                              <label className="flex min-h-8 cursor-pointer items-center gap-3 text-[0.9375rem] hover:text-white">
+                              <label className="flex min-h-9 cursor-pointer items-center gap-3 text-[0.9375rem] text-fog hover:text-white">
                                 <input type="checkbox" name={key} value={o.value} defaultChecked={state[key].includes(o.value)} className="h-4 w-4 shrink-0 accent-lime" />
                                 {key === 'category' ? <span aria-hidden className={`h-2.5 w-2.5 shrink-0 ${STATUS_SWATCH[o.value as IucnCategory]}`} /> : null}
                                 <span>{o.label}</span>
-                                <span className="ml-auto font-mono text-xs text-muted">({o.count})</span>
+                                <span className="figures ml-auto text-[0.8125rem] text-muted">{o.count}</span>
                               </label>
                             </li>
                           ))}
@@ -112,7 +119,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
           </FilterDrawer>
         </div>
 
-        <div className="min-w-0 md:col-start-2 md:row-start-2">
+        <div className="min-w-0">
           {chips.length || state.q ? (
             <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Applied filters">
               {state.q ? (
@@ -126,7 +133,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
                   <span className="sr-only">remove this filter</span>
                 </Link>
               ))}
-              <Link href="/species" className="ml-2 inline-flex min-h-9 items-center text-sm text-fog underline underline-offset-4 hover:text-lime">Reset all</Link>
+              <Link href="/species" className="ml-2 inline-flex min-h-9 items-center text-sm font-semibold text-fog underline underline-offset-4 hover:text-lime">Reset all</Link>
             </div>
           ) : null}
 
@@ -137,17 +144,17 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
             </div>
           ) : list.items.length === 0 ? (
             <div className="panel px-6 py-10">
-              <p className="font-mono text-lg font-bold text-white">No species match {chips.length || state.q ? 'these filters' : 'yet'}.</p>
+              <p className="text-xl font-bold text-white">No species match {chips.length || state.q ? 'these filters' : 'yet'}.</p>
               {chips.length || state.q ? (
                 <p className="mt-2 text-fog">Try removing a filter, or <Link href="/species" className="link">reset all filters</Link>.</p>
               ) : null}
             </div>
           ) : (
             <>
-              <p className="meta mb-5" role="status">
+              <p className="mb-6 text-[0.9375rem] font-semibold text-fog" role="status">
                 {list.total} species in this catalogue match
               </p>
-              <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+              <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                 {list.items.map((c, i) => (
                   <li key={c.slug}>
                     <SpeciesCard card={c} headingLevel="h2" eager={i < 3} />
@@ -158,7 +165,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
             </>
           )}
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }

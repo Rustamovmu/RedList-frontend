@@ -33,7 +33,7 @@ export default function MethodologyPage() {
             <li key={c}><StatusBadge category={c} /></li>
           ))}
         </ul>
-        <p className="font-mono text-sm font-bold uppercase tracking-[0.06em] text-lime">Data Deficient and Not Evaluated are not low risk.</p>
+        <p className="font-bold text-lime">Data Deficient and Not Evaluated are not low risk.</p>
         <ul>
           <li>Categories follow the IUCN Red List: Extinct, Extinct in the Wild, Critically Endangered, Endangered, Vulnerable, Near Threatened, Least Concern, Data Deficient and Not Evaluated.</li>
           <li>Each status shows its scope (global or regional) and, when known, the assessment date. A regional status is never shown as the global one.</li>

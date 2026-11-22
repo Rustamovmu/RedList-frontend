@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       lead="You can use all of Wildward without an account, and we do not track you."
       updated="21 November 2026"
       summary={
-        <p className="notice font-mono text-sm uppercase leading-relaxed tracking-[0.06em] text-white">
+        <p className="notice bg-black/40 text-[0.9375rem] font-semibold leading-relaxed text-white">
           In short: no accounts · no tracking cookies · no analytics · your location never leaves your browser
         </p>
       }

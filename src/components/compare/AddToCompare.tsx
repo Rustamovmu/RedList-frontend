@@ -17,14 +17,14 @@ export function AddToCompare({ slug, name }: { slug: string; name: string }) {
         aria-pressed={added}
         disabled={full}
         onClick={() => writeCompare(added ? selected.filter((s) => s !== slug) : [...selected, slug])}
-        className={`btn ${added ? 'btn-primary' : 'btn-secondary'}`}
+        className={`btn ${added ? 'btn-secondary' : 'btn-primary'}`}
       >
         {added ? 'Remove from compare' : 'Add to compare'}
       </button>
-      <span aria-live="polite" className="max-w-[36ch] font-mono text-xs leading-relaxed text-muted">
+      <span aria-live="polite" className="max-w-[36ch] text-[0.8125rem] leading-relaxed text-muted">
         {added ? `${name} is in your comparison. ` : full ? `Compare holds ${MAX_COMPARE} species. Remove one first. ` : null}
         {selected.length ? (
-          <Link href={compareHref(selected)} className="inline-flex min-h-6 items-center text-lime underline underline-offset-4">
+          <Link href={compareHref(selected)} className="inline-flex min-h-6 items-center font-semibold text-lime underline underline-offset-4">
             Compare ({selected.length} of {MAX_COMPARE})
           </Link>
         ) : null}

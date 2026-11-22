@@ -8,7 +8,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div>
       <p className="border-y border-rule bg-panel">
-        <span className="wrap block py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-lime">Staff area</span>
+        <span className="wrap block py-2 text-xs font-bold uppercase tracking-[0.12em] text-lime">Staff area</span>
       </p>
       <div className="wrap max-w-6xl pt-8 text-[0.9375rem]">
         <StaffSessionProvider>{children}</StaffSessionProvider>

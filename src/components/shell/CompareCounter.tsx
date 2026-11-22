@@ -3,17 +3,14 @@
 import Link from 'next/link';
 import { compareHref, MAX_COMPARE, useCompare } from '@/components/compare/compare-store';
 
-/** "Comparing 2 of 3" in the header, shown only while the visitor has species picked (kept in their browser). */
+/** "Comparing 2 of 3" in the header: an outlined button, shown only while the visitor has species picked (kept in their browser). */
 export function CompareCounter() {
   const selected = useCompare();
   if (!selected.length) return null;
   return (
-    <Link
-      href={compareHref(selected)}
-      className="inline-flex min-h-9 items-center whitespace-nowrap border border-lime px-3 font-mono text-xs uppercase tracking-[0.1em] text-lime hover:bg-lime hover:text-black"
-    >
-      {/* Below 360px only the count shows; "Comparing" stays in the accessible name. */}
-      <span className="max-[359px]:sr-only">Comparing&nbsp;</span>
+    <Link href={compareHref(selected)} className="btn btn-sm btn-secondary whitespace-nowrap md:min-h-11 md:px-5 md:text-[0.8125rem]">
+      {/* Below 360px, and in the tighter md row, only the count shows; "Comparing" stays in the accessible name. */}
+      <span className="max-[359px]:sr-only md:max-lg:sr-only">Comparing&nbsp;</span>
       {selected.length} of {MAX_COMPARE}
     </Link>
   );

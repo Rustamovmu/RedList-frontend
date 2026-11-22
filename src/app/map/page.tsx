@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { parseBboxParam } from '@/components/map/geo';
 import { MapExplorer } from '@/components/map/MapExplorer';
+import { PageHeader } from '@/components/PageHeader';
 import { apiGet } from '@/lib/api';
 import { IUCN_CATEGORIES, IUCN_LABEL } from '@/lib/iucn';
 import { GROUP_LABEL } from '@/lib/labels';
@@ -40,22 +41,28 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
   );
 
   return (
-    <div className="wrap pt-10 md:pt-16">
-      <p className="kicker">Catalogue / Map</p>
-      <h1 className="h-page mt-3">Map</h1>
-      <p className="prose-measure mt-6 text-fog">
-        Where the species in this catalogue live. When only the countries or seas are known, whole areas are shaded and labelled
-        &ldquo;Country-level presence&rdquo;. A range is drawn only where a cited source publishes one. Species whose locations are withheld for their protection never appear here.
-      </p>
-      <MapExplorer
-        key={`${group.join(',')}|${category.join(',')}`}
-        initial={initial}
-        initialBbox={bbox}
-        group={group}
-        category={category}
-        groupOptions={groupOptions}
-        categoryOptions={categoryOptions}
+    <div>
+      <PageHeader
+        kicker="Catalogue"
+        title="Map"
+        lead={
+          <>
+            Where the species in this catalogue live. When only the countries or seas are known, whole areas are shaded and labelled
+            &ldquo;Country-level presence&rdquo;. A range is drawn only where a cited source publishes one. Species whose locations are withheld for their protection never appear here.
+          </>
+        }
       />
+      <div className="wrap">
+        <MapExplorer
+          key={`${group.join(',')}|${category.join(',')}`}
+          initial={initial}
+          initialBbox={bbox}
+          group={group}
+          category={category}
+          groupOptions={groupOptions}
+          categoryOptions={categoryOptions}
+        />
+      </div>
     </div>
   );
 }

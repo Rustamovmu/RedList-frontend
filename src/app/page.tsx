@@ -3,18 +3,26 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { GroupTile } from '@/components/GroupTile';
+import { AlertIcon, BranchIcon, GlobeIcon, GuideIcon } from '@/components/home/StatIcons';
+import { HeroCurve } from '@/components/shell/Curves';
+import { Chevron, GridIcon, SearchIcon } from '@/components/shell/Icons';
 import { SectionHead } from '@/components/SectionHead';
 import { SpeciesCard } from '@/components/SpeciesCard';
+import { WholePhoto } from '@/components/WholePhoto';
+import type { components } from '@/contracts/api';
 import { apiGet } from '@/lib/api';
 import { ENVIRONMENT_LABEL } from '@/lib/labels';
-import { mediaSrc } from '@/lib/media';
 import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
 
 /**
- * Home (PLAN §4). Every number comes from the database and says "in this catalogue": never a global total.
- * The hero photo, when there is one, is a catalogue image with its credit: never a stock or invented image.
+ * Home (PLAN §4), laid out like the owner's reference site (D-038): a photo hero with the promise and a search box,
+ * the catalogue in numbers, then photo-led sections. Every number comes from the database and says "in this catalogue",
+ * never a global total. Below the hero every photo is a catalogue image with its credit. The hero image is the owner's
+ * choice; its credit and licence are still pending, and the caption says so (DECISIONS D-041).
  */
 export const metadata: Metadata = { alternates: { canonical: '/' } };
+
+type Card = components['schemas']['SpeciesCardDto'];
 
 const RULES = [
   'Every number and status links to the source it came from, with the source’s own date.',
@@ -22,19 +30,59 @@ const RULES = [
   'Each profile is reviewed by our editors before it is published, and the review date is shown.',
 ];
 
+const THREATENED_HREF = '/species?category=CR&category=EN&category=VU&sort=status';
+
+/**
+ * The hero image: the owner's collage of eight close-ups (D-041), a fixed file in /public served from our own domain.
+ * Its creator and licence are not yet known, so nothing here names a photographer or a licence.
+ */
+const HERO_IMAGE = {
+  src: '/hero/wild-faces.webp',
+  alt: 'Close-ups of eight animal faces side by side: a lion, a bee, an orangutan, a spotted big cat, a gorilla, a cheetah, a fish and an owl.',
+};
+
+/**
+ * Hands out photos for the page's photo sections: the next threatened species with a photo that is not already on the
+ * page, preferring one that matches `want` and is not already a group tile's photo. So no photo appears twice when
+ * there are enough, and a section without a photo left is skipped.
+ */
+function photoPicker(pool: Card[], used: Set<string>, onTiles: Set<string>) {
+  return (want: (c: Card) => boolean = () => true): Card | null => {
+    const free = pool.filter((c) => c.image && !used.has(c.slug));
+    const fresh = free.filter((c) => !onTiles.has(c.slug));
+    const pick = fresh.find(want) ?? fresh[0] ?? free.find(want) ?? free[0] ?? null;
+    if (pick) used.add(pick.slug);
+    return pick;
+  };
+}
+
 export default async function Home() {
   // Render per request (never prerendered at build, when the API may be down). Data stays cached by tag.
   await connection();
   const [filters, threatened] = await Promise.all([
     apiGet('/api/v1/filters', { tags: ['catalogue'] }).catch(() => null),
-    apiGet('/api/v1/species', { query: { category: 'CR,EN,VU', sort: 'status', pageSize: '5' }, tags: ['catalogue'] }).catch(() => null),
+    apiGet('/api/v1/species', { query: { category: 'CR,EN,VU', sort: 'status', pageSize: '16' }, tags: ['catalogue'] }).catch(() => null),
   ]);
-  // The hero photo is the first threatened species that has an approved, licensed photo. Never a stock or invented image.
-  const hero = threatened?.items.find((c) => c.image) ?? null;
+  const pool = threatened?.items ?? [];
   const groups = filters?.groups.filter((g) => g.count > 0) ?? [];
   const environments = filters?.environments.filter((e) => e.count > 0) ?? [];
-  const places = [...(filters?.regions ?? [])].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 10);
-  const cards = threatened?.items ?? [];
+  const regions = (filters?.regions ?? []).filter((r) => r.count > 0);
+  const places = [...regions].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 10);
+
+  const onTiles = new Set(groups.map((g) => g.example?.slug).filter((s): s is string => Boolean(s)));
+  const used = new Set<string>();
+  const pick = photoPicker(pool, used, onTiles);
+  // Three threatened species for the cards, photos first, then the rest in status order.
+  const cards: Card[] = [];
+  for (let i = 0; i < 3; i++) {
+    const c = pick();
+    if (c) cards.push(c);
+  }
+  for (const c of pool) if (cards.length < 3 && !used.has(c.slug)) cards.push(c);
+  const helpPhoto = pick((c) => c.displayGroup === 'mammal');
+  const placesPhoto = pick((c) => c.environments.includes('marine'));
+  const sourcePhoto = pick((c) => c.displayGroup === 'bird');
+  const comparePhoto = pick();
 
   // schema.org WebSite with the site search, so search engines can offer a search box for the catalogue.
   const site = {
@@ -45,141 +93,141 @@ export default async function Home() {
     potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: absolute('/species?q={search_term_string}') }, 'query-input': 'required name=search_term_string' },
   };
 
+  const stats = filters
+    ? [
+        { label: 'Species in this catalogue', value: filters.total, Icon: GuideIcon },
+        { label: 'Threatened (CR, EN or VU)', value: filters.threatened, Icon: AlertIcon },
+        { label: 'Countries, seas and oceans', value: regions.length, Icon: GlobeIcon },
+        { label: 'Animal groups', value: groups.length, Icon: BranchIcon },
+      ]
+    : [];
+
   return (
     <div className="flush-bottom">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(site) }} />
 
-      {/* ---------- hero: the name frames the animal; the header's nav row floats over it ---------- */}
-      <section aria-labelledby="hero-h" className="relative -mt-[var(--nav-h)] flex min-h-[max(34rem,calc(100svh-2.75rem))] flex-col overflow-hidden border-b border-lime bg-black">
-        {hero?.image ? (
-          <figure className="absolute inset-0 m-0">
-            <Image
-              src={mediaSrc(hero.image.storageKey)}
-              alt={hero.image.altText}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover brightness-[0.62] saturate-[0.85]"
-            />
-            {/* Dark scrims at the top and bottom keep the nav, the name and the captions readable on any photo. */}
-            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.75),transparent_32%,transparent_58%,rgb(0_0_0/0.85))]" />
-            <figcaption className="absolute inset-x-0 bottom-0 z-20">
-              <div className="wrap flex flex-wrap items-end justify-between gap-x-6 gap-y-1 pb-5 font-mono text-xs leading-relaxed text-lime sm:text-[0.8125rem]">
-                <span className="max-w-[60ch]">{hero.image.credit}</span>
-                <Link href={`/species/${hero.slug}`} className="inline-flex min-h-8 items-center underline underline-offset-4 hover:decoration-2">
-                  {hero.commonName ?? <i>{hero.scientificName}</i>}
-                </Link>
-              </div>
-            </figcaption>
-          </figure>
-        ) : (
-          <div aria-hidden className="grid-bg absolute inset-0" />
-        )}
-        <h1 id="hero-h" className="pointer-events-none relative z-10 flex flex-1 flex-col items-center justify-between pt-[var(--nav-h)] pb-32 text-lime sm:pb-20">
-          <span className="sr-only">Wildward</span>
-          <span aria-hidden className="hero-word type-display text-[min(31vw,28svh)] leading-[0.82]">Wild</span>
-          {hero?.image ? null : (
-            <span aria-hidden className="max-w-[34ch] px-5 text-center font-mono text-sm text-fog sm:text-base">
-              a free field guide to threatened wildlife, with every fact cited
-            </span>
-          )}
-          <span aria-hidden className="hero-word hero-word-late type-display text-[min(31vw,28svh)] leading-[0.82]">Ward</span>
-        </h1>
+      {/* ---------- hero: the collage runs under the nav and ends in a curve; the promise and the search sit in the middle ---------- */}
+      <section
+        aria-labelledby="hero-h"
+        className="relative isolate -mt-[var(--nav-h)] flex min-h-[max(40rem,92svh)] flex-col overflow-hidden bg-black [--curve-h:clamp(3.5rem,10vw,9.5rem)]"
+      >
+        <figure className="absolute inset-0 m-0">
+          {/* Sharp edge to edge, no blur. A fixed file, not catalogue media, so the media loader does not apply (unoptimized).
+              On phones the crop centres on the spotted cat, so no seam between two strips runs down the middle. */}
+          <Image
+            src={HERO_IMAGE.src}
+            alt={HERO_IMAGE.alt}
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="hero-in object-cover object-[42%_50%] sm:object-center"
+          />
+          {/* Scrims keep the nav, the headline and the caption readable over the faces. */}
+          <div aria-hidden className="absolute inset-0 bg-black/25" />
+          <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.6),transparent_28%,transparent_60%,rgb(0_0_0/0.7))]" />
+          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_45%,rgb(0_0_0/0.45),transparent)]" />
+          <figcaption className="absolute inset-x-0 bottom-[calc(var(--curve-h)+0.75rem)] z-20">
+            <div className="wrap flex justify-end">
+              <p className="text-right text-[0.6875rem] leading-relaxed text-fog sm:text-xs">Header image: credit and licence pending</p>
+            </div>
+          </figcaption>
+        </figure>
+
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-5 pt-[calc(var(--nav-h)+2rem)] pb-[calc(var(--curve-h)+8rem)] text-center sm:pb-[calc(var(--curve-h)+5.5rem)]">
+          <h1 id="hero-h" className="h-hero rise max-w-[30ch] text-balance [text-shadow:0_2px_28px_rgb(0_0_0/0.55)]">
+            Understand a species, see where it lives, and find a credible way to help.
+          </h1>
+          <form action="/species" method="get" role="search" className="rise rise-2 mt-10 w-full max-w-[58rem]">
+            <div className="searchbox h-14 sm:h-16">
+              <label htmlFor="home-q" className="sr-only">Search species by name</label>
+              <input id="home-q" name="q" type="search" placeholder="Common or scientific name" />
+              <button type="submit">
+                <span className="sr-only">Search</span>
+                <SearchIcon />
+              </button>
+            </div>
+          </form>
+          <Link href="/species" className="rise rise-3 btn btn-primary mt-8">
+            Explore all species
+            <GridIcon />
+          </Link>
+        </div>
+
+        <HeroCurve id="hero-curve" fill={filters ? 'var(--color-panel)' : 'var(--color-canvas)'} className="absolute inset-x-0 bottom-0 z-10 h-[var(--curve-h)] w-full" />
       </section>
 
-      {/* ---------- promise, search and catalogue counts ---------- */}
-      <section aria-label="Search the catalogue" className="border-b border-rule">
-        <div className="wrap grid gap-12 py-16 lg:grid-cols-[1.15fr_1fr] lg:gap-24 lg:py-24">
-          <p className="max-w-[22ch] text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.15] tracking-[-0.01em] text-white">
-            Understand a species, discover where it lives, and find a credible way to help.
-          </p>
-          <div className="self-end">
-            <form action="/species" method="get" role="search" className="flex items-end gap-3">
-              <label htmlFor="home-q" className="sr-only">Search species by name</label>
-              <input id="home-q" name="q" type="search" placeholder="Search by common or scientific name" className="field-search min-w-0 flex-1" />
-              <button className="btn btn-primary">Search</button>
-            </form>
-            {filters ? (
-              <dl className="mt-10 grid grid-cols-2 gap-6">
-                <div className="flex flex-col-reverse gap-1">
-                  <dt className="label">Species in this catalogue</dt>
-                  <dd className="type-display text-[clamp(3rem,5vw,4.5rem)] leading-none text-lime">{filters.total}</dd>
+      {/* ---------- the catalogue in numbers ---------- */}
+      {filters ? (
+        <section aria-labelledby="numbers-h" className="bg-panel">
+          <div className="wrap pt-12 pb-20 lg:pt-14 lg:pb-24">
+            <h2 id="numbers-h" className="sr-only">This catalogue in numbers</h2>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-14 lg:grid-cols-4">
+              {stats.map((s) => (
+                <div key={s.label} className="flex flex-col-reverse items-center justify-end text-center">
+                  <dt className="mt-3 max-w-[22ch] text-balance text-[0.9375rem] font-semibold leading-snug text-fog sm:text-base">{s.label}</dt>
+                  <dd className="flex flex-col items-center">
+                    <s.Icon className="h-14 w-14 text-lime sm:h-16 sm:w-16" />
+                    <span className="figures mt-5 text-[clamp(2.5rem,4.6vw,3.5rem)] font-bold leading-none tracking-[-0.03em] text-white">{s.value}</span>
+                  </dd>
                 </div>
-                <div className="flex flex-col-reverse gap-1">
-                  <dt className="label">Threatened (CR, EN or VU)</dt>
-                  <dd className="type-display text-[clamp(3rem,5vw,4.5rem)] leading-none text-lime">{filters.threatened}</dd>
-                </div>
-              </dl>
-            ) : null}
+              ))}
+            </dl>
+            <p className="mt-14 text-center text-sm text-muted">These count what this catalogue covers. They are not totals for the world.</p>
           </div>
+        </section>
+      ) : null}
+
+      {filters === null ? (
+        <div className="wrap pt-16">
+          <p role="alert" className="notice-error">The catalogue could not be loaded right now. Search still works.</p>
+        </div>
+      ) : null}
+
+      {/* ---------- how we source facts: photo left, text right ---------- */}
+      <section aria-labelledby="how" className="wrap grid items-center gap-x-16 gap-y-10 py-24 lg:grid-cols-2 lg:py-32 xl:gap-x-24">
+        {sourcePhoto ? <SectionPhoto card={sourcePhoto} sizes="(min-width: 1024px) 46vw, 100vw" frame="aspect-[3/2]" /> : null}
+        <div className={sourcePhoto ? '' : 'lg:col-span-2'}>
+          <h2 id="how" className="h-section">How we source facts</h2>
+          <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-muted">
+            {SITE_NAME} is an independent catalogue for curious learners. Each profile answers the same eight questions, from what a species is to how we know.
+          </p>
+          <ol className="mt-8 max-w-[54ch] space-y-5">
+            {RULES.map((r, i) => (
+              <li key={r} className="grid grid-cols-[2.5rem_1fr] border-t border-rule pt-5">
+                <span aria-hidden className="figures pt-0.5 text-sm font-bold text-lime">0{i + 1}</span>
+                <p className="text-[1.0625rem] leading-relaxed text-fog">{r}</p>
+              </li>
+            ))}
+          </ol>
+          <Link href="/methodology" className="btn btn-soft go mt-10">Read the methodology</Link>
         </div>
       </section>
 
-      <div className="wrap space-y-24 py-20 lg:space-y-32 lg:py-28">
-        {filters === null ? (
-          <p role="alert" className="notice-error">The catalogue could not be loaded right now. Search still works.</p>
-        ) : null}
+      {/* ---------- threatened species, as article cards ---------- */}
+      {cards.length ? (
+        <section aria-labelledby="threatened" className="wrap pb-24 lg:pb-32">
+          <SectionHead id="threatened" title="Threatened species in this catalogue" aside={<Link href={THREATENED_HREF} className="more">See all threatened</Link>} />
+          <ul className="mt-10 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {cards.map((c, i) => (
+              <li key={c.slug} className={i === 2 ? 'sm:max-lg:hidden' : ''}>
+                <SpeciesCard card={c} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
-        {groups.length ? (
-          <section aria-labelledby="by-group">
-            <SectionHead id="by-group" title="Browse by animal group" />
-            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {/* ---------- browse by animal group: photo tiles ---------- */}
+      {groups.length ? (
+        <section aria-labelledby="by-group" className="bg-panel">
+          <div className="wrap py-24 lg:py-32">
+            <SectionHead id="by-group" title="Browse by animal group" aside={<Link href="/species" className="more">All species</Link>} />
+            <p className="mt-4 max-w-[60ch] text-muted">Counts are species in this catalogue. Each photo shows one member of the group.</p>
+            <ul className="mt-10 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-10">
               {groups.map((g) => (
                 <li key={g.value}>
                   <GroupTile group={g} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        {environments.length ? (
-          <section aria-labelledby="by-env">
-            <SectionHead id="by-env" title="Browse by environment" />
-            <p className="mt-4 max-w-[60ch] text-muted">Group and environment are separate: a whale is a mammal and marine.</p>
-            <ul className="mt-8 border-t border-rule">
-              {environments.map((e) => (
-                <li key={e.value} className="border-b border-rule">
-                  <Link href={`/species?environment=${e.value}`} className="group flex items-center justify-between gap-6 py-3 sm:py-4">
-                    <span className="type-display min-w-0 text-[clamp(2.25rem,9vw,6.5rem)] leading-[0.95] text-muted group-hover:text-lime group-focus-visible:text-lime">
-                      {ENVIRONMENT_LABEL[e.value] ?? e.value}
-                    </span>
-                    <span className="shrink-0 font-mono text-sm text-fog group-hover:text-lime">{e.count} species</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        {cards.length ? (
-          <section aria-labelledby="threatened">
-            <SectionHead
-              id="threatened"
-              title="Threatened species in this catalogue"
-              aside={<Link href="/species?category=CR&category=EN&category=VU&sort=status" className="btn btn-sm btn-secondary">See all threatened</Link>}
-            />
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {cards.map((c, i) => (
-                <li key={c.slug} className={i === 0 ? 'sm:col-span-2 lg:row-span-2' : ''}>
-                  <SpeciesCard card={c} feature={i === 0} eager={c.slug === hero?.slug} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </div>
-
-      {places.length ? (
-        <section aria-labelledby="places" className="border-y border-rule bg-panel">
-          <div className="wrap py-20 lg:py-24">
-            <SectionHead id="places" title="Explore by country, sea or ocean" aside={<Link href="/map" className="btn btn-sm btn-secondary">Open the map</Link>} />
-            <ul className="mt-10 flex flex-wrap gap-3">
-              {places.map((r) => (
-                <li key={r.slug}>
-                  <Link href={`/regions/${r.slug}`} className="inline-flex min-h-12 items-center gap-2 border border-muted px-5 font-mono text-sm uppercase tracking-[0.08em] text-white hover:border-lime hover:text-lime">
-                    {r.name} <span className="text-muted">({r.count})</span>
-                  </Link>
                 </li>
               ))}
             </ul>
@@ -187,24 +235,137 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <section aria-labelledby="how" className="on-lime bg-lime text-black">
-        <div className="wrap py-20 lg:py-24">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <h2 id="how" className="type-display text-[clamp(2.75rem,7vw,6rem)]">How we source facts</h2>
-            <Link href="/methodology" className="inline-flex min-h-11 items-center font-mono text-sm font-bold uppercase tracking-[0.08em] underline underline-offset-4">
-              Read the methodology
-            </Link>
-          </div>
-          <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
-            {RULES.map((r, i) => (
-              <li key={r} className="border-t-2 border-black pt-4">
-                <span aria-hidden className="font-mono text-sm font-bold">0{i + 1}</span>
-                <p className="mt-6 max-w-[34ch] text-lg font-medium leading-snug">{r}</p>
-              </li>
-            ))}
-          </ol>
+      {/* ---------- compare: a full-bleed photo banner ---------- */}
+      <section aria-labelledby="compare-h" className="relative isolate flex min-h-[32rem] items-end overflow-hidden bg-black lg:min-h-[38rem]">
+        {comparePhoto?.image ? (
+          <figure className="absolute inset-0 m-0 overflow-hidden">
+            {/* The whole animal on the right (top on phones); the text sits over the blurred fill. */}
+            <WholePhoto storageKey={comparePhoto.image.storageKey} alt={comparePhoto.image.altText} sizes="100vw" position="object-top lg:object-right" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_right,rgb(0_0_0/0.82),rgb(0_0_0/0.45)_50%,rgb(0_0_0/0.08))]" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_top,rgb(0_0_0/0.65),transparent_50%)]" />
+            <figcaption className="absolute inset-x-0 bottom-0 z-20">
+              <div className="wrap flex justify-end pb-5">
+                <p className="max-w-[52ch] text-right text-xs leading-relaxed text-fog">
+                  <Link href={`/species/${comparePhoto.slug}`} className="font-semibold text-white underline decoration-white/50 underline-offset-4 hover:text-lime hover:decoration-lime">
+                    {comparePhoto.commonName ?? <i>{comparePhoto.scientificName}</i>}
+                  </Link>
+                  <span aria-hidden> · </span>
+                  <span>{comparePhoto.image.credit}</span>
+                </p>
+              </div>
+            </figcaption>
+          </figure>
+        ) : (
+          <div aria-hidden className="grid-bg absolute inset-0" />
+        )}
+        <div className="wrap relative z-10 pt-24 pb-24 lg:pb-28">
+          <h2 id="compare-h" className="type-display max-w-[18ch] text-[clamp(2rem,4.2vw,3.5rem)] text-white">Compare up to three species, side by side</h2>
+          <p className="mt-5 max-w-[56ch] text-lg leading-relaxed text-fog sm:text-xl sm:leading-relaxed">
+            Status, population, habitats, diet and threats in one table. There is no overall score, and figures in different units are never combined.
+          </p>
+          <Link href="/compare" className="btn btn-primary go mt-8">Start comparing</Link>
         </div>
       </section>
+
+      {/* ---------- where they live: text left, photo right ---------- */}
+      {environments.length || places.length ? (
+        <section aria-labelledby="places-h" className="wrap grid gap-x-16 gap-y-12 py-24 lg:grid-cols-2 lg:py-32 xl:gap-x-24">
+          <div>
+            <h2 id="places-h" className="h-section">Where they live</h2>
+            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-muted">
+              Browse by environment or by place. Group and environment are separate: a whale is a mammal and marine.
+            </p>
+            {environments.length ? (
+              <>
+                <h3 className="mt-12 text-lg font-bold text-white">By environment</h3>
+                <ul className="mt-4 border-t border-rule">
+                  {environments.map((e) => (
+                    <li key={e.value} className="border-b border-rule">
+                      <Link href={`/species?environment=${e.value}`} className="group flex min-h-16 items-center justify-between gap-6 py-3">
+                        <span className="text-[1.375rem] font-semibold tracking-[-0.01em] text-white group-hover:text-lime">{ENVIRONMENT_LABEL[e.value] ?? e.value}</span>
+                        <span className="figures flex items-center gap-4 text-[0.9375rem] text-muted group-hover:text-lime">
+                          {e.count} species
+                          <Chevron />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            {places.length ? (
+              <>
+                <h3 className="mt-12 text-lg font-bold text-white">By country, sea or ocean</h3>
+                <ul className="mt-4 flex flex-wrap gap-2.5">
+                  {places.map((r) => (
+                    <li key={r.slug}>
+                      <Link href={`/regions/${r.slug}`} className="inline-flex min-h-11 items-center gap-2 border border-rule px-4 text-[0.9375rem] font-medium text-white hover:border-lime hover:text-lime">
+                        {r.name} <span className="figures text-muted">({r.count})</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            <Link href="/map" className="btn btn-soft go mt-10">Open the map</Link>
+          </div>
+          {placesPhoto ? <SectionPhoto card={placesPhoto} sizes="(min-width: 1024px) 46vw, 100vw" frame="aspect-[4/3]" className="lg:sticky lg:top-8 lg:self-start" /> : null}
+        </section>
+      ) : null}
+
+      {/* ---------- how to help: a lime panel whose photo has a curved edge ---------- */}
+      <section aria-labelledby="help-h" className="wrap pb-24 lg:pb-32">
+        <div className="on-lime relative isolate grid overflow-hidden bg-lime text-black lg:grid-cols-[1.2fr_1fr]">
+          <div className="relative z-10 px-6 py-12 sm:px-10 sm:py-14 lg:px-16 lg:py-20">
+            <h2 id="help-h" className="type-display text-[clamp(1.875rem,3.2vw,2.75rem)]">Find a credible way to help</h2>
+            <p className="mt-5 max-w-[46ch] text-lg font-medium leading-relaxed">
+              Our support directory lists reviewed links to independent conservation organizations. Each link shows where it goes before you click,
+              and a click is a referral, not a donation.
+            </p>
+            <Link href="/support" className="btn btn-dark go mt-8">See the support directory</Link>
+          </div>
+          {helpPhoto?.image ? (
+            <div className="relative min-h-64 sm:min-h-80 lg:min-h-0">
+              <div className="absolute inset-0 [clip-path:ellipse(85%_100%_at_50%_100%)] lg:[clip-path:ellipse(100%_85%_at_100%_50%)]">
+                <WholePhoto storageKey={helpPhoto.image.storageKey} alt={helpPhoto.image.altText} sizes="(min-width: 1024px) 40vw, 100vw" />
+              </div>
+              {/* A thin black arc beside the photo's curved edge. Decorative. */}
+              <svg aria-hidden focusable="false" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" fill="none">
+                <ellipse className="lg:hidden" cx="50%" cy="100%" rx="89%" ry="106%" stroke="black" strokeOpacity="0.45" strokeWidth="1.5" />
+                <ellipse className="hidden lg:block" cx="100%" cy="50%" rx="105%" ry="89%" stroke="black" strokeOpacity="0.45" strokeWidth="1.5" />
+              </svg>
+            </div>
+          ) : null}
+        </div>
+        {helpPhoto?.image ? (
+          <p className="mt-3 text-right text-xs leading-relaxed text-muted">
+            <Link href={`/species/${helpPhoto.slug}`} className="font-semibold text-fog underline decoration-muted underline-offset-4 hover:text-lime hover:decoration-lime">
+              {helpPhoto.commonName ?? <i>{helpPhoto.scientificName}</i>}
+            </Link>
+            <span aria-hidden> · </span>
+            {helpPhoto.image.credit}
+          </p>
+        ) : null}
+      </section>
     </div>
+  );
+}
+
+/** A section's photograph, with the species it shows and the credit underneath. */
+function SectionPhoto({ card, sizes, frame, className = '' }: { card: Card; sizes: string; frame: string; className?: string }) {
+  if (!card.image) return null;
+  return (
+    <figure className={`m-0 ${className}`}>
+      <div className={`relative overflow-hidden bg-panel ${frame}`}>
+        <WholePhoto storageKey={card.image.storageKey} alt={card.image.altText} sizes={sizes} />
+      </div>
+      <figcaption className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
+        <Link href={`/species/${card.slug}`} className="font-semibold text-fog underline decoration-muted underline-offset-4 hover:text-lime hover:decoration-lime">
+          {card.commonName ?? <i>{card.scientificName}</i>}
+        </Link>
+        <span aria-hidden> · </span>
+        {card.image.credit}
+      </figcaption>
+    </figure>
   );
 }

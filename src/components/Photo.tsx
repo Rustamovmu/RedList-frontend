@@ -1,11 +1,12 @@
 import Image from 'next/image';
+import { WholePhoto } from '@/components/WholePhoto';
 import { licenceUrl, mediaSrc } from '@/lib/media';
 
 /**
  * A catalogue photograph with its attribution (PLAN §4 "photo with credit", §8). The credit and licence are
  * the snapshot stored with the published revision, so later edits to the image record never change this page.
  *
- * By default the photo fills a fixed `aspect` box and is cropped to it. With `fit` (the photo's own pixel size)
+ * By default the photo sits whole inside a fixed `aspect` box (WholePhoto: never cropped). With `fit` (the photo's own pixel size)
  * the whole photo is shown uncropped at its own aspect ratio: as wide as its container allows, but never taller
  * than the CSS variable --photo-max-h, which the parent sets. The credit line then spans the photo's width.
  */
@@ -36,10 +37,15 @@ export function Photo({
         className={`relative w-full overflow-hidden bg-panel ${natural ? '' : aspect}`}
         style={natural ? { aspectRatio: `${natural.width} / ${natural.height}` } : undefined}
       >
-        <Image src={mediaSrc(storageKey)} alt={altText} fill sizes={sizes} priority={priority} className="object-cover" />
+        {natural ? (
+          // The box already has the photo's own shape, so nothing is cut off.
+          <Image src={mediaSrc(storageKey)} alt={altText} fill sizes={sizes} priority={priority} className="object-cover" />
+        ) : (
+          <WholePhoto storageKey={storageKey} alt={altText} sizes={sizes} priority={priority} />
+        )}
       </div>
-      <figcaption className="mt-2 font-mono text-xs leading-relaxed text-muted">
-        {caption ? <span className="mr-1 text-fog">{caption}</span> : null}
+      <figcaption className="mt-2.5 text-[0.8125rem] leading-relaxed text-muted">
+        {caption ? <span className="mr-1 font-medium text-fog">{caption}</span> : null}
         <span>{credit}</span>
         {creditHasLicence && !deed ? null : (
           <>

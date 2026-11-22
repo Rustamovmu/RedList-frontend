@@ -33,7 +33,7 @@ export function FilterDrawer({ appliedCount, children }: { appliedCount: number;
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(true)}
-        className="btn btn-quiet w-full md:hidden"
+        className="btn btn-soft w-full md:hidden"
       >
         Filters{appliedCount ? ` (${appliedCount} applied)` : ''}
       </button>
@@ -45,8 +45,8 @@ export function FilterDrawer({ appliedCount, children }: { appliedCount: number;
         aria-label={open ? 'Filters' : undefined}
         className={`${open ? 'fixed inset-0 z-40 overflow-y-auto bg-black px-5 pt-5' : 'hidden'} md:static md:block md:bg-transparent md:p-0`}
       >
-        <div className="mb-6 flex items-center justify-between border-b border-lime pb-4 md:hidden">
-          <h2 className="type-display text-4xl text-lime">Filters</h2>
+        <div className="mb-6 flex items-center justify-between border-b border-rule pb-4 md:hidden">
+          <h2 className="text-2xl font-bold tracking-[-0.02em] text-white">Filters</h2>
           <button
             type="button"
             onClick={() => {

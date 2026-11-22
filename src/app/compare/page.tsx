@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { CompareSync } from '@/components/compare/AddToCompare';
+import { PageHeader } from '@/components/PageHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
@@ -26,7 +27,7 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
           {p.status.assessments.map((a, i) => (
             <li key={i}>
               <StatusBadge category={a.category} year={a.assessedOn ? Number(a.assessedOn.slice(0, 4)) : undefined} scope={a.scope} size="sm" />
-              <div className="mt-1.5 font-mono text-xs text-muted">
+              <div className="mt-1.5 text-[0.8125rem] text-muted">
                 {a.scope === 'global' ? 'Global' : (a.region?.name ?? 'Regional')} · {TREND_LABEL[a.trend]}
               </div>
             </li>
@@ -49,7 +50,7 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
               <li key={i}>
                 <span className="font-semibold text-white">{v ?? 'Unknown'}</span>
                 {v && e.form !== 'qualitative' ? ` ${BASIS_LABEL[e.basis]}` : ''}
-                <div className="mt-0.5 font-mono text-xs text-muted">
+                <div className="mt-0.5 text-[0.8125rem] text-muted">
                   {e.context === 'wild' ? 'Wild' : 'Captive'} · {e.scope === 'global' ? 'Global' : (e.region?.name ?? 'Regional')}
                   {period ? ` · ${period}` : ''}
                 </div>
@@ -79,7 +80,7 @@ const ROWS: Array<{ key: string; label: string; cell: (p: Profile) => React.Reac
     cell: (p) => (
       <>
         <div>{p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ') || <Unknown />}</div>
-        <div className="mt-1 font-mono text-xs text-muted">
+        <div className="mt-1 text-[0.8125rem] text-muted">
           {p.geography.locationWithheld
             ? 'Locations withheld to protect this species'
             : p.geography.regions.length
@@ -116,11 +117,11 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     return (
       <Shell>
         <CompareSync slugs={[]} />
-        <div className="grid items-center gap-8 border-t border-rule pt-10 md:grid-cols-[auto_1fr] md:gap-16">
-          <p aria-hidden className="type-display text-[clamp(7rem,22vw,16rem)] leading-[0.85] text-rule">0/{MAX}</p>
+        <div className="grid items-center gap-8 md:grid-cols-[auto_1fr] md:gap-16">
+          <p aria-hidden className="figures text-[clamp(6rem,16vw,11rem)] font-bold leading-none tracking-[-0.05em] text-rule">0/{MAX}</p>
           <div>
-            <p className="max-w-[40ch] text-xl leading-snug text-white">Pick up to {MAX} species to see them side by side. Use “Add to compare” on any species page.</p>
-            <Link href="/species" className="btn btn-primary mt-8">Explore species</Link>
+            <p className="max-w-[40ch] text-xl leading-snug text-white sm:text-2xl sm:leading-snug">Pick up to {MAX} species to see them side by side. Use “Add to compare” on any species page.</p>
+            <Link href="/species" className="btn btn-primary go mt-8">Explore species</Link>
           </div>
         </div>
       </Shell>
@@ -154,7 +155,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       className={`px-5 py-4 text-[0.9375rem] leading-snug ${comparable ? 'notice text-fog' : 'on-lime bg-lime font-medium text-black'}`}
       data-testid="population-comparability"
     >
-      <strong className="mr-1 font-mono text-xs font-bold uppercase tracking-[0.1em]">Population: </strong>
+      <strong className="mr-1 font-bold">Population: </strong>
       {data.population.message}
     </p>
   );
@@ -162,7 +163,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   return (
     <Shell>
       <CompareSync slugs={slugs} />
-      {slugs.length < MAX ? <p className="meta -mt-4 mb-8">You can add {MAX - slugs.length} more from any species page.</p> : null}
+      {slugs.length < MAX ? <p className="meta mb-8">You can add {MAX - slugs.length} more from any species page.</p> : null}
 
       {/* Desktop: one column per species */}
       <div className="hidden md:block">
@@ -173,7 +174,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
               <td className="w-44 border-b border-rule lg:w-52" />
               {data.species.map((p) => (
                 <th key={p.slug} scope="col" className="border-b border-l border-rule bg-panel p-5 text-left align-top font-normal">
-                  <Link href={`/species/${p.slug}`} className="type-display text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[0.95] text-lime hover:underline">{name(p)}</Link>
+                  <Link href={`/species/${p.slug}`} className="text-[clamp(1.375rem,2vw,1.75rem)] font-bold leading-tight tracking-[-0.02em] text-white decoration-lime decoration-2 underline-offset-[5px] hover:underline">{name(p)}</Link>
                   {p.commonName ? <div className="mt-2 italic text-muted">{p.scientificName}</div> : null}
                   <Link href={remove(p.slug)} className="btn btn-sm btn-quiet mt-4">Remove</Link>
                 </th>
@@ -184,7 +185,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
             {ROWS.map((r) => (
               <Fragment key={r.key}>
                 <tr className="align-top">
-                  <th scope="row" className="border-b border-rule p-5 text-left font-mono text-xs font-normal uppercase tracking-[0.12em] text-muted">{r.label}</th>
+                  <th scope="row" className="border-b border-rule p-5 text-left text-sm font-semibold text-muted">{r.label}</th>
                   {data.species.map((p) => (
                     <td key={p.slug} className="border-b border-l border-rule p-5 text-fog">{r.cell(p)}</td>
                   ))}
@@ -205,8 +206,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
         {note}
         {data.species.map((p) => (
           <section key={p.slug} aria-label={name(p)} className="panel p-5">
-            <h2 className="type-display text-4xl leading-[0.95] text-lime">
-              <Link href={`/species/${p.slug}`} className="hover:underline">{name(p)}</Link>
+            <h2 className="text-2xl font-bold leading-tight tracking-[-0.02em] text-white">
+              <Link href={`/species/${p.slug}`} className="decoration-lime decoration-2 underline-offset-[5px] hover:underline">{name(p)}</Link>
             </h2>
             {p.commonName ? <p className="mt-1 italic text-muted">{p.scientificName}</p> : null}
             <dl className="mt-5 border-t border-rule text-[0.9375rem]">
@@ -227,13 +228,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="wrap pt-10 md:pt-16">
-      <p className="kicker">Side by side</p>
-      <h1 className="h-page mt-3">Compare species</h1>
-      <p className="prose-measure mt-6 mb-10 text-fog">
-        Side by side, with no overall score. Figures with different units, places or dates are never combined.
-      </p>
-      {children}
+    <div>
+      <PageHeader
+        kicker="Side by side"
+        title="Compare species"
+        lead="Up to three species, with no overall score. Figures with different units, places or dates are never combined."
+      />
+      <div className="wrap pt-10 md:pt-14">{children}</div>
     </div>
   );
 }

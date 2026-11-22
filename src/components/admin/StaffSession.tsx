@@ -38,7 +38,7 @@ export function StaffSessionProvider({ children }: { children: React.ReactNode }
     <StaffCtx.Provider value={{ user, signOut }}>
       <div className="mb-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-rule">
         <StaffNav />
-        <span className="flex items-center gap-3 pb-2 font-mono text-xs text-muted">
+        <span className="flex items-center gap-3 pb-2 text-[0.8125rem] text-muted">
           {user.name} ({user.role})
           <button onClick={signOut} className="btn btn-sm btn-quiet">Sign out</button>
         </span>
@@ -69,7 +69,7 @@ function SignIn({ onSignedIn }: { onSignedIn: (u: S['StaffMeDto']) => void }) {
 
   return (
     <form onSubmit={submit} className="panel mx-auto mt-6 max-w-[380px] space-y-5 p-7" aria-labelledby="signin-h">
-      <h1 id="signin-h" className="type-display text-[2rem] text-lime">Staff sign-in</h1>
+      <h1 id="signin-h" className="text-[2rem] font-bold leading-tight tracking-[-0.02em] text-white">Staff sign-in</h1>
       <label className="block">
         <span className="label">Email</span>
         <input name="email" type="email" autoComplete="username" required className="field mt-1.5" />
@@ -103,7 +103,7 @@ function StaffNav() {
             key={n.href}
             href={n.href}
             aria-current={current ? 'page' : undefined}
-            className={`-mb-px inline-flex min-h-11 items-center border-b-2 font-mono text-[0.8125rem] font-bold uppercase tracking-[0.1em] ${current ? 'border-lime text-lime' : 'border-transparent text-fog hover:text-lime'}`}
+            className={`-mb-px inline-flex min-h-11 items-center border-b-2 text-[0.9375rem] font-semibold ${current ? 'border-lime text-lime' : 'border-transparent text-fog hover:text-lime'}`}
           >
             {n.label}
           </Link>

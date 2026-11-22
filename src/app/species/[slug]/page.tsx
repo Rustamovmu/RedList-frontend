@@ -13,7 +13,7 @@ import { ApiError, apiGet } from '@/lib/api';
 import { mediaSrc } from '@/lib/media';
 import { absolute, jsonLd } from '@/lib/site';
 import {
-  ACTION_LABEL, BASIS_LABEL, ENVIRONMENT_LABEL, estimateValue, formatDate, GROUP_LABEL, ORIGIN_LABEL, PRESENCE_LABEL,
+  ACTION_LABEL, BASIS_LABEL, ENVIRONMENT_LABEL, estimateValue, formatDate, GROUP_PLURAL, ORIGIN_LABEL, PRESENCE_LABEL,
   referencePeriod, SEASON_LABEL, TREND_LABEL,
 } from '@/lib/labels';
 
@@ -109,7 +109,7 @@ export default async function SpeciesPage({ params }: Params) {
   const environments = p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ');
 
   return (
-    <article>
+    <article className={p.related.length ? 'flush-bottom' : undefined}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData(p)) }} />
       {/* ---------- title, photo and key facts ----------
           Stacked on small screens (title, photo, facts). From lg the title and facts sit beside the photo, so the
@@ -117,19 +117,28 @@ export default async function SpeciesPage({ params }: Params) {
       <header className="profile-hero wrap pt-8 md:pt-10">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-y-6 md:gap-y-8 [grid-template-areas:'title''photo''facts'] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-rows-[auto_1fr] lg:gap-x-12 lg:[grid-template-areas:'title_photo''facts_photo'] xl:gap-x-16">
           <div className="min-w-0 [grid-area:title]">
-            <p className="kicker">
-              {GROUP_LABEL[p.displayGroup]}
-              {environments ? ` / ${environments}` : ''}
-            </p>
+            <nav aria-label="Breadcrumb">
+              <ol className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-muted">
+                <li>
+                  <Link href="/species" className="inline-flex min-h-6 items-center text-fog underline-offset-4 hover:text-lime hover:underline">Explore</Link>
+                </li>
+                <li aria-hidden>/</li>
+                <li>
+                  <Link href={`/species?group=${p.displayGroup}`} className="inline-flex min-h-6 items-center text-fog underline-offset-4 hover:text-lime hover:underline">
+                    {GROUP_PLURAL[p.displayGroup]}
+                  </Link>
+                </li>
+              </ol>
+            </nav>
             {p.commonName ? (
               <>
-                <h1 className="h-page mt-3 max-w-[15ch] text-[clamp(2.75rem,9vw,5.5rem)] lg:text-[clamp(3rem,5.2vw,6rem)]">{p.commonName}</h1>
-                <p className="mt-3 font-mono text-lg italic text-fog sm:text-xl">{p.scientificName}</p>
+                <h1 className="h-page mt-5 max-w-[16ch] text-[clamp(2.5rem,7vw,4rem)] lg:text-[clamp(2.75rem,4.2vw,4.5rem)]">{p.commonName}</h1>
+                <p className="mt-3 text-xl italic text-fog sm:text-2xl">{p.scientificName}</p>
               </>
             ) : (
-              <h1 className="mt-3 font-mono text-[clamp(2rem,5vw,3.5rem)] font-bold italic leading-tight text-lime lg:text-[clamp(2rem,3.4vw,3.25rem)]">{p.scientificName}</h1>
+              <h1 className="mt-5 text-[clamp(2rem,5vw,3.25rem)] font-bold italic leading-tight tracking-[-0.02em] text-white">{p.scientificName}</h1>
             )}
-            <div className="mt-6">
+            <div className="mt-8">
               <AddToCompare slug={p.slug} name={p.commonName ?? p.scientificName} />
             </div>
           </div>
@@ -142,7 +151,7 @@ export default async function SpeciesPage({ params }: Params) {
                 fit={{ width: photo.width, height: photo.height }} className="lg:ml-auto"
               />
             ) : (
-              <div className="grid-bg flex aspect-[4/3] max-h-[var(--photo-max-h)] w-full items-center justify-center border border-rule text-center font-mono text-xs uppercase tracking-[0.14em] text-muted sm:aspect-[21/9] sm:text-sm lg:aspect-[4/3]" role="img" aria-label="No photograph available">
+              <div className="grid-bg flex aspect-[4/3] max-h-[var(--photo-max-h)] w-full items-center justify-center border border-rule text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted sm:aspect-[21/9] sm:text-sm lg:aspect-[4/3]" role="img" aria-label="No photograph available">
                 No licensed photograph yet
               </div>
             )}
@@ -155,13 +164,13 @@ export default async function SpeciesPage({ params }: Params) {
                 {headline ? (
                   <StatusBadge category={headline.category} year={year(headline.assessedOn)} scope={headline.scope} />
                 ) : (
-                  <span className="font-mono text-white">{p.status.notAssessed ? 'Not assessed' : 'Unknown'}</span>
+                  <span className="font-semibold text-white">{p.status.notAssessed ? 'Not assessed' : 'Unknown'}</span>
                 )}
               </dd>
             </div>
             <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
               <dt className="label">Population</dt>
-              <dd className="mt-2 font-mono text-white lg:mt-0 lg:text-right">
+              <dd className="mt-2 font-semibold text-white lg:mt-0 lg:text-right">
                 {p.population.estimates.length
                   ? `${p.population.estimates.length} dated estimate${p.population.estimates.length > 1 ? 's' : ''}`
                   : 'Unknown'}
@@ -169,7 +178,7 @@ export default async function SpeciesPage({ params }: Params) {
             </div>
             <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
               <dt className="label">Environment</dt>
-              <dd className="mt-2 font-mono text-white lg:mt-0 lg:text-right">{environments || 'Unknown'}</dd>
+              <dd className="mt-2 font-semibold text-white lg:mt-0 lg:text-right">{environments || 'Unknown'}</dd>
             </div>
           </dl>
         </div>
@@ -181,8 +190,8 @@ export default async function SpeciesPage({ params }: Params) {
           <ol className="flex gap-x-5 overflow-x-auto whitespace-nowrap md:block md:space-y-0 md:whitespace-normal">
             {SECTIONS.map((s, i) => (
               <li key={s.id} className="md:border-b md:border-rule">
-                <a href={`#${s.id}`} className="flex min-h-11 items-center gap-3 font-mono text-xs uppercase tracking-[0.08em] text-fog hover:text-lime md:py-2">
-                  <span className="text-lime">{String(i + 1).padStart(2, '0')}</span>
+                <a href={`#${s.id}`} className="flex min-h-11 items-center gap-3 text-sm font-medium text-fog hover:text-lime md:py-2">
+                  <span className="figures text-xs font-bold text-lime">{String(i + 1).padStart(2, '0')}</span>
                   {s.title}
                 </a>
               </li>
@@ -208,16 +217,16 @@ export default async function SpeciesPage({ params }: Params) {
               </p>
             ) : null}
             <details className="disclosure mt-8 border border-rule bg-panel">
-              <summary className="flex min-h-14 items-center px-5 font-mono text-sm font-bold uppercase tracking-[0.1em] text-white">Classification and biology</summary>
+              <summary className="flex min-h-14 items-center px-5 text-base font-bold text-white">Classification and biology</summary>
               <div className="border-t border-rule px-5 pt-4 pb-6">
                 <dl className="grid grid-cols-[auto_1fr] gap-x-10 text-[0.9375rem]">
                   {(['kingdom', 'phylum', 'class', 'order', 'family', 'genus'] as const).map((rank) => (
                     <div key={rank} className="contents">
-                      <dt className="border-b border-rule py-2 font-mono text-xs uppercase tracking-[0.1em] text-muted">{rank}</dt>
+                      <dt className="border-b border-rule py-2 text-sm font-medium capitalize text-muted">{rank}</dt>
                       <dd className={`border-b border-rule py-2 text-white ${rank === 'genus' && p.taxonomy[rank] ? 'italic' : ''}`}>{p.taxonomy[rank] ?? 'Not recorded'}</dd>
                     </div>
                   ))}
-                  <dt className="py-2 font-mono text-xs uppercase tracking-[0.1em] text-muted">Rank</dt>
+                  <dt className="py-2 text-sm font-medium text-muted">Rank</dt>
                   <dd className="py-2 capitalize text-white">{p.rank}</dd>
                 </dl>
                 {p.biology.narrative ? <p className="prose-measure mt-4 text-[0.9375rem]">{p.biology.narrative}<Cite ids={cited('biology')} index={index} /></p> : null}
@@ -277,13 +286,13 @@ export default async function SpeciesPage({ params }: Params) {
                       <li key={i} className="panel flex flex-col px-6 py-6">
                         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
                           {value === null ? (
-                            <span className="type-display text-5xl leading-none text-muted">Unknown</span>
+                            <span className="text-4xl font-bold leading-none tracking-[-0.03em] text-muted">Unknown</span>
                           ) : words ? (
                             <span className="text-xl font-medium leading-snug text-white">{value}</span>
                           ) : (
-                            <span className="type-display text-[clamp(2.75rem,5vw,4.25rem)] leading-none text-lime">{value}</span>
+                            <span className="figures text-[clamp(2.25rem,4vw,3.25rem)] font-bold leading-none tracking-[-0.03em] text-lime">{value}</span>
                           )}
-                          {value && !words ? <span className="font-mono text-sm text-fog">{BASIS_LABEL[e.basis]}</span> : null}
+                          {value && !words ? <span className="text-[0.9375rem] font-medium text-fog">{BASIS_LABEL[e.basis]}</span> : null}
                           <Cite ids={[e.sourceId]} index={index} />
                         </p>
                         <p className="mt-5 flex flex-wrap gap-2" aria-label="Context of this estimate">
@@ -303,8 +312,8 @@ export default async function SpeciesPage({ params }: Params) {
               </>
             ) : (
               <div>
-                <p className="type-display text-[clamp(3.5rem,8vw,6rem)] text-muted">Unknown</p>
-                <p className="prose-measure mt-3 text-fog">
+                <p className="text-[clamp(2.5rem,6vw,4rem)] font-bold leading-none tracking-[-0.03em] text-muted">Unknown</p>
+                <p className="prose-measure mt-4 text-fog">
                   {p.population.unknownNote ?? 'Our sources give no reliable population estimate for this species.'} Unknown does not mean zero.
                 </p>
               </div>
@@ -347,9 +356,9 @@ export default async function SpeciesPage({ params }: Params) {
                     <ul className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                       {p.geography.regions.map((r, i) => (
                         <li key={i} className="panel px-4 py-3">
-                          <Link href={`/regions/${r.region.slug}`} className="inline-flex min-h-6 items-center font-medium text-lime underline-offset-4 hover:underline">{r.region.name}</Link>
+                          <Link href={`/regions/${r.region.slug}`} className="inline-flex min-h-6 items-center font-semibold text-lime underline-offset-4 hover:underline">{r.region.name}</Link>
                           <Cite ids={[r.sourceId]} index={index} />
-                          <span className="mt-1 block font-mono text-xs text-muted">
+                          <span className="mt-1 block text-[0.8125rem] text-muted">
                             {PRESENCE_LABEL[r.presence]} · {ORIGIN_LABEL[r.origin]} · {SEASON_LABEL[r.seasonality]}
                           </span>
                         </li>
@@ -424,7 +433,7 @@ export default async function SpeciesPage({ params }: Params) {
                       {t.name}
                       <Cite ids={[t.sourceId]} index={index} />
                     </span>
-                    {t.severity || t.timing ? <span className="font-mono text-xs text-muted">({[t.severity, t.timing].filter(Boolean).join(', ')})</span> : null}
+                    {t.severity || t.timing ? <span className="text-[0.8125rem] text-muted">({[t.severity, t.timing].filter(Boolean).join(', ')})</span> : null}
                   </li>
                 ))}
               </ul>
@@ -446,10 +455,10 @@ export default async function SpeciesPage({ params }: Params) {
                 {p.support.map((l, i) => (
                   <li key={i} className="panel px-6 py-5">
                     <p className="kicker">{ACTION_LABEL[l.actionType]}</p>
-                    <a href={l.url} rel="noopener noreferrer" className="mt-2 inline-block text-lg font-medium text-lime underline decoration-1 underline-offset-4 hover:decoration-2">
+                    <a href={l.url} rel="noopener noreferrer" className="mt-2 inline-block text-lg font-semibold text-lime underline decoration-1 underline-offset-4 hover:decoration-2">
                       {ACTION_LABEL[l.actionType]}: {l.organizationName}<span aria-hidden> ↗</span>
                     </a>
-                    <span className="mt-1 block font-mono text-xs text-muted">(goes to {l.domain})</span>
+                    <span className="mt-1 block text-[0.8125rem] text-muted">(goes to {l.domain})</span>
                     <p className="mt-3 text-[0.9375rem]">{l.description}</p>
                     {l.contextNote ? <p className="mt-2 text-[0.9375rem] text-muted">{l.contextNote}</p> : null}
                   </li>
@@ -470,7 +479,7 @@ export default async function SpeciesPage({ params }: Params) {
               <ol className="border-t border-rule">
                 {p.sources.map((s, i) => (
                   <li key={s.id} id={`source-${i + 1}`} className="grid scroll-mt-24 grid-cols-[3rem_1fr] gap-x-3 border-b border-rule py-4 text-[0.9375rem]">
-                    <span className="font-mono text-sm text-lime">[{i + 1}]</span>
+                    <span className="figures text-sm font-bold text-lime">[{i + 1}]</span>
                     <span>
                       {s.authors ? `${s.authors}. ` : ''}
                       {s.url ? (
@@ -504,7 +513,7 @@ export default async function SpeciesPage({ params }: Params) {
                 </ul>
               </>
             ) : null}
-            <p className="panel mt-8 px-5 py-4 font-mono text-sm text-fog">
+            <p className="panel mt-8 px-5 py-4 text-[0.9375rem] text-fog">
               Version {p.review.version}, reviewed {formatDate(p.review.reviewedAt)}
               {p.review.reviewerRole ? ` by an ${p.review.reviewerRole === 'admin' ? 'administrator' : 'editor'}` : ''}
               {p.review.selfReviewed ? ' (self-reviewed: the author published their own edit, with no independent review)' : ''}.
@@ -514,16 +523,18 @@ export default async function SpeciesPage({ params }: Params) {
       </div>
 
       {p.related.length ? (
-        <section aria-labelledby="related-h" className="wrap mt-28">
-          <SectionHead id="related-h" title="Related species" />
-          <p className="mt-4 text-muted">Chosen because they share an animal group, threats or places.</p>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {p.related.map((c) => (
-              <li key={c.slug}>
-                <SpeciesCard card={c} />
-              </li>
-            ))}
-          </ul>
+        <section aria-labelledby="related-h" className="mt-28 border-t border-rule bg-panel">
+          <div className="wrap py-20 lg:py-24">
+            <SectionHead id="related-h" title="Related species" />
+            <p className="mt-4 text-muted">Chosen because they share an animal group, threats or places.</p>
+            <ul className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+              {p.related.map((c) => (
+                <li key={c.slug}>
+                  <SpeciesCard card={c} />
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       ) : null}
     </article>
@@ -533,12 +544,12 @@ export default async function SpeciesPage({ params }: Params) {
 function Section({ n, id, title, children }: { n: number; id: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-20 md:scroll-mt-8">
-      <SectionHead id={`${id}-h`} n={String(n).padStart(2, '0')} title={title} />
+      <SectionHead id={`${id}-h`} n={String(n).padStart(2, '0')} title={title} rule />
       <div className="mt-8">{children}</div>
     </section>
   );
 }
 
 function SubHead({ children }: { children: React.ReactNode }) {
-  return <h3 className="mt-10 font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime first:mt-0">{children}</h3>;
+  return <h3 className="mt-12 text-lg font-bold text-white first:mt-0">{children}</h3>;
 }

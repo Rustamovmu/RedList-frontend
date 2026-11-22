@@ -51,16 +51,16 @@ export function StatusBadge({ category, year, scope = 'global', size = 'md' }: P
   const label = IUCN_LABEL[category];
   return (
     <span
-      className={`inline-flex flex-wrap items-center gap-x-1.5 font-mono leading-snug ${STYLE[category]} ${
+      className={`inline-flex flex-wrap items-center gap-x-1.5 font-semibold leading-snug ${STYLE[category]} ${
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-[0.8125rem]'
       }`}
     >
-      <abbr title={label} className="font-bold no-underline">
+      <abbr title={label} className="font-extrabold tracking-[0.02em] no-underline">
         {category}
       </abbr>
       <span>{label}</span>
-      {year ? <span>· {year}</span> : null}
-      {scope === 'regional' ? <span>· regional</span> : null}
+      {year ? <span className="figures font-medium">· {year}</span> : null}
+      {scope === 'regional' ? <span className="font-medium">· regional</span> : null}
     </span>
   );
 }

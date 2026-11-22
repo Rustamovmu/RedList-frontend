@@ -11,7 +11,7 @@ type MapDto = components['schemas']['MapDto'];
 
 const WorldMap = dynamic(() => import('./WorldMap'), {
   ssr: false,
-  loading: () => <p className="p-4 font-mono text-xs text-muted">Loading the map…</p>,
+  loading: () => <p className="p-4 text-sm text-muted">Loading the map…</p>,
 });
 
 /** The small map in a profile's "Where does it live?" section. Loads after the page; the lists beside it hold the same facts. */

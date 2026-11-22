@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Design tokens: the "Signal" look (DECISIONS D-034, replaces PLAN §4's nature-editorial style).
- * Black canvas, navy panels, one acid-lime signal colour, square corners, no shadows.
+ * Design tokens (DECISIONS D-038). The palette is the "Signal" palette of D-034: black canvas, navy bands and panels,
+ * one acid-lime signal colour. The layout and type follow the owner's reference (a conservation-data site): one
+ * geometric sans in sentence case, a full-bleed photo hero with a curved lower edge, generous whitespace, photo-led
+ * sections, small bold uppercase buttons with a chevron, and a plain multi-column footer.
  * Status colours are never the only signal. Every badge also carries its code and label as text.
  * Contrast on black: fog 15.3:1, muted 8.3:1, lime 18.5:1, alert 9.2:1 (muted on navy 6.7:1). Text on lime is always black.
  */
@@ -27,20 +29,16 @@
   --color-status-dd: #5b6470;
   --color-status-ne: #ffffff;
 
-  /* Self-hosted from npm (@fontsource), SIL Open Font License. The CSP allows fonts from 'self' only. */
-  --font-display: "Anton", Impact, "Arial Narrow Bold", sans-serif;
-  --font-mono: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
-  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Self-hosted from npm (@fontsource-variable/plus-jakarta-sans), SIL Open Font License. The CSP allows fonts from 'self' only. */
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Anton has one weight, so the browser must never fake a bold. */
+/* Headings and big figures: bold, tight, sentence case. */
 @utility type-display {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-synthesis: none;
-  text-transform: uppercase;
-  line-height: 0.9;
-  letter-spacing: 0.002em;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   overflow-wrap: break-word;
 }
 
@@ -52,7 +50,7 @@
   }
   @media (min-width: 768px) {
     :root {
-      --nav-h: 4.5rem;
+      --nav-h: 5.5rem;
     }
   }
   html {
@@ -61,9 +59,12 @@
     font-family: var(--font-sans);
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  /* 450, not 400: light text on black reads thin at the regular weight. */
   body {
     font-size: 1.0625rem;
+    font-weight: 450;
     line-height: 1.65;
   }
   ::selection {
@@ -96,85 +97,149 @@
 }
 
 @layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-14;
+  }
+
+  /* ---------- type ---------- */
+  .h-hero {
+    @apply type-display text-white;
+    font-size: clamp(2.125rem, 3.7vw, 3.5rem);
+    line-height: 1.1;
+  }
   .h-page {
-    @apply type-display text-lime;
-    font-size: clamp(3rem, 10.5vw, 8.5rem);
+    @apply type-display text-white;
+    font-size: clamp(2.25rem, 4.4vw, 3.75rem);
   }
   .h-section {
-    @apply type-display text-fog;
-    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    @apply type-display text-white;
+    font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+    line-height: 1.14;
+  }
+  .h-card {
+    @apply text-xl font-bold leading-snug tracking-[-0.01em] text-white;
   }
   .kicker {
-    @apply font-mono text-xs uppercase tracking-[0.14em] text-lime;
+    @apply text-[0.8125rem] font-bold uppercase tracking-[0.1em] text-lime;
   }
   .label {
-    @apply font-mono text-xs uppercase tracking-[0.1em] text-muted;
+    @apply text-sm font-semibold text-muted;
   }
   .meta {
-    @apply font-mono text-[0.8125rem] leading-relaxed text-muted;
+    @apply text-sm leading-relaxed text-muted;
   }
   .lead {
-    @apply max-w-[44ch] text-xl leading-snug text-white sm:text-2xl;
+    @apply max-w-[56ch] text-lg leading-relaxed text-fog sm:text-xl sm:leading-relaxed;
   }
   .prose-measure {
     max-width: 68ch;
   }
-  .wrap {
-    @apply mx-auto w-full max-w-[90rem] px-5 md:px-10;
+  .figures {
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   /*
    * Species profile hero. The photo is shown whole (Photo `fit`), never taller than --photo-max-h.
    * Stacked (below lg) it takes at most 45% of the screen height. Side by side (lg+) it fills what is left of the first
-   * screen under the lime bar (2.75rem) and nav (--nav-h), minus the top padding, credit line and a margin.
+   * screen under the nav (--nav-h), minus the top padding, credit line and a margin.
    */
   .profile-hero {
     --photo-max-h: min(45svh, 40rem);
   }
   @media (min-width: 64rem) {
     .profile-hero {
-      --photo-max-h: max(18rem, calc(100svh - var(--nav-h) - 10rem));
+      --photo-max-h: max(18rem, calc(100svh - var(--nav-h) - 8rem));
     }
   }
 
+  /* ---------- links ---------- */
   .link {
     @apply text-lime underline decoration-1 underline-offset-4 hover:decoration-2;
   }
   .link-quiet {
     @apply underline decoration-muted decoration-1 underline-offset-4 hover:text-lime hover:decoration-lime;
   }
+  /* "See more ›": small bold uppercase text with a chevron. */
+  .more {
+    @apply inline-flex min-h-11 items-center gap-2.5 text-[0.8125rem] font-bold uppercase tracking-[0.06em] text-white hover:text-lime;
+  }
 
+  /* ---------- buttons: square, small bold uppercase label; `.go` adds a chevron ---------- */
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 border-2 px-5 py-2 text-center font-mono text-[0.8125rem] font-bold uppercase leading-tight tracking-[0.08em] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-45;
+    @apply inline-flex min-h-11 items-center justify-center gap-2.5 border-2 px-5 py-2 text-center text-[0.8125rem] font-bold uppercase leading-tight tracking-[0.05em] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-sm {
-    @apply min-h-9 px-3 py-1 text-xs;
+    @apply min-h-9 gap-2 px-3.5 py-1 text-xs;
   }
   .btn-primary {
     @apply border-lime bg-lime text-black hover:border-white hover:bg-white disabled:hover:border-lime disabled:hover:bg-lime;
   }
+  /* Outlined, for the second action beside a primary one. */
   .btn-secondary {
-    @apply border-lime text-lime hover:bg-lime hover:text-black disabled:hover:bg-transparent disabled:hover:text-lime;
+    @apply border-white/80 text-white hover:border-white hover:bg-white hover:text-black disabled:hover:bg-transparent disabled:hover:text-white;
+  }
+  /* A soft filled button for calls to action inside sections, so the page is not a wall of lime. */
+  .btn-soft {
+    @apply border-raised bg-raised text-white hover:border-lime hover:bg-lime hover:text-black;
   }
   .btn-quiet {
-    @apply border-muted text-fog hover:border-fog hover:text-white;
+    @apply border-rule text-fog hover:border-fog hover:text-white;
+  }
+  .btn-dark {
+    @apply border-black bg-black text-white hover:border-panel hover:bg-panel;
   }
   .btn-danger {
     @apply border-alert text-alert hover:bg-alert hover:text-black;
   }
+  .go::after,
+  .more::after {
+    content: "";
+    flex: none;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-left: 0.1rem;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
 
+  /* ---------- form fields ---------- */
   .field {
-    @apply block w-full border border-muted bg-black px-3 py-2.5 text-base text-fog placeholder:text-muted focus:border-lime;
+    @apply block w-full border border-rule bg-black px-3.5 py-2.5 text-base text-fog placeholder:text-muted hover:border-muted focus:border-lime;
   }
-  .field-search {
-    @apply block w-full border-0 border-b-2 border-lime bg-transparent px-0 py-3 text-xl text-white placeholder:text-muted;
+  /* The big white search box (home hero and Explore): a white field with the search button inside it. */
+  .searchbox {
+    @apply flex w-full items-stretch bg-white text-black;
+  }
+  .searchbox input {
+    @apply min-w-0 flex-1 bg-transparent px-4 text-base text-black placeholder:text-[#5b6470] sm:px-5 sm:text-lg;
+  }
+  .searchbox input:focus-visible {
+    outline: none;
+  }
+  .searchbox:focus-within {
+    outline: 3px solid var(--color-lime);
+    outline-offset: 3px;
+  }
+  .searchbox button {
+    @apply flex w-14 shrink-0 items-center justify-center text-black hover:text-[#5b6470];
+  }
+  /* Lime would vanish on the white box, so the button's ring is black and inset. */
+  .searchbox button:focus-visible {
+    outline: 3px solid #000;
+    outline-offset: -7px;
   }
 
+  /* ---------- surfaces ---------- */
   .panel {
     @apply border border-rule bg-panel;
   }
   .chip {
-    @apply inline-flex items-center gap-2 border border-rule px-3 py-1.5 font-mono text-xs uppercase tracking-[0.08em] text-fog;
+    @apply inline-flex items-center gap-2 border border-rule px-3 py-1.5 text-[0.8125rem] font-medium text-fog;
+  }
+  /* An outlined tag, like a topic label on an article card. */
+  .tag {
+    @apply inline-flex items-center border border-muted/60 px-2.5 py-1 text-[0.8125rem] font-semibold leading-tight text-white;
   }
   .notice {
     @apply border-l-2 border-lime bg-panel px-4 py-3;
@@ -198,8 +263,8 @@
   /* "+" / "−" on disclosure bars, drawn in CSS so it never enters the accessible name. */
   .disclosure > summary::after {
     content: "+";
-    font-family: var(--font-mono);
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    font-weight: 400;
     line-height: 1;
     color: var(--color-lime);
     margin-left: auto;
@@ -210,7 +275,7 @@
   }
 }
 
-/* MapLibre controls in the Signal style: square, black, lime outline, light icons. */
+/* MapLibre controls in our style: square, black, lime outline, light icons. */
 .maplibregl-ctrl-group:not(:empty) {
   background: #000 !important;
   border: 1px solid var(--color-lime);
@@ -226,7 +291,7 @@
 .maplibregl-ctrl-attrib {
   background: rgb(0 0 0 / 0.8) !important;
   color: var(--color-muted) !important;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 11px;
   border-radius: 0 !important;
 }
@@ -240,7 +305,7 @@
 /* Body text of the information pages: lime links, square bullets. A list marked .plain keeps its own layout. */
 @layer components {
   .info-body {
-    @apply space-y-4 leading-relaxed text-fog;
+    @apply space-y-4 text-[1.0625rem] leading-relaxed text-fog;
     max-width: 68ch;
   }
   .info-body a {
@@ -257,17 +322,17 @@
     content: "";
     position: absolute;
     left: 0;
-    top: 0.65em;
+    top: 0.62em;
     width: 0.45rem;
     height: 0.45rem;
     background: var(--color-lime);
   }
 }
 
-/* The one orchestrated moment: the hero name rises into place on load. Reduced motion skips it (base layer rule). */
-@keyframes hero-rise {
+/* The one orchestrated moment: the hero's headline, search and button rise into place on load. Reduced motion skips it. */
+@keyframes rise {
   from {
-    transform: translateY(0.18em);
+    transform: translateY(1.25rem);
     opacity: 0;
   }
   to {
@@ -275,12 +340,28 @@
     opacity: 1;
   }
 }
-@layer components {
-  .hero-word {
-    display: block;
-    animation: hero-rise 900ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+/* The hero image fades in from a slight zoom. Reduced motion skips it. */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
   }
-  .hero-word-late {
-    animation-delay: 140ms;
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@layer components {
+  .hero-in {
+    animation: hero-in 1100ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  }
+  .rise {
+    animation: rise 800ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  }
+  .rise-2 {
+    animation-delay: 120ms;
+  }
+  .rise-3 {
+    animation-delay: 240ms;
   }
 }

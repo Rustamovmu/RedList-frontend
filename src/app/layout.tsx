@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { connection } from 'next/server';
-// Self-hosted fonts (SIL Open Font License), bundled from npm so the CSP can keep font-src 'self' (DECISIONS D-034).
-import '@fontsource/anton/400.css';
-import '@fontsource/space-mono/400.css';
-import '@fontsource/space-mono/400-italic.css';
-import '@fontsource/space-mono/700.css';
-import '@fontsource-variable/inter/wght.css';
-import '@fontsource-variable/inter/wght-italic.css';
+// Self-hosted font (SIL Open Font License), bundled from npm so the CSP can keep font-src 'self' (DECISIONS D-038).
+// The italic matters: scientific names are always set in a true italic, never a slanted roman.
+import '@fontsource-variable/plus-jakarta-sans/wght.css';
+import '@fontsource-variable/plus-jakarta-sans/wght-italic.css';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
@@ -31,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"
-          className="on-lime sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:bg-lime focus:px-4 focus:py-3 focus:font-mono focus:text-sm focus:font-bold focus:uppercase focus:text-black"
+          className="on-lime sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:bg-lime focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:uppercase focus:tracking-[0.05em] focus:text-black"
         >
           Skip to content
         </a>

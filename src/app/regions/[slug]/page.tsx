@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import type { components } from '@/contracts/api';
@@ -84,28 +85,29 @@ export default async function RegionPageView({ params, searchParams }: Props) {
 
   return (
     <div>
-      <header className="grid-bg border-b border-rule">
-        <div className="wrap pt-12 pb-14 md:pt-20 md:pb-20">
-          <p className="kicker">{TYPE_LABEL[r.region.type] ?? r.region.type}</p>
-          <h1 className="h-page mt-3 max-w-[16ch]">{r.region.name}</h1>
-          <p className="prose-measure mt-6 text-fog">
+      <PageHeader
+        kicker={TYPE_LABEL[r.region.type] ?? r.region.type}
+        title={r.region.name}
+        lead={
+          <>
             Species in this catalogue recorded in {r.region.name}, with how they occur here as their sources record it. This is not a complete list of the
             wildlife of {r.region.name}. Species whose locations are withheld for their protection are never listed by place.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            {r.region.bbox ? (
-              <Link href={`/map?bbox=${r.region.bbox.join(',')}`} className="btn btn-secondary">View on the map</Link>
-            ) : null}
-            {r.region.source ? <span className="meta">Boundary: {r.region.source.title} ({r.region.source.license ?? 'licence not recorded'})</span> : null}
-          </div>
+          </>
+        }
+      >
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          {r.region.bbox ? (
+            <Link href={`/map?bbox=${r.region.bbox.join(',')}`} className="btn btn-primary go">View on the map</Link>
+          ) : null}
+          {r.region.source ? <span className="meta">Boundary: {r.region.source.title} ({r.region.source.license ?? 'licence not recorded'})</span> : null}
         </div>
-      </header>
+      </PageHeader>
 
       <div className="wrap">
         {anySpecies ? (
           <form method="get" action={`/regions/${slug}`} className="mt-10" aria-label={`Filter species in ${r.region.name}`}>
             <details className="disclosure border border-rule bg-panel" open={applied > 0}>
-              <summary className="flex min-h-14 items-center px-5 font-mono text-sm font-bold uppercase tracking-[0.1em] text-white">
+              <summary className="flex min-h-14 items-center px-5 text-base font-bold text-white">
                 <span>Filters{applied ? ` (${applied} applied)` : ''}</span>
               </summary>
               <div className="grid gap-8 border-t border-rule px-5 pt-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -114,14 +116,14 @@ export default async function RegionPageView({ params, searchParams }: Props) {
                   if (!opts.length) return null;
                   return (
                     <fieldset key={k}>
-                      <legend className="kicker">{KEY_LABEL[k]}</legend>
+                      <legend className="text-[0.9375rem] font-bold text-white">{KEY_LABEL[k]}</legend>
                       <ul className="mt-3 space-y-0.5">
                         {opts.map((o) => (
                           <li key={o.value}>
-                            <label className="flex min-h-8 cursor-pointer items-center gap-3 text-[0.9375rem] hover:text-white">
+                            <label className="flex min-h-9 cursor-pointer items-center gap-3 text-[0.9375rem] text-fog hover:text-white">
                               <input type="checkbox" name={k} value={o.value} defaultChecked={state[k].includes(o.value)} className="h-4 w-4 shrink-0 accent-lime" />
                               <span>{label(k, o.value)}</span>
-                              <span className="ml-auto font-mono text-xs text-muted">({o.count})</span>
+                              <span className="figures ml-auto text-[0.8125rem] text-muted">{o.count}</span>
                             </label>
                           </li>
                         ))}
@@ -132,7 +134,7 @@ export default async function RegionPageView({ params, searchParams }: Props) {
               </div>
               <div className="flex flex-wrap items-center gap-5 px-5 pt-6 pb-5">
                 <button className="btn btn-primary">Apply filters</button>
-                {applied ? <Link href={`/regions/${slug}`} className="text-sm underline underline-offset-4 hover:text-lime">Reset all</Link> : null}
+                {applied ? <Link href={`/regions/${slug}`} className="text-sm font-semibold underline underline-offset-4 hover:text-lime">Reset all</Link> : null}
               </div>
             </details>
           </form>
@@ -150,14 +152,14 @@ export default async function RegionPageView({ params, searchParams }: Props) {
             </p>
           ) : (
             <>
-              <p role="status" className="meta mb-5">
+              <p role="status" className="mb-6 text-[0.9375rem] font-semibold text-fog">
                 {r.total} species in this catalogue recorded here{applied ? ' match' : ''}
               </p>
-              <ul className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
                 {r.items.map((i) => (
                   <li key={i.card.slug} className="flex flex-col">
                     <SpeciesCard card={i.card} headingLevel="h3" />
-                    <ul className="mt-3 space-y-1 font-mono text-xs text-muted" aria-label={`How ${i.card.commonName ?? i.card.scientificName} occurs here`}>
+                    <ul className="mt-3 space-y-1 border-t border-rule pt-3 text-[0.8125rem] text-muted" aria-label={`How ${i.card.commonName ?? i.card.scientificName} occurs here`}>
                       {i.occurrences.map((o, n) => (
                         <li key={n} className="before:mr-2 before:text-lime before:content-['▸']">
                           {PRESENCE_LABEL[o.presence]} · {ORIGIN_LABEL[o.origin]} · {SEASON_LABEL[o.seasonality]}

@@ -8,7 +8,7 @@ export function Cite({ ids, index }: { ids: Array<string | null | undefined>; in
   const uniq = [...new Set(ids.filter((x): x is string => Boolean(x)))].map((id) => index.get(id)).filter((x) => x !== undefined);
   if (!uniq.length) return null;
   return (
-    <span className="ml-1 whitespace-nowrap align-super font-mono text-xs">
+    <span className="figures ml-1 whitespace-nowrap align-super text-xs font-bold">
       {uniq
         .sort((a, b) => a.n - b.n)
         .map((s, i) => (

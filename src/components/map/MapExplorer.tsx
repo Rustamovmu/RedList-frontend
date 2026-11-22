@@ -15,7 +15,7 @@ type Option = { value: string; label: string; count: number };
 // MapLibre loads only in the browser, after the list has rendered (PLAN §11: the map never blocks the list).
 const WorldMap = dynamic(() => import('./WorldMap'), {
   ssr: false,
-  loading: () => <p className="p-4 font-mono text-xs text-muted">Loading the map…</p>,
+  loading: () => <p className="p-4 text-sm text-muted">Loading the map…</p>,
 });
 
 const LAYER_LABEL = { range: 'Published range map', country: 'Country-level presence' } as const;
@@ -106,7 +106,7 @@ export function MapExplorer({
     <>
       <form method="get" action="/map" className="mt-10" aria-label="Filter the map">
         <details className="disclosure border border-rule bg-panel" open={applied > 0}>
-          <summary className="flex min-h-14 items-center px-5 font-mono text-sm font-bold uppercase tracking-[0.1em] text-white">
+          <summary className="flex min-h-14 items-center px-5 text-base font-bold text-white">
             <span>Filters{applied ? ` (${applied} applied)` : ''}</span>
           </summary>
           <div className="grid gap-8 border-t border-rule px-5 pt-5 sm:grid-cols-2">
@@ -115,11 +115,11 @@ export function MapExplorer({
               { key: 'category', legend: 'Status', options: categoryOptions, selected: category },
             ].map((f) => (
               <fieldset key={f.key}>
-                <legend className="kicker">{f.legend}</legend>
+                <legend className="text-[0.9375rem] font-bold text-white">{f.legend}</legend>
                 <ul className="mt-3 space-y-0.5">
                   {f.options.map((o) => (
                     <li key={o.value}>
-                      <label className="flex min-h-8 cursor-pointer items-center gap-3 text-[0.9375rem] hover:text-white">
+                      <label className="flex min-h-9 cursor-pointer items-center gap-3 text-[0.9375rem] text-fog hover:text-white">
                         <input type="checkbox" name={f.key} value={o.value} defaultChecked={f.selected.includes(o.value)} className="h-4 w-4 accent-lime" />
                         <span>{o.label}</span>
                       </label>
@@ -132,7 +132,7 @@ export function MapExplorer({
           <input type="hidden" name="bbox" value={bboxParam(bbox)} />
           <div className="flex flex-wrap items-center gap-5 px-5 pt-6 pb-5">
             <button className="btn btn-primary">Apply filters</button>
-            {applied ? <a href="/map" className="text-sm underline underline-offset-4 hover:text-lime">Reset all</a> : null}
+            {applied ? <a href="/map" className="text-sm font-semibold underline underline-offset-4 hover:text-lime">Reset all</a> : null}
           </div>
         </details>
       </form>
@@ -162,18 +162,18 @@ export function MapExplorer({
                 type="button"
                 onClick={nearMe}
                 disabled={!basemap}
-                className="btn btn-sm btn-secondary"
+                className="btn btn-sm btn-soft"
               >
                 Near me
               </button>
-              <p className="mt-2 font-mono text-xs leading-relaxed text-muted">Finds your country in this browser only. Your position is never sent to us.</p>
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-muted">Finds your country in this browser only. Your position is never sent to us.</p>
               {nearMessage ? <p className="mt-2 text-sm text-white">{nearMessage}</p> : null}
             </div>
           </div>
         </div>
 
         <section aria-labelledby="results-h" className="min-w-0">
-          <h2 id="results-h" className="type-display text-4xl text-fog">Species in this view</h2>
+          <h2 id="results-h" className="text-2xl font-bold tracking-[-0.02em] text-white">Species in this view</h2>
           {listFailed ? (
             <p role="alert" className="notice-error mt-3 text-sm">Species could not be loaded. This is a problem on our side; please try again.</p>
           ) : (
@@ -185,11 +185,11 @@ export function MapExplorer({
               {species.length === 0 ? (
                 <p className="missing mt-4">No species here match these filters. Move the map or remove a filter.</p>
               ) : (
-                <ul className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+                <ul className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-1">
                   {species.map((s) => (
                     <li key={s.slug}>
                       <SpeciesCard card={s} />
-                      <p className="mt-2 font-mono text-xs text-muted">Shown on the map as: {LAYER_LABEL[s.layer]}</p>
+                      <p className="mt-2 border-t border-rule pt-2 text-[0.8125rem] text-muted">Shown on the map as: {LAYER_LABEL[s.layer]}</p>
                     </li>
                   ))}
                 </ul>

@@ -61,7 +61,7 @@ export default function RevisionPage() {
   return (
     <div>
       <p className="text-sm"><Link href={`/admin/species/${rev.speciesId}`} className="underline underline-offset-4">Back to species</Link></p>
-      <h1 className="mt-3 font-mono text-2xl font-bold text-lime">
+      <h1 className="mt-3 text-3xl font-bold tracking-[-0.02em] text-white">
         {rev.speciesSlug} · version {rev.version}
       </h1>
       <p className="text-sm text-muted">
@@ -78,11 +78,11 @@ export default function RevisionPage() {
       </div>
 
       <section aria-labelledby="check-h" className="panel mt-6 p-5">
-        <h2 id="check-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Publication checklist</h2>
+        <h2 id="check-h" className="text-lg font-bold text-white">Publication checklist</h2>
         <ul className="mt-3 space-y-1.5 text-sm">
           {rev.checklist.map((c) => (
             <li key={c.key}>
-              <span aria-hidden className={`font-mono font-bold ${c.ok ? 'text-lime' : 'text-alert'}`}>{c.ok ? '✓' : '✗'}</span> <span className="sr-only">{c.ok ? 'Done:' : 'Missing:'}</span> {c.message}
+              <span aria-hidden className={`font-bold ${c.ok ? 'text-lime' : 'text-alert'}`}>{c.ok ? '✓' : '✗'}</span> <span className="sr-only">{c.ok ? 'Done:' : 'Missing:'}</span> {c.message}
             </li>
           ))}
         </ul>
@@ -104,7 +104,7 @@ export default function RevisionPage() {
       </section>
 
       <section aria-labelledby="content-h" className="mt-6">
-        <h2 id="content-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Content</h2>
+        <h2 id="content-h" className="text-lg font-bold text-white">Content</h2>
         <p className="text-sm text-muted">
           {editable ? 'Edit the JSON and save. The API validates every field.' : 'This revision is not a draft, so it is read-only. Create a new draft from the species page to edit.'}
         </p>
@@ -173,7 +173,7 @@ function SourcesPanel() {
 
   return (
     <section aria-labelledby="src-h" className="panel p-5">
-      <h2 id="src-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Sources</h2>
+      <h2 id="src-h" className="text-lg font-bold text-white">Sources</h2>
       <label className="mt-2 block text-sm">Search
         <input value={q} onChange={(e) => setQ(e.target.value)} className="field mt-1 py-1.5 text-sm" />
       </label>
@@ -219,7 +219,7 @@ function ReferencePanel() {
 
   return (
     <section aria-labelledby="ref-h" className="panel p-5">
-      <h2 id="ref-h" className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-lime">Reference ids</h2>
+      <h2 id="ref-h" className="text-lg font-bold text-white">Reference ids</h2>
       <label className="mt-2 block text-sm">Find a region, habitat, threat, image or support link
         <input value={q} onChange={(e) => setQ(e.target.value)} className="field mt-1 py-1.5 text-sm" />
       </label>
