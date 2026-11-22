@@ -23,8 +23,8 @@ export default async function SupportPage() {
         title="Support directory"
         lead={
           <>
-            Links to independent organizations, reviewed by our editors. A click takes you to the organization&apos;s own site. It is a referral, not a
-            donation, and we do not handle money.
+            Links to <strong>independent organizations</strong>, reviewed by our editors. A click takes you to the organization&apos;s own site. It is a <strong>referral, not a
+            donation</strong>, and we do not handle money.
           </>
         }
       >

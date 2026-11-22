@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { FilterDrawer } from '@/components/explore/FilterDrawer';
-import { PageHeader } from '@/components/PageHeader';
+import { type HeaderImage, PageHeader } from '@/components/PageHeader';
 import { SearchIcon } from '@/components/shell/Icons';
 import { Pagination } from '@/components/Pagination';
 import { SpeciesCard } from '@/components/SpeciesCard';
@@ -19,6 +19,17 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 24;
+
+/**
+ * The header photo is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-048).
+ * The crop sits low (80%) so the animals, not the sky, fill the short band.
+ */
+const HEADER_IMAGE: HeaderImage = {
+  src: '/hero/savanna.webp',
+  alt: 'Savanna animals, among them an elephant, a giraffe, a lion, a zebra and a hippo, in front of a snow-capped mountain',
+  position: 'object-[50%_80%]',
+  caption: 'Header image: credit and licence pending',
+};
 type Filters = components['schemas']['FiltersDto'];
 type Option = { value: string; label: string; count: number };
 
@@ -59,7 +70,13 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       <PageHeader
         kicker="Catalogue"
         title="Explore species"
-        lead={`${filters ? `${filters.total} species in this catalogue. ` : ''}Search by name, or filter by group, environment, status, place, habitat and trend.`}
+        image={HEADER_IMAGE}
+        lead={
+          <>
+            {filters ? <><strong>{filters.total} species</strong> in this catalogue. </> : null}
+            Search by name, or filter by group, environment, status, place, habitat and trend.
+          </>
+        }
       >
         <div className="mt-8 grid max-w-[64rem] gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
           <div className="searchbox h-14">

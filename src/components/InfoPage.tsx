@@ -1,5 +1,5 @@
 import { Children, cloneElement, isValidElement, type ReactElement } from 'react';
-import { PageHeader } from '@/components/PageHeader';
+import { type HeaderImage, PageHeader } from '@/components/PageHeader';
 import { SectionHead } from '@/components/SectionHead';
 
 type SectionProps = { id: string; title: string; n?: number; children: React.ReactNode };
@@ -9,17 +9,17 @@ type SectionProps = { id: string; title: string; n?: number; children: React.Rea
  * sticky "On this page" list built from the InfoSection children, which it also numbers.
  */
 export function InfoPage({
-  kicker, title, lead, updated, summary, children,
-}: { kicker: string; title: string; lead: string; updated: string; summary?: React.ReactNode; children: React.ReactNode }) {
+  kicker, title, lead, updated, summary, image, children,
+}: { kicker: string; title: string; lead: React.ReactNode; updated: string; summary?: React.ReactNode; image?: HeaderImage; children: React.ReactNode }) {
   const sections = Children.toArray(children).filter((c): c is ReactElement<SectionProps> => isValidElement(c));
   return (
     <article>
-      <PageHeader kicker={kicker} title={title} lead={lead} titleClassName="max-w-[18ch]">
+      <PageHeader kicker={kicker} title={title} lead={lead} titleClassName="max-w-[18ch]" image={image}>
         {summary ? <div className="mt-8 max-w-[68ch]">{summary}</div> : null}
       </PageHeader>
 
       <div className="wrap mt-14 grid grid-cols-[minmax(0,1fr)] gap-x-16 gap-y-12 md:mt-20 md:grid-cols-[13rem_minmax(0,1fr)] lg:grid-cols-[16rem_minmax(0,1fr)] xl:gap-x-24">
-        <nav aria-labelledby="toc-h" className="md:sticky md:top-8 md:self-start">
+        <nav aria-labelledby="toc-h" className="md:sticky md:top-[calc(var(--nav-h)+2rem)] md:self-start">
           <p id="toc-h" className="label">On this page</p>
           <ol className="mt-3 border-t border-rule">
             {sections.map((s, i) => (

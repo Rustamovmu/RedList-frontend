@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { parseBboxParam } from '@/components/map/geo';
 import { MapExplorer } from '@/components/map/MapExplorer';
-import { PageHeader } from '@/components/PageHeader';
+import { type HeaderImage, PageHeader } from '@/components/PageHeader';
 import { apiGet } from '@/lib/api';
 import { IUCN_CATEGORIES, IUCN_LABEL } from '@/lib/iucn';
 import { GROUP_LABEL } from '@/lib/labels';
@@ -16,6 +16,14 @@ type Raw = Record<string, string | string[] | undefined>;
 const list = (v: string | string[] | undefined) =>
   [...new Set((Array.isArray(v) ? v : v ? [v] : []).flatMap((x) => x.split(',')).map((x) => x.trim()).filter(Boolean))].slice(0, 11);
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-050). */
+const HEADER_IMAGE: HeaderImage = {
+  src: '/hero/world-animals.webp',
+  alt: 'An illustrated world map with drawings of animals on each continent and in the oceans',
+  position: 'object-[50%_45%]',
+  caption: 'Header image: credit and licence pending',
+};
 
 export default async function MapPage({ searchParams }: { searchParams: Promise<Raw> }) {
   const raw = await searchParams;
@@ -45,10 +53,11 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
       <PageHeader
         kicker="Catalogue"
         title="Map"
+        image={HEADER_IMAGE}
         lead={
           <>
-            Where the species in this catalogue live. When only the countries or seas are known, whole areas are shaded and labelled
-            &ldquo;Country-level presence&rdquo;. A range is drawn only where a cited source publishes one. Species whose locations are withheld for their protection never appear here.
+            <strong>Where the species in this catalogue live.</strong> When only the countries or seas are known, whole areas are shaded and labelled
+            &ldquo;<strong>Country-level presence</strong>&rdquo;. A range is drawn only where a cited source publishes one. Species whose locations are withheld for their protection never appear here.
           </>
         }
       />

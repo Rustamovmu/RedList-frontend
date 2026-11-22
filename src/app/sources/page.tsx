@@ -23,7 +23,7 @@ export default async function SourcesPage() {
         title="Sources"
         lead={
           <>
-            Every source cited by a published profile, with the date we read it. Notes say how a source may be used, and when a figure is second-hand.
+            Every source cited by a published profile, <strong>with the date we read it</strong>. Notes say how a source may be used, and when a figure is second-hand.
             See <Link href="/methodology" className="text-lime underline decoration-1 underline-offset-4 hover:decoration-2">how we source facts</Link>.
           </>
         }

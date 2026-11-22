@@ -14,7 +14,11 @@ export default function PrivacyPage() {
     <InfoPage
       kicker="Legal"
       title="Privacy"
-      lead="You can use all of Wildward without an account, and we do not track you."
+      lead={
+        <>
+          You can use all of Wildward <strong>without an account</strong>, and <strong>we do not track you</strong>.
+        </>
+      }
       updated="21 November 2026"
       summary={
         <p className="notice bg-black/40 text-[0.9375rem] font-semibold leading-relaxed text-white">

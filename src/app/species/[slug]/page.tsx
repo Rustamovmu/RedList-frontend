@@ -132,8 +132,8 @@ export default async function SpeciesPage({ params }: Params) {
             </nav>
             {p.commonName ? (
               <>
-                <h1 className="h-page mt-5 max-w-[16ch] text-[clamp(2.5rem,7vw,4rem)] lg:text-[clamp(2.75rem,4.2vw,4.5rem)]">{p.commonName}</h1>
-                <p className="mt-3 text-xl italic text-fog sm:text-2xl">{p.scientificName}</p>
+                <h1 className="h-page mt-5 max-w-[16ch] text-[clamp(2.75rem,8vw,4.75rem)] lg:text-[clamp(3rem,4.8vw,5.25rem)]">{p.commonName}</h1>
+                <p className="mt-4 text-2xl font-medium italic tracking-[-0.01em] text-lime sm:text-[1.875rem]">{p.scientificName}</p>
               </>
             ) : (
               <h1 className="mt-5 text-[clamp(2rem,5vw,3.25rem)] font-bold italic leading-tight tracking-[-0.02em] text-white">{p.scientificName}</h1>
@@ -186,7 +186,7 @@ export default async function SpeciesPage({ params }: Params) {
 
       <div className="wrap mt-10 grid grid-cols-[minmax(0,1fr)] gap-x-16 md:mt-20 md:grid-cols-[13rem_minmax(0,1fr)] lg:grid-cols-[16rem_minmax(0,1fr)] xl:gap-x-24">
         {/* ---------- in-page navigation: a sticky side list, or a sticky scrolling bar on small screens ---------- */}
-        <nav aria-label="On this page" className="sticky top-0 z-20 -mx-5 border-y border-rule bg-black px-5 md:top-8 md:mx-0 md:self-start md:border-0 md:bg-transparent md:px-0">
+        <nav aria-label="On this page" className="sticky top-[var(--nav-h)] z-20 -mx-5 border-y border-rule bg-black px-5 md:top-[calc(var(--nav-h)+2rem)] md:mx-0 md:self-start md:border-0 md:bg-transparent md:px-0">
           <ol className="flex gap-x-5 overflow-x-auto whitespace-nowrap md:block md:space-y-0 md:whitespace-normal">
             {SECTIONS.map((s, i) => (
               <li key={s.id} className="md:border-b md:border-rule">

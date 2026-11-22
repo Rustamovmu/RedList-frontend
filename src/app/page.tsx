@@ -107,7 +107,7 @@ export default async function Home() {
     <div className="flush-bottom">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(site) }} />
 
-      {/* ---------- hero: the collage runs under the nav and ends in a curve; the promise and the search sit in its lower part ---------- */}
+      {/* ---------- hero: the collage runs under the transparent nav and ends in a curve; the promise and the search sit in its lower part ---------- */}
       <section
         aria-labelledby="hero-h"
         className="relative isolate -mt-[var(--nav-h)] flex min-h-[max(40rem,92svh)] flex-col overflow-hidden bg-black [--curve-h:clamp(3.5rem,10vw,9.5rem)]"
@@ -137,8 +137,12 @@ export default async function Home() {
 
         {/* Anchored to the bottom, a fixed gap above the curve, so the promise and the search sit low and clear of the caption. */}
         <div className="relative z-10 flex flex-1 flex-col items-center justify-end px-5 pt-[calc(var(--nav-h)+2rem)] pb-[calc(var(--curve-h)+2.75rem)] text-center sm:pb-[calc(var(--curve-h)+3rem)] lg:pb-[calc(var(--curve-h)-2rem)]">
-          <h1 id="hero-h" className="h-hero rise max-w-[30ch] text-balance [text-shadow:0_2px_28px_rgb(0_0_0/0.55)]">
-            Understand a species, see where it lives, and find a credible way to help.
+          {/* The three things the site does, one per line from md up, each verb in lime (D-054). The spans keep the
+              spaces in the accessible name ("…a species, see where…"). */}
+          <h1 id="hero-h" className="h-hero rise max-w-[17ch] text-balance [text-shadow:0_2px_28px_rgb(0_0_0/0.55)] md:max-w-none">
+            <span className="md:block"><strong>Understand</strong> a species,</span>{' '}
+            <span className="md:block"><strong>see</strong> where it lives,</span>{' '}
+            <span className="md:block">and find a credible way to <strong>help</strong>.</span>
           </h1>
           <form action="/species" method="get" role="search" className="rise rise-2 mt-10 w-full max-w-[58rem]">
             <div className="searchbox h-14 sm:h-16">
@@ -311,7 +315,7 @@ export default async function Home() {
             ) : null}
             <Link href="/map" className="btn btn-soft go mt-10">Open the map</Link>
           </div>
-          {placesPhoto ? <SectionPhoto card={placesPhoto} sizes="(min-width: 1024px) 46vw, 100vw" frame="aspect-[4/3]" className="lg:sticky lg:top-8 lg:self-start" /> : null}
+          {placesPhoto ? <SectionPhoto card={placesPhoto} sizes="(min-width: 1024px) 46vw, 100vw" frame="aspect-[4/3]" className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)] lg:self-start" /> : null}
         </section>
       ) : null}
 

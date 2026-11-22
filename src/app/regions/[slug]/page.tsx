@@ -90,7 +90,7 @@ export default async function RegionPageView({ params, searchParams }: Props) {
         title={r.region.name}
         lead={
           <>
-            Species in this catalogue recorded in {r.region.name}, with how they occur here as their sources record it. This is not a complete list of the
+            Species in this catalogue recorded in {r.region.name}, with <strong>how they occur here</strong> as their sources record it. This is not a complete list of the
             wildlife of {r.region.name}. Species whose locations are withheld for their protection are never listed by place.
           </>
         }

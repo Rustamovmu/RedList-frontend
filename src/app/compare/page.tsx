@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { CompareSync } from '@/components/compare/AddToCompare';
-import { PageHeader } from '@/components/PageHeader';
+import { type HeaderImage, PageHeader } from '@/components/PageHeader';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
@@ -13,6 +13,14 @@ export const metadata: Metadata = { title: 'Compare species', robots: { index: f
 type Profile = components['schemas']['SpeciesProfileDto'];
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX = 3;
+
+/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-051). */
+const HEADER_IMAGE: HeaderImage = {
+  src: '/hero/compare-friends.webp',
+  alt: 'A painting of a robot facing a crow, a small striped animal, a zebra and a polar bear in an autumn forest',
+  position: 'object-[50%_20%]',
+  caption: 'Header image: credit and licence pending',
+};
 
 const Unknown = ({ children = 'Unknown' }: { children?: React.ReactNode }) => <span className="missing">{children}</span>;
 
@@ -232,7 +240,12 @@ function Shell({ children }: { children: React.ReactNode }) {
       <PageHeader
         kicker="Side by side"
         title="Compare species"
-        lead="Up to three species, with no overall score. Figures with different units, places or dates are never combined."
+        image={HEADER_IMAGE}
+        lead={
+          <>
+            Up to three species, with <strong>no overall score</strong>. Figures with different units, places or dates are never combined.
+          </>
+        }
       />
       <div className="wrap pt-10 md:pt-14">{children}</div>
     </div>

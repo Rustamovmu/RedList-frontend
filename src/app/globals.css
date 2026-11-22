@@ -46,7 +46,8 @@
 
 @layer base {
   :root {
-    /* Height of the header's nav row. The home hero slides under it. */
+    /* Height of the sticky main navigation bar (D-049). The home hero and PageHeader slide under it; sticky in-page
+       navigation sits below it. */
     --nav-h: 6.75rem;
     color-scheme: dark;
   }
@@ -56,6 +57,8 @@
     }
   }
   html {
+    /* Anchor jumps land below the sticky main navigation. */
+    scroll-padding-top: var(--nav-h);
     background: var(--color-canvas);
     color: var(--color-fog);
     font-family: var(--font-sans);
@@ -103,20 +106,33 @@
     @apply mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-14;
   }
 
-  /* ---------- type ---------- */
+  /* ---------- type (D-054) ----------
+     Display sizes step up from section (h-section) to page (h-page) to hero (h-hero), bold (700) and tightly set.
+     800 was tried: Plus Jakarta Sans opens visible gaps before commas and full stops at that weight.
+     Colour follows one rule: lime marks what a page promises (its key phrase, in <strong>), never decoration. */
   .h-hero {
     @apply type-display text-white;
-    font-size: clamp(2.125rem, 3.7vw, 3.5rem);
-    line-height: 1.1;
+    font-size: clamp(2.5rem, 5.4vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
   }
   .h-page {
     @apply type-display text-white;
-    font-size: clamp(2.25rem, 4.4vw, 3.75rem);
+    font-size: clamp(2.75rem, 6vw, 5.25rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
   }
   .h-section {
     @apply type-display text-white;
-    font-size: clamp(1.75rem, 2.8vw, 2.5rem);
-    line-height: 1.14;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+  /* The promise words: lime, same weight as the text around them in a heading, semibold in a lead. */
+  .h-hero strong,
+  .h-page strong {
+    color: var(--color-lime);
+    font-weight: inherit;
   }
   .h-card {
     @apply text-xl font-bold leading-snug tracking-[-0.01em] text-white;
@@ -132,6 +148,10 @@
   }
   .lead {
     @apply max-w-[56ch] text-lg leading-relaxed text-fog sm:text-xl sm:leading-relaxed;
+  }
+  .lead strong {
+    color: var(--color-lime);
+    font-weight: 600;
   }
   .prose-measure {
     max-width: 68ch;

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPage, InfoSection } from '@/components/InfoPage';
+import type { HeaderImage } from '@/components/PageHeader';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -10,13 +11,27 @@ export const metadata: Metadata = {
 
 const contact = process.env.NEXT_PUBLIC_CONTACT_URL;
 
+/** The header picture is the owner's choice; its credit and licence are still pending, and the caption says so (DECISIONS D-052). */
+const HEADER_IMAGE: HeaderImage = {
+  src: '/hero/about-turtles.webp',
+  alt: 'Two cupped hands holding a handful of sea turtle hatchlings above deep blue water',
+  position: 'object-[50%_55%]',
+  caption: 'Header image: credit and licence pending',
+};
+
 export default function AboutPage() {
   return (
     <InfoPage
       kicker="About"
       title="About Wildward"
-      lead="Wildward helps curious people understand a species, see where it lives, and find a credible way to help. Every fact on it links to the source it came from."
+      lead={
+        <>
+          Wildward helps curious people <strong>understand</strong> a species, <strong>see</strong> where it lives, and find a credible way to <strong>help</strong>. Every fact on it
+          links to the source it came from.
+        </>
+      }
       updated="21 November 2026"
+      image={HEADER_IMAGE}
     >
       <InfoSection id="what" title="What this is">
         <p>

@@ -15,7 +15,11 @@ export default function MethodologyPage() {
     <InfoPage
       kicker="Methodology"
       title="How we source facts"
-      lead="Every status, number and photograph on Wildward is tied to a source you can check. These are the rules we follow."
+      lead={
+        <>
+          Every status, number and photograph on Wildward is <strong>tied to a source you can check</strong>. These are the rules we follow.
+        </>
+      }
       updated="21 November 2026"
     >
       <InfoSection id="sources" title="Sources and citations">
