@@ -107,7 +107,7 @@ export default async function Home() {
     <div className="flush-bottom">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(site) }} />
 
-      {/* ---------- hero: the collage runs under the nav and ends in a curve; the promise and the search sit in the middle ---------- */}
+      {/* ---------- hero: the collage runs under the nav and ends in a curve; the promise and the search sit in its lower part ---------- */}
       <section
         aria-labelledby="hero-h"
         className="relative isolate -mt-[var(--nav-h)] flex min-h-[max(40rem,92svh)] flex-col overflow-hidden bg-black [--curve-h:clamp(3.5rem,10vw,9.5rem)]"
@@ -127,7 +127,7 @@ export default async function Home() {
           {/* Scrims keep the nav, the headline and the caption readable over the faces. */}
           <div aria-hidden className="absolute inset-0 bg-black/25" />
           <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.6),transparent_28%,transparent_60%,rgb(0_0_0/0.7))]" />
-          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_45%,rgb(0_0_0/0.45),transparent)]" />
+          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_67%,rgb(0_0_0/0.45),transparent)]" />
           <figcaption className="absolute inset-x-0 bottom-[calc(var(--curve-h)+0.75rem)] z-20">
             <div className="wrap flex justify-end">
               <p className="text-right text-[0.6875rem] leading-relaxed text-fog sm:text-xs">Header image: credit and licence pending</p>
@@ -135,7 +135,8 @@ export default async function Home() {
           </figcaption>
         </figure>
 
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-5 pt-[calc(var(--nav-h)+2rem)] pb-[calc(var(--curve-h)+8rem)] text-center sm:pb-[calc(var(--curve-h)+5.5rem)]">
+        {/* Anchored to the bottom, a fixed gap above the curve, so the promise and the search sit low and clear of the caption. */}
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-end px-5 pt-[calc(var(--nav-h)+2rem)] pb-[calc(var(--curve-h)+2.75rem)] text-center sm:pb-[calc(var(--curve-h)+3rem)] lg:pb-[calc(var(--curve-h)-2rem)]">
           <h1 id="hero-h" className="h-hero rise max-w-[30ch] text-balance [text-shadow:0_2px_28px_rgb(0_0_0/0.55)]">
             Understand a species, see where it lives, and find a credible way to help.
           </h1>
