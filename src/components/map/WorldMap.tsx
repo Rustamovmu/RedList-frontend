@@ -10,7 +10,7 @@ import { PMTiles, Protocol } from 'pmtiles';
 import { useEffect, useRef, useState } from 'react';
 import type { components } from '@/contracts/api';
 import { COUNT_STEPS, countStep, MAP_COLORS } from './colors';
-import { type Bbox, fitTarget, normalizeBounds } from './geo';
+import { type Bbox, fitTarget, normalizeBounds, viewFor, WORLD_VIEW } from './geo';
 
 type MapDto = components['schemas']['MapDto'];
 type MapData = Pick<MapDto, 'countryPresence' | 'ranges'> & { species?: MapDto['species'] };
@@ -32,8 +32,22 @@ const NONE: ExpressionSpecification = ['in', ['get', 'slug'], ['literal', []]];
  */
 const BASEMAP_PATH = '/basemap/world.pmtiles';
 const BASEMAP_ATTRIBUTION = '<a href="https://protomaps.com">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-/** Protomaps' dark theme, with its land and water in the site's own colours so the map sits in the page. */
-const FLAVOR = { ...namedFlavor('dark'), background: MAP_COLORS.water, water: MAP_COLORS.water, earth: MAP_COLORS.land };
+/**
+ * Protomaps' dark theme, with its land and water in the site's own colours so the map sits in the page. Its labels are
+ * dim greys made for dark land; over the lime "Country-level presence" shading they turned muddy, so place names use the
+ * site's own fog and muted greys, still with the theme's dark halo.
+ */
+const FLAVOR = {
+  ...namedFlavor('dark'),
+  background: MAP_COLORS.water,
+  water: MAP_COLORS.water,
+  earth: MAP_COLORS.land,
+  country_label: '#dcdcdc',
+  state_label: '#9aa4b2',
+  city_label: '#c8ced6',
+  city_label_halo: '#0b1119',
+  ocean_label: '#9aa4b2',
+};
 
 let protocol: Protocol | null = null;
 
@@ -198,12 +212,21 @@ export default function WorldMap({
           style,
           center: [10, 20],
           zoom: 0.6,
-          minZoom: 0,
+          // Below 0 so the whole world view fits a narrow phone map (at zoom 0 the world is 512 px wide).
+          minZoom: -2,
           maxZoom: 8,
           dragRotate: false,
           pitchWithRotate: false,
           // Never collapsed: the OpenStreetMap credit stays in view (D-060).
           attributionControl: { compact: false, customAttribution: 'Boundaries: Natural Earth (public domain)' },
+          // A plain scroll (or one finger on a touch screen) moves the page, never the map (D-060, owner request).
+          // MapLibre zooms with Ctrl + scroll everywhere, ⌘ + scroll on a Mac, and a trackpad pinch (sent as Ctrl + wheel).
+          cooperativeGestures: true,
+          locale: {
+            'CooperativeGesturesHandler.WindowsHelpText': 'Use Ctrl + scroll to zoom the map',
+            'CooperativeGesturesHandler.MacHelpText': 'Use Ctrl or ⌘ + scroll, or pinch, to zoom the map',
+            'CooperativeGesturesHandler.MobileHelpText': 'Use two fingers to move the map',
+          },
         });
         map.current = m;
         m.addImage('hatch', hatch());
@@ -217,7 +240,7 @@ export default function WorldMap({
           ready.current = true;
           apply(m, latest.current.data, latest.current.interactive);
           sync(m, flags.current, latest.current);
-          if (latest.current.fit) m.fitBounds(fitTarget(latest.current.fit), { padding: 24, duration: 0, maxZoom: 6 });
+          fitView(m, latest.current.fit);
         });
         m.on('moveend', () => {
           clearTimeout(moveTimer);
@@ -237,12 +260,15 @@ export default function WorldMap({
           const width = m.getContainer().clientWidth;
           setTip(f ? { x: e.point.x, y: e.point.y, text: tipText(f, latest.current.data), flip: e.point.x > width - 200 } : null);
         });
-        m.on('mouseout', () => {
+        const clearHover = () => {
           if (!ready.current) return;
           setFlag(m, flags.current, 'hover', []);
           m.getCanvas().style.cursor = '';
           setTip(null);
-        });
+        };
+        m.on('mouseout', clearHover);
+        // A plain scroll moves the page and shows MapLibre's "Ctrl + scroll" hint; the pointer label would sit on top of it.
+        m.on('cooperativegestureprevented', clearHover);
         m.on('click', (e) => {
           const { interactive: on, onPick: pick } = latest.current;
           if (!ready.current || !on || !pick) return;
@@ -275,18 +301,19 @@ export default function WorldMap({
   }, [picked, linkedSpecies]);
 
   useEffect(() => {
-    if (map.current && ready.current && fit) map.current.fitBounds(fitTarget(fit), { padding: 24, duration: 0, maxZoom: 6 });
+    if (map.current && ready.current && fit) fitView(map.current, fit);
   }, [fit]);
 
   return (
-    <div className="relative h-full w-full">
+    // `isolate`: MapLibre's gesture hint has z-index 99999. Kept inside the map, it never covers the sticky nav.
+    <div className="relative isolate h-full w-full">
       {/* Sized by h-full/w-full, not by absolute insets: MapLibre's own CSS makes its container position: relative. */}
       <div ref={container} role="region" aria-label={label} className="h-full w-full" data-testid="map-canvas" />
       {/* A pointer label for mouse users. The list and the selection panel carry the same facts, so it is hidden from assistive technology. */}
       {tip ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute z-10 border border-rule bg-black/90 px-2.5 py-1.5 text-[0.8125rem] font-semibold whitespace-nowrap text-white"
+          className="pointer-events-none absolute z-10 border border-rule bg-black px-2.5 py-1.5 text-[0.8125rem] font-semibold whitespace-nowrap text-white"
           style={{ left: tip.x, top: tip.y, transform: `translate(${tip.flip ? 'calc(-100% - 14px)' : '14px'}, -50%)` }}
         >
           {tip.text}
@@ -294,6 +321,13 @@ export default function WorldMap({
       ) : null}
     </div>
   );
+}
+
+/** Shows a box, or the world view (84° N to 60° S) when there is none or it spans every longitude. The world view is
+ *  fitted without padding, so it fills the frame from edge to edge (D-060). */
+function fitView(m: MapLibre, fit: Bbox | null | undefined) {
+  const box = viewFor(fit);
+  m.fitBounds(fitTarget(box), { padding: box === WORLD_VIEW ? 0 : 24, duration: 0, maxZoom: 6 });
 }
 
 function apply(m: MapLibre, data: MapData | null, countShading: boolean) {

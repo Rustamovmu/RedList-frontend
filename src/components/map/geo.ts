@@ -5,6 +5,15 @@
 export type Bbox = [number, number, number, number];
 export const WORLD: Bbox = [-180, -90, 180, 90];
 
+/**
+ * The whole-world view (D-060): every longitude, from northern Greenland (84° N) down to 60° S. Web Mercator draws
+ * Antarctica huge; cutting it there lets the world fill a 3:2 frame. The map can still be moved or zoomed south.
+ */
+export const WORLD_VIEW: Bbox = [-180, -60, 180, 84];
+
+/** The box to show: the world view when there is none, or when the box spans every longitude (a zoomed-out view in the URL). */
+export const viewFor = (b: Bbox | null | undefined): Bbox => (!b || (b[0] === -180 && b[2] === 180) ? WORLD_VIEW : b);
+
 const round = (x: number) => Math.round(x * 1e4) / 1e4;
 const wrapLon = (x: number) => ((((x + 180) % 360) + 360) % 360) - 180;
 const clampLat = (y: number) => Math.max(-90, Math.min(90, y));

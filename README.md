@@ -11,7 +11,7 @@ Start the backend first (see its README). Then:
 cp .env.example .env.local    # REVALIDATE_SECRET must match the backend's
 npm install
 npm run contracts:generate    # types from ../RedList-backent/openapi.json
-npm run basemap:fetch         # optional: the map's Protomaps basemap (~80 MB, needs the pmtiles CLI, e.g. `brew install pmtiles`)
+npm run basemap:fetch         # optional: the map's Protomaps basemap (~58 MB, needs the pmtiles CLI, e.g. `brew install pmtiles`)
 npm run dev                   # http://localhost:3000
 ```
 

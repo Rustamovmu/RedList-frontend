@@ -2,7 +2,7 @@
  * npm run basemap:fetch — puts the self-hosted basemap (DECISIONS D-060) in public/basemap/ (git-ignored):
  *
  *   world.pmtiles          zoom 0–6 of a pinned Protomaps daily build: OpenStreetMap data, distributed as an ODbL
- *                          "Produced Work"; the map shows "Protomaps © OpenStreetMap". About 60 MB.
+ *                          "Produced Work"; the map shows "Protomaps © OpenStreetMap". 45 MB for build 20261123.
  *                          Needs the pmtiles CLI (BSD-3-Clause): https://github.com/protomaps/go-pmtiles/releases
  *                          or `brew install pmtiles`. Set PMTILES=/path/to/pmtiles if it is not on PATH.
  *   fonts/<font>/*.pbf     Noto Sans Regular, Medium and Italic glyphs (SIL Open Font License; OFL.txt alongside). About 19 MB.

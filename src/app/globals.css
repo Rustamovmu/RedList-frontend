@@ -105,6 +105,10 @@
   .wrap {
     @apply mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-14;
   }
+  /* For tools that need the room, such as the Map page's map and list (D-060): narrow side margins, capped at 1920px. */
+  .wrap-wide {
+    @apply mx-auto w-full max-w-[120rem] px-5 sm:px-8;
+  }
 
   /* ---------- type (D-054) ----------
      Display sizes step up from section (h-section) to page (h-page) to hero (h-hero), bold (700) and tightly set.
@@ -322,6 +326,14 @@
 }
 .maplibregl-ctrl-attrib-button {
   filter: invert(1);
+}
+/* The "Use Ctrl + scroll to zoom the map" hint (cooperative gestures, D-060): our type, a darker scrim. */
+.maplibregl-cooperative-gesture-screen {
+  background: rgb(0 0 0 / 0.6);
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 /*

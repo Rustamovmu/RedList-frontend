@@ -92,7 +92,10 @@ export function MapExplorer({
   );
 
   const onMove = useCallback(
-    (b: Bbox) => {
+    (view: Bbox) => {
+      // A view that spans every longitude is the world view. Its cut at 60° S is only for the picture (D-060), so the
+      // list still covers the whole world, Antarctica included.
+      const b: Bbox = view[0] === -180 && view[2] === 180 ? WORLD : view;
       setBbox(b);
       // Keep the view in the URL without filling the Back history with every pan.
       const url = new URL(window.location.href);
@@ -170,9 +173,12 @@ export function MapExplorer({
       {/* On large screens the list scrolls inside its own box, exactly as tall as the map column (the box is taken out of
           the flow, so the map column sets the row height). The page stays short: the footer is one scroll away instead
           of below every card, and when the list reaches its end the wheel carries on to the page. Phones keep one flow. */}
-      <div className="mt-6 grid gap-x-10 gap-y-12 lg:grid-cols-[1fr_24rem]">
+      {/* From lg the map is 3:2, the shape of the world view (84° N to 60° S, Antarctica cut, D-060), so the world fills it
+          edge to edge and the page above and below stays free for scrolling. It never grows taller than the window under
+          the sticky nav. Phones keep a shorter map, so one-finger scrolling is not trapped by it. */}
+      <div className="mt-6 grid gap-x-8 gap-y-12 lg:grid-cols-[minmax(0,1fr)_24rem] xl:grid-cols-[minmax(0,1fr)_28rem]">
         <div className="min-w-0">
-          <div className="relative h-[55vh] min-h-72 overflow-hidden border border-rule bg-panel lg:h-[70vh]">
+          <div className="relative h-[55vh] min-h-72 overflow-hidden border border-rule bg-panel lg:aspect-[3/2] lg:h-auto lg:max-h-[calc(100svh-var(--nav-h)-2.5rem)] lg:min-h-[28rem] lg:w-full">
             {mapFailed ? (
               <p role="status" className="notice m-4 text-[0.9375rem] text-fog">
                 <strong className="text-white">The map could not be loaded.</strong> The list still works: it shows every species for the area and filters you chose.
@@ -193,7 +199,7 @@ export function MapExplorer({
                 />
                 {/* The selected place or range, in the map's top left corner (the zoom buttons are top right). */}
                 {picked ? (
-                  <div data-testid="map-selection" className="absolute top-3 left-3 z-10 w-[min(21rem,calc(100%-4.5rem))] border border-rule bg-black/90 py-3.5 pr-12 pl-4">
+                  <div data-testid="map-selection" className="absolute top-3 left-3 z-10 w-[min(21rem,calc(100%-4.5rem))] border border-rule bg-black py-3.5 pr-12 pl-4">
                     <p className="kicker">{picked.kind === 'region' ? (REGION_TYPE_LABEL[picked.regionType] ?? 'Place') : 'Published range map'}</p>
                     <p className="mt-1 text-lg font-bold leading-snug text-white">
                       {picked.kind === 'region' ? picked.name : (rangeSpecies?.commonName ?? rangeSpecies?.scientificName ?? picked.species)}
@@ -227,6 +233,7 @@ export function MapExplorer({
               {mapFailed ? null : (
                 <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
                   Select a shaded place to list only its species. Pointing at a species in the list outlines where it is recorded.
+                  Zoom with Ctrl + scroll (or ⌘ on a Mac), the + and − buttons, or two fingers on a touch screen.
                 </p>
               )}
             </div>
@@ -247,7 +254,7 @@ export function MapExplorer({
 
         <section aria-labelledby="results-h" className="min-w-0 lg:relative">
           <div className="lg:absolute lg:inset-0 lg:flex lg:flex-col">
-            <h2 id="results-h" className="text-2xl font-bold tracking-[-0.02em] text-white">Species in this view</h2>
+            <h2 id="results-h" className="text-xl font-bold tracking-[-0.02em] text-white">Species in this view</h2>
             {listFailed ? (
               <p role="alert" className="notice-error mt-3 text-sm">Species could not be loaded. This is a problem on our side; please try again.</p>
             ) : (
@@ -276,7 +283,7 @@ export function MapExplorer({
                     <ul
                       ref={listRef}
                       data-testid="map-results"
-                      className="mt-6 grid sm:grid-cols-2 sm:gap-x-8 lg:-ml-2 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:pr-3 lg:pl-2 lg:[scrollbar-color:var(--color-rule)_transparent] lg:[scrollbar-width:thin]"
+                      className="mt-6 grid lg:-ml-2 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:pr-3 lg:pl-2 lg:[scrollbar-color:var(--color-rule)_transparent] lg:[scrollbar-width:thin]"
                       onMouseLeave={() => setLinked(null)}
                     >
                       {shown.map((s, i) => (

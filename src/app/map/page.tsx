@@ -60,7 +60,8 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
           </>
         }
       />
-      <div className="wrap">
+      {/* Wider than the other pages, so the map and the list use the screen (D-060). */}
+      <div className="wrap-wide">
         <MapExplorer
           key={`${group.join(',')}|${category.join(',')}`}
           initial={initial}
