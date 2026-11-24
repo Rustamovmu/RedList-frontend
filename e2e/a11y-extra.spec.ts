@@ -29,7 +29,8 @@ const PAGES = [
   '/credits',
   '/privacy',
   '/terms',
-  '/admin',
+  '/sign-in',
+  '/sign-up',
   '/admin/set-password',
 ];
 
@@ -74,8 +75,8 @@ test('structure: one main, one h1, heading levels in order, content inside landm
 
 test('staff pages: keyboard sign-in, then no serious or critical axe violations', async ({ page }) => {
   test.setTimeout(180_000);
-  await page.goto('/admin');
-  await expect(page.getByRole('heading', { name: 'Staff sign-in' })).toBeVisible();
+  await page.goto('/sign-in');
+  await expect(page.getByRole('heading', { name: 'Sign in', level: 1 })).toBeVisible();
   // Keyboard only: focus the email field, type, Tab to the password, Enter submits.
   await page.getByLabel(/email/i).focus();
   await page.keyboard.type(E2E_ADMIN_EMAIL);

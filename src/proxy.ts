@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { GUARD_REDIRECT, isOpenStaffPath, isStaffPath, SESSION_COOKIES } from '@/lib/staff-paths';
 
 /**
  * Content Security Policy with a fresh nonce per request (M5, DECISIONS D-029).
@@ -30,6 +31,13 @@ export function buildCsp(nonce: string, dev: boolean): string {
 }
 
 export function proxy(request: NextRequest) {
+  // Staff area guard (D-065): no session cookie, no staff page. Only the cookie's presence is checked here; the
+  // staff layout asks the API whether the session is valid, and sends a stale one home as well.
+  const path = request.nextUrl.pathname;
+  if (isStaffPath(path) && !isOpenStaffPath(path) && !SESSION_COOKIES.some((name) => request.cookies.has(name))) {
+    return NextResponse.redirect(new URL(GUARD_REDIRECT, request.url));
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const csp = buildCsp(nonce, process.env.NODE_ENV === 'development');
   const requestHeaders = new Headers(request.headers);

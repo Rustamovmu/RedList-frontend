@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCompare } from '@/components/compare/compare-store';
+import { AccountLink } from '@/components/shell/AccountLink';
 import { CompareCounter } from '@/components/shell/CompareCounter';
 import { GridIcon } from '@/components/shell/Icons';
 
@@ -51,6 +52,9 @@ export function NavLinks() {
           Explore
           <GridIcon />
         </Link>
+      </li>
+      <li className="hidden md:list-item">
+        <AccountLink />
       </li>
     </ul>
   );

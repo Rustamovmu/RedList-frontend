@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { errorText, type S, staffApi } from '@/lib/staff-api';
+import { setWho } from '@/lib/who';
 
 const MIN = 12;
 const NO_LINK = 'Open the full link an admin gave you. If you reloaded this page, open the link again.';
@@ -47,7 +48,8 @@ export default function SetPasswordPage() {
     setBusy(true);
     setError(null);
     try {
-      await staffApi.redeemLink(t, password);
+      const r = await staffApi.redeemLink(t, password);
+      setWho({ kind: 'staff', name: r.user.name });
       setDone(true);
     } catch (err) {
       setError(errorText(err));

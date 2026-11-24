@@ -24,7 +24,8 @@ const CORE_PAGES = [
   '/credits',
   '/privacy',
   '/terms',
-  '/admin',
+  '/sign-in',
+  '/sign-up',
   '/admin/set-password',
   '/no-such-page', // 404
 ];
@@ -61,7 +62,7 @@ test('axe: no serious or critical violations on the core pages', async ({ page }
 test('CSP: every page sends a nonce policy, framework scripts carry the nonce, and nothing is blocked', async ({ page }) => {
   test.setTimeout(120_000);
   const violations = await watchCsp(page);
-  for (const path of ['/', '/species', '/species/fictus-marinus', '/compare?species=fictus-regionalis,fictus-occultus', '/map', '/about', '/admin']) {
+  for (const path of ['/', '/species', '/species/fictus-marinus', '/compare?species=fictus-regionalis,fictus-occultus', '/map', '/about', '/sign-in']) {
     const res = await page.goto(path);
     const csp = res?.headers()['content-security-policy'] ?? '';
     expect(csp, path).toMatch(/script-src 'self' 'nonce-[A-Za-z0-9+/=]+' 'strict-dynamic'/);

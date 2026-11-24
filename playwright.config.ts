@@ -45,6 +45,8 @@ export default defineConfig({
         NODE_ENV: 'development',
         E2E_ADMIN_EMAIL,
         E2E_ADMIN_PASSWORD,
+        // Every test browser signs in from the same address; the default of 20 per 15 minutes would cut the suite off.
+        LOGIN_IP_LIMIT: '500',
       },
     },
     {

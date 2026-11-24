@@ -8,7 +8,7 @@ import { expect, Page, test } from '@playwright/test';
 import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from './staff';
 
 async function signIn(page: Page) {
-  await page.goto('/admin');
+  await page.goto('/sign-in');
   await page.getByLabel(/email/i).fill(E2E_ADMIN_EMAIL);
   await page.getByLabel(/password/i).fill(E2E_ADMIN_PASSWORD);
   await page.getByRole('button', { name: /sign in/i }).click();

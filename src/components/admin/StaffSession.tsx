@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { errorText, type S, StaffApiError, staffApi } from '@/lib/staff-api';
+import { GUARD_REDIRECT, isAdminOnlyPath, isOpenStaffPath } from '@/lib/staff-paths';
+import { setWho } from '@/lib/who';
 
 type Ctx = { user: S['StaffMeDto']; signOut: () => Promise<void> };
 const StaffCtx = createContext<Ctx | null>(null);
@@ -14,16 +16,19 @@ export function useStaff(): Ctx {
   return ctx;
 }
 
-/** The one staff page that works without a session: setting a password from a one-time link (D-062). */
-export const SET_PASSWORD_PATH = '/admin/set-password';
-
-/** Loads the session; shows the sign-in form when there is none. */
+/**
+ * Staff area guard (D-065). The set-password page works without a session; every other staff page needs a valid
+ * one, and admin-only pages need the admin role. Anyone else is sent to the home page. The proxy already redirects
+ * requests without a session cookie; this catches stale sessions and the role check. Staff sign in at /sign-in (D-066).
+ */
 export function StaffSessionProvider({ children }: { children: React.ReactNode }) {
-  if (usePathname() === SET_PASSWORD_PATH) return <>{children}</>;
+  if (isOpenStaffPath(usePathname())) return <>{children}</>;
   return <SessionGate>{children}</SessionGate>;
 }
 
 function SessionGate({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const path = usePathname();
   const [user, setUser] = useState<S['StaffMeDto'] | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,14 +39,20 @@ function SessionGate({ children }: { children: React.ReactNode }) {
       .catch((e) => (e instanceof StaffApiError && e.status === 401 ? setUser(null) : setError(errorText(e))));
   }, []);
 
+  const denied = user === null || (user !== undefined && isAdminOnlyPath(path) && user.role !== 'admin');
+  useEffect(() => {
+    if (denied) router.replace(GUARD_REDIRECT);
+  }, [denied, router]);
+
+  // Signing out sets the user to null, and the guard above sends the browser home.
   const signOut = useCallback(async () => {
     await staffApi.logout().catch(() => undefined);
+    setWho({ kind: 'none' });
     setUser(null);
   }, []);
 
   if (error) return <p role="alert" className="text-alert">{error}</p>;
-  if (user === undefined) return <p role="status" className="meta">Loading…</p>;
-  if (user === null) return <SignIn onSignedIn={setUser} />;
+  if (user === undefined || denied) return <p role="status" className="meta">Loading…</p>;
   return (
     <StaffCtx.Provider value={{ user, signOut }}>
       <div className="mb-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-rule">
@@ -55,44 +66,6 @@ function SessionGate({ children }: { children: React.ReactNode }) {
       </div>
       {children}
     </StaffCtx.Provider>
-  );
-}
-
-function SignIn({ onSignedIn }: { onSignedIn: (u: S['StaffMeDto']) => void }) {
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    setBusy(true);
-    setError(null);
-    try {
-      const r = await staffApi.login(String(f.get('email')), String(f.get('password')));
-      onSignedIn(r.user);
-    } catch (err) {
-      setError(errorText(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={submit} className="panel mx-auto mt-6 max-w-[380px] space-y-5 p-7" aria-labelledby="signin-h">
-      <h1 id="signin-h" className="text-[2rem] font-bold leading-tight tracking-[-0.02em] text-white">Staff sign-in</h1>
-      <label className="block">
-        <span className="label">Email</span>
-        <input name="email" type="email" autoComplete="username" required className="field mt-1.5" />
-      </label>
-      <label className="block">
-        <span className="label">Password</span>
-        <input name="password" type="password" autoComplete="current-password" required className="field mt-1.5" />
-      </label>
-      {error ? <p role="alert" className="whitespace-pre-line text-sm text-alert">{error}</p> : null}
-      <button disabled={busy} className="btn btn-primary w-full">
-        {busy ? 'Signing in…' : 'Sign in'}
-      </button>
-    </form>
   );
 }
 

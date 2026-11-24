@@ -9,7 +9,7 @@ import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from './staff';
 const INVITEE_PASSWORD = 'e2e-only invitee passphrase';
 
 async function signIn(page: Page) {
-  await page.goto('/admin');
+  await page.goto('/sign-in');
   await page.getByLabel(/email/i).fill(E2E_ADMIN_EMAIL);
   await page.getByLabel(/password/i).fill(E2E_ADMIN_PASSWORD);
   await page.getByRole('button', { name: /sign in/i }).click();
@@ -50,6 +50,10 @@ test('invite, set a password from the link, then disable the account', async ({ 
   await expect(invitee.getByRole('link', { name: `${name} (editor)` })).toBeVisible();
   // Editors do not see the Staff page in the navigation.
   await expect(invitee.getByRole('navigation', { name: 'Staff' }).getByRole('link', { name: 'Staff' })).toHaveCount(0);
+  // ...and an editor who opens it anyway is sent to the home page (D-065).
+  await invitee.goto('/admin/staff');
+  await expect(invitee).toHaveURL(/\/$/);
+  await expect(invitee.getByRole('heading', { name: 'Staff', level: 1 })).toHaveCount(0);
 
   // The link works once.
   const again = await other.newPage();
@@ -63,7 +67,9 @@ test('invite, set a password from the link, then disable the account', async ({ 
   page.once('dialog', (d) => d.accept());
   await row.getByRole('button', { name: 'Disable' }).click();
   await expect(row.getByText('Disabled', { exact: true })).toBeVisible();
+  // Its cookie is still in the browser, but the API no longer accepts it, so the staff area sends it home (D-065).
   await invitee.goto('/admin');
-  await expect(invitee.getByRole('heading', { name: 'Staff sign-in' })).toBeVisible();
+  await expect(invitee).toHaveURL(/\/$/);
+  await expect(invitee.getByRole('navigation', { name: 'Staff' })).toHaveCount(0);
   await other.close();
 });

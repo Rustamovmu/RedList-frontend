@@ -3,7 +3,7 @@ import { InfoPage, InfoSection } from '@/components/InfoPage';
 
 export const metadata: Metadata = {
   title: 'Privacy',
-  description: 'What Wildward stores about visitors: no accounts, no tracking cookies, no analytics.',
+  description: 'What Wildward stores about visitors: accounts are optional, no tracking cookies, no analytics.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -19,20 +19,45 @@ export default function PrivacyPage() {
           You can use all of Wildward <strong>without an account</strong>, and <strong>we do not track you</strong>.
         </>
       }
-      updated="24 November 2026"
+      updated="25 November 2026"
       summary={
         <p className="notice bg-black/40 text-[0.9375rem] font-semibold leading-relaxed text-white">
-          In short: no accounts · no tracking cookies · no analytics · your location never leaves your browser
+          In short: accounts are optional · no tracking cookies · no analytics · your location never leaves your browser
         </p>
       }
     >
       <InfoSection id="visitors" title="If you are a visitor">
         <ul>
-          <li>No accounts, no sign-up and no newsletter.</li>
-          <li>No analytics, no advertising and no tracking cookies. Wildward sets no cookies for visitors.</li>
+          <li>No newsletter. An account is optional: without one, everything on the site works the same.</li>
+          <li>No analytics, no advertising and no tracking cookies. Wildward sets no cookies unless you sign in.</li>
           <li>All pages, photos and map data load from this site itself. Your browser makes no requests to other companies when you read a profile.</li>
           <li>Like any website, the server may keep short-lived technical logs (such as the time and address of a request) to keep the site running and secure. They are not used to profile visitors.</li>
         </ul>
+      </InfoSection>
+
+      <InfoSection id="accounts" title="If you create an account">
+        <p>An account is optional. When you create one, we store:</p>
+        <ul>
+          <li>the name and email address you give, and when the account was created;</li>
+          <li>your password only as a secure hash (Argon2id), never the password itself;</li>
+          <li>
+            for each browser where you are signed in: a hash of its session token, a security (CSRF) token, and when the session started, was last used
+            and ends. No IP address or browser details are stored with it.
+          </li>
+        </ul>
+        <p>
+          Signing in sets a session cookie and a security (CSRF) cookie. Both are needed to keep your account secure, and both are removed when you sign
+          out. A session ends after 7 days without use, and after 30 days in any case.
+        </p>
+        <p>
+          We use your email address only to sign you in. It is not shown to anyone else. Wildward sends no email, and does not check that the address is
+          yours.
+        </p>
+        <p>
+          You can delete your account at any time on your account page. The account and all its sessions are deleted at once. Copies may remain in
+          server backups made before then, until those backups are deleted. If the site is ever restored from such a backup, the account comes back
+          with it, and you can delete it again.
+        </p>
       </InfoSection>
 
       <InfoSection id="browser" title="What stays in your browser">

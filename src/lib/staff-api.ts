@@ -1,72 +1,23 @@
 import type { components } from '@/contracts/api';
+import { ApiError, errorText, jsonClient } from '@/lib/api-client';
 
 /**
- * Browser-side client for the staff API. Calls go to same-origin /api/v1 (proxied to the API), so the
- * HttpOnly session cookie travels automatically. Every mutation sends the CSRF token from the readable
- * CSRF cookie in `x-csrf-token` (double submit, PLAN §9). Types come from the generated contract.
+ * Browser-side client for the staff API (`/api/v1/staff`), with the staff CSRF cookie. Types come from the generated
+ * contract. Signing in goes through the form for everyone (account-api, D-066).
  */
 export type S = components['schemas'];
 
-export class StaffApiError extends Error {
-  constructor(
-    public status: number,
-    public code: string,
-    message: string,
-    public details?: string[],
-  ) {
-    super(message);
-  }
-}
+export { ApiError as StaffApiError, errorText };
 
-function csrfToken(): string | undefined {
-  for (const part of document.cookie.split(';')) {
-    const [k, ...v] = part.trim().split('=');
-    if (k === '__Host-ww_csrf' || k === 'ww_csrf') return decodeURIComponent(v.join('='));
-  }
-  return undefined;
-}
+/** The staff CSRF cookie: __Host- prefixed over HTTPS, plain on local HTTP (see the API's cookieNames). */
+export const STAFF_CSRF_COOKIES = ['__Host-ww_csrf', 'ww_csrf'] as const;
 
-async function call<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = { accept: 'application/json' };
-  if (body !== undefined) headers['content-type'] = 'application/json';
-  if (method !== 'GET') headers['x-csrf-token'] = csrfToken() ?? '';
-  const res = await fetch(`/api/v1/staff${path}`, {
-    method,
-    headers,
-    credentials: 'same-origin',
-    cache: 'no-store',
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const json = (await res.json().catch(() => null)) as { error?: { code?: string; message?: string; details?: unknown } } | null;
-  if (!res.ok) {
-    const details = Array.isArray(json?.error?.details) ? (json.error.details as unknown[]).map(String) : undefined;
-    throw new StaffApiError(res.status, json?.error?.code ?? 'ERROR', json?.error?.message ?? res.statusText, details);
-  }
-  return json as T;
-}
-
-/** Multipart upload: the browser sets the multipart boundary, so no content-type header here. CSRF as for every mutation. */
-async function upload<T>(path: string, form: FormData): Promise<T> {
-  const res = await fetch(`/api/v1/staff${path}`, {
-    method: 'POST',
-    headers: { accept: 'application/json', 'x-csrf-token': csrfToken() ?? '' },
-    credentials: 'same-origin',
-    cache: 'no-store',
-    body: form,
-  });
-  const json = (await res.json().catch(() => null)) as { error?: { code?: string; message?: string; details?: unknown } } | null;
-  if (!res.ok) {
-    const details = Array.isArray(json?.error?.details) ? (json.error.details as unknown[]).map(String) : undefined;
-    throw new StaffApiError(res.status, json?.error?.code ?? 'ERROR', json?.error?.message ?? res.statusText, details);
-  }
-  return json as T;
-}
+const { call, upload } = jsonClient('/api/v1/staff', STAFF_CSRF_COOKIES);
 
 const enc = encodeURIComponent;
 
 export const staffApi = {
   me: () => call<{ user: S['StaffMeDto']; csrfToken: string }>('GET', '/auth/me'),
-  login: (email: string, password: string) => call<{ user: S['StaffMeDto']; csrfToken: string }>('POST', '/auth/login', { email, password }),
   logout: () => call<{ ok: true }>('POST', '/auth/logout'),
   changePassword: (b: S['ChangePasswordDto']) => call<{ ok: true }>('POST', '/auth/password', b),
   // One-time links: no session needed. The token comes from the link's #fragment, never from the query string.
@@ -115,8 +66,3 @@ export const staffApi = {
   updateSupportLink: (id: string, b: S['UpdateSupportLinkDto']) => call<S['StaffSupportLinkDto']>('PUT', `/support-links/${enc(id)}`, b),
   setSupportLinkStatus: (id: string, action: 'approve' | 'disable') => call<S['StaffSupportLinkDto']>('POST', `/support-links/${enc(id)}/${action}`),
 };
-
-export function errorText(e: unknown): string {
-  if (e instanceof StaffApiError) return [e.message, ...(e.details ?? [])].join('\n');
-  return e instanceof Error ? e.message : 'Something went wrong';
-}

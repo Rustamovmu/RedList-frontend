@@ -20,7 +20,7 @@ Pages: home `/`, Explore `/species`, profiles `/species/<slug>`, compare `/compa
 The map uses MapLibre GL JS. Its basemap is the Protomaps dark theme (OpenStreetMap data), served from this site's own `public/basemap/` after `npm run basemap:fetch`; without that file it draws our own Natural Earth land from the API. There is no tile provider or key either way (DECISIONS D-004, D-060). `npm run dev` and `npm run build` first copy MapLibre's worker to `public/vendor/` (`scripts/copy-maplibre-worker.mjs`, DECISIONS D-016).
 
 - **Species profiles:** `/species/<slug>` (try `fictus-regionalis` after `npm run db:seed:fixtures` in the backend).
-- **Staff area:** `/admin`. Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.
+- **Staff area:** sign in with **Sign in** at the top of any page (`/sign-in`, the form for everyone; D-066). Without a session, staff pages redirect home (D-065). Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.
 
 ## How it talks to the API
 - **Server components** call `API_INTERNAL_URL` through `src/lib/api.ts`. Calls are typed from `src/contracts/api.d.ts` and carry cache tags.
