@@ -20,7 +20,7 @@ export default function MethodologyPage() {
           Every status, number and photograph on Wildward is <strong>tied to a source you can check</strong>. These are the rules we follow.
         </>
       }
-      updated="21 November 2026"
+      updated="24 November 2026"
     >
       <InfoSection id="sources" title="Sources and citations">
         <ul>
@@ -68,7 +68,10 @@ export default function MethodologyPage() {
         <ul>
           <li>We use only images under CC0, the Public Domain Mark, CC BY or CC BY-SA. We do not use non-commercial or no-derivatives images.</li>
           <li>We check each licence on the file&apos;s source page and against the copyright notice embedded in the file. If the two disagree, we do not use the image.</li>
-          <li>Every photo shows its creator and licence. Images are resized and re-encoded, which removes embedded data such as camera details and GPS position.</li>
+          <li>
+            Each photo&apos;s credit and licence are listed under Sources on its profile and on the <Link href="/credits">photo credits page</Link>. Images are
+            resized and re-encoded, which removes embedded data such as camera details and GPS position.
+          </li>
         </ul>
       </InfoSection>
 
