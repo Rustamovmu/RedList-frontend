@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { GroupTile } from '@/components/GroupTile';
+import { type GlobeEntry, SpeciesGlobe } from '@/components/home/SpeciesGlobe';
 import { SpeciesWall } from '@/components/home/SpeciesWall';
 import { AlertIcon, BranchIcon, GlobeIcon, GuideIcon } from '@/components/home/StatIcons';
 import { HeroCurve } from '@/components/shell/Curves';
@@ -21,10 +22,12 @@ import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
  * the catalogue in numbers, then photo-led sections. Every number comes from the database and says "in this catalogue",
  * never a global total. Below the hero every photo is a catalogue image, captioned with the species it shows; photographers
  * and licences are listed on /credits, linked from the footer (D-055). The hero image is the owner's choice (DECISIONS D-041).
+ * After the numbers come two full-screen sections the owner asked for: a photo wall (D-063) and a globe (D-064).
  */
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 type Card = components['schemas']['SpeciesCardDto'];
+type Pin = components['schemas']['SpeciesPinDto'];
 
 const RULES = [
   'Every number and status links to the source it came from, with the source’s own date.',
@@ -86,6 +89,43 @@ function wallPicks(pool: Card[], used: Set<string>, onTiles: Set<string>): Card[
   return wall;
 }
 
+/** Pins on the home globe (SpeciesGlobe, D-064). */
+const GLOBE_SIZE = 8;
+
+/** Angle between two points on the globe, in degrees (haversine). */
+function arcDegrees(a: Pin, b: Pin): number {
+  const rad = Math.PI / 180;
+  const h = Math.sin(((b.lat - a.lat) * rad) / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(((b.lng - a.lng) * rad) / 2) ** 2;
+  return (2 * Math.asin(Math.min(1, Math.sqrt(h)))) / rad;
+}
+
+/**
+ * The globe's species, taken after the wall: threatened species whose photo is not already on the page and that have a
+ * pin (GET /map/pins: a point inside a place where they live; species with hidden locations never have one).
+ * Pins must not cover each other: a pin is about 12° of arc wide at the middle of the globe, 17° when it is featured,
+ * so each new pin keeps 20° from the others, then 10° if candidates run short; a closer one is left off. Two species in
+ * one place share a point, so they never both get a pin.
+ * A new animal group is preferred. Ordered west to east, so "Next species" turns the globe one way round.
+ */
+function globePicks(pool: Card[], used: Set<string>, pins: Pin[]): GlobeEntry[] {
+  const pinOf = new Map(pins.map((p) => [p.slug, p]));
+  const picked: GlobeEntry[] = [];
+  const groups = new Set<string>();
+  const passes = [{ newGroup: true, apart: 20 }, { newGroup: false, apart: 20 }, { newGroup: false, apart: 10 }];
+  for (const { newGroup, apart } of passes) {
+    for (const c of pool) {
+      const pin = pinOf.get(c.slug);
+      if (picked.length >= GLOBE_SIZE || !pin || !c.image || used.has(c.slug)) continue;
+      if (newGroup && groups.has(c.displayGroup)) continue;
+      if (picked.some((e) => arcDegrees(e.pin, pin) < apart)) continue;
+      picked.push({ card: { ...c, image: c.image }, pin });
+      used.add(c.slug);
+      groups.add(c.displayGroup);
+    }
+  }
+  return picked.sort((a, b) => a.pin.lng - b.pin.lng);
+}
+
 /**
  * Hands out photos for the page's photo sections: the next threatened species with a photo that is not already on the
  * page, preferring one that matches `want` and is not already a group tile's photo. So no photo appears twice when
@@ -129,6 +169,12 @@ export default async function Home() {
   const sourcePhoto = pick((c) => c.displayGroup === 'bird');
   const comparePhoto = pick();
   const wall = wallPicks(pool, used, onTiles);
+  // The globe's candidates are the threatened species with a photo not yet on the page; the API says where each lives.
+  const globeCandidates = pool.filter((c) => c.image && !used.has(c.slug)).map((c) => c.slug);
+  const pins = globeCandidates.length
+    ? await apiGet('/api/v1/map/pins', { query: { species: globeCandidates.join(',') }, tags: ['catalogue'] }).catch(() => null)
+    : null;
+  const globe = globePicks(pool, used, pins?.pins ?? []);
 
   // schema.org WebSite with the site search, so search engines can offer a search box for the catalogue.
   const site = {
@@ -232,6 +278,9 @@ export default async function Home() {
 
       {/* ---------- meet the animals: a full-screen photo wall of threatened species (D-063) ---------- */}
       <SpeciesWall cards={wall} allHref={THREATENED_HREF} />
+
+      {/* ---------- around the world: a full-screen globe of threatened species, one place each (D-064) ---------- */}
+      <SpeciesGlobe entries={globe} />
 
       {/* ---------- how we source facts: photo left, text right ---------- */}
       <section aria-labelledby="how" className="wrap grid items-center gap-x-16 gap-y-10 py-24 lg:grid-cols-2 lg:py-32 xl:gap-x-24">

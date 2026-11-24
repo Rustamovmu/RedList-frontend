@@ -36,11 +36,13 @@
 }
 
 /*
- * shadcn-style colour names, mapped onto the palette above, for the vendored picture rail gallery
- * (components/ui/picture-rail-gallery.tsx, home photo wall, D-063). Its classes (bg-card, text-muted-foreground, ring-ring…)
- * and inline styles (var(--color-card)…) read these. `static` because inline styles are not scanned, so the variables
- * must always be emitted. Our `muted` stays the muted TEXT grey; muted-foreground is the same grey as a literal, so a
- * section may repaint `--color-muted` (the gallery's photo backing) without touching its text.
+ * shadcn-style colour names, mapped onto the palette above, for the vendored home components in components/ui: the
+ * picture rail gallery (photo wall, D-063) and the testimonial globe (D-064). Their classes (bg-card,
+ * text-muted-foreground, ring-ring, ring-chart-2…) and inline styles (var(--color-card)…) read these, and the globe reads
+ * background and foreground to colour its sphere. `static` because inline styles are not scanned, so the variables must
+ * always be emitted. Our `muted` stays the muted TEXT grey; muted-foreground is the same grey as a literal, so a section
+ * may repaint `--color-muted` (the photo backing in both components) without touching its text. The chart colours are
+ * all lime: the site keeps one signal colour (D-034), and they carry no meaning here.
  */
 @theme static {
   --color-background: var(--color-canvas);
@@ -50,7 +52,11 @@
   --color-muted-foreground: #9aa4b2;
   --color-border: var(--color-rule);
   --color-ring: var(--color-lime);
+  --color-chart-1: var(--color-lime);
   --color-chart-2: var(--color-lime);
+  --color-chart-3: var(--color-lime);
+  --color-chart-4: var(--color-lime);
+  --color-chart-5: var(--color-lime);
 }
 
 /* The site is dark only (`color-scheme: dark`), so `dark:` always applies, whatever the visitor's system setting. */

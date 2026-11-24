@@ -228,6 +228,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/map/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GeographyController_pins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/regions/{slug}": {
         parameters: {
             query?: never;
@@ -989,6 +1005,25 @@ export interface components {
             type: "FeatureCollection";
             features: components["schemas"]["BasemapFeatureDto"][];
             attribution: string;
+        };
+        PinPlaceDto: {
+            /** @description Region slug (its page is /regions/<slug>) */
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "country" | "ocean" | "sea" | "other";
+        };
+        SpeciesPinDto: {
+            slug: string;
+            /** @description The smallest country, sea or ocean where the species is recorded as living (native or reintroduced, present) */
+            place: components["schemas"]["PinPlaceDto"];
+            /** @description Latitude of a point inside the place (not inside the species range), rounded to 0.001° */
+            lat: number;
+            /** @description Longitude of the same point, rounded to 0.001° */
+            lng: number;
+        };
+        SpeciesPinsDto: {
+            pins: components["schemas"]["SpeciesPinDto"][];
         };
         RegionSourceDto: {
             title: string;
@@ -2320,6 +2355,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["BasemapDto"];
                 };
+            };
+        };
+    };
+    GeographyController_pins: {
+        parameters: {
+            query: {
+                /** @description 1 to 48 species slugs, comma-separated. Duplicates are ignored. */
+                species: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpeciesPinsDto"];
+                };
+            };
+            /** @description species is missing, has a malformed slug, or lists more than 48 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
