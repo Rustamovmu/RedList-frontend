@@ -69,6 +69,28 @@ test('every profile renders with outbound network blocked, with or without a pho
   expect(leaked).toEqual([]);
 });
 
+test('the population key fact shows one estimate with its basis, context, place and year, or Unknown (D-059)', async ({ page }) => {
+  const fact = page.getByTestId('population-fact');
+  // Two estimates: the global wild one leads; the regional breeding-pairs one is one click away.
+  await page.goto('/species/fictus-regionalis');
+  await expect(fact).toContainText('20,000–49,999 mature individuals');
+  await expect(fact).toContainText('Wild · Global · 2019');
+  await expect(fact.getByRole('link', { name: 'and 1 more estimate' })).toHaveAttribute('href', '#population');
+  // Wild before captive, even when the captive count comes with an exact figure.
+  await page.goto('/species/fictus-captivus');
+  await expect(fact).toContainText('50–249 mature individuals');
+  await expect(fact).toContainText('Wild · Global · 2022');
+  await expect(fact).not.toContainText('412');
+  // A qualitative estimate is shown in words, and a missing year is said, not hidden.
+  await page.goto('/species/fictus-marinus');
+  await expect(fact).toContainText('Locally common on outer reefs (synthetic)');
+  await expect(fact).toContainText('Wild · Global · date not stated');
+  // No estimate: Unknown, never zero.
+  await page.goto('/species/fictus-exemplaris');
+  await expect(fact).toHaveText('Unknown');
+  await expectNoHorizontalOverflow(page);
+});
+
 test('cards and the home hero show the photo without a credit line or caption, same-origin only', async ({ page }) => {
   const { leaked } = await blockOutbound(page);
   await page.goto('/');

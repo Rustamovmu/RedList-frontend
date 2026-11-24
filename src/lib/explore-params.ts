@@ -43,3 +43,13 @@ export function apiQuery(s: ExploreState, pageSize: number): Record<string, stri
 }
 
 export const appliedCount = (s: ExploreState) => LIST_KEYS.reduce((n, k) => n + s[k].length, 0) + (s.q ? 1 : 0);
+
+/**
+ * True when a filter cannot narrow the list, so the page leaves it out (D-059): it has a single option, that option
+ * matches every species the page covers (`total`), and it is not selected. A selected option always stays, so it can be
+ * unticked. Example: "Trend unknown (81)" while every species' trend is unknown.
+ */
+export function onlyOneChoice(options: ReadonlyArray<{ value: string; count: number }>, total: number, selected: readonly string[]): boolean {
+  const [only] = options;
+  return options.length === 1 && only !== undefined && only.count === total && !selected.includes(only.value);
+}

@@ -47,6 +47,36 @@ test('map loads with its own basemap, and a viewport in the URL narrows the list
   await expectNoHorizontalOverflow(page);
 });
 
+test('selecting a shaded place narrows the list to its species and links to its page; clearing brings the list back (D-060)', async ({ page }) => {
+  // The view is centred on Tanzania (35° E, 6° S), where only the example beast is recorded. Madagascar's lizard is also in view.
+  await page.goto('/map?bbox=25,-16,45,4');
+  await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('link', { name: 'Captive example lizard (fixture)' })).toBeVisible();
+  const map = page.getByTestId('map-canvas');
+  await map.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const panel = page.getByTestId('map-selection');
+  // The map may still be drawing its first frame, so click the centre until the selection shows.
+  await expect(async () => {
+    const box = await map.boundingBox();
+    if (!box) throw new Error('no map');
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(panel).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 20_000 });
+
+  await expect(panel).toContainText('Country');
+  await expect(panel).toContainText('Tanzania');
+  await expect(panel.getByRole('link', { name: 'Open the page for Tanzania' })).toHaveAttribute('href', '/regions/tanzania');
+  await expect(count(page)).toHaveText(/^1 of \d+ species in this view are recorded in Tanzania$/);
+  await expect(page.getByRole('link', { name: 'Example beast (fixture)' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Captive example lizard (fixture)' })).toHaveCount(0);
+  await expectNoHorizontalOverflow(page);
+
+  await panel.getByRole('button', { name: /Clear the selection/ }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(count(page)).toHaveText(/ species in this catalogue match this view$/);
+  await expect(page.getByRole('link', { name: 'Captive example lizard (fixture)' })).toBeVisible();
+});
+
 test.describe('Near me', () => {
   test.use({ geolocation: { latitude: -1.29, longitude: 36.82 }, permissions: ['geolocation'] });
   test('finds the country in the browser and opens its region page', async ({ page }) => {
@@ -64,11 +94,17 @@ test('region pages list how species occur there and never list hidden species', 
   await expect(page.getByRole('link', { name: 'Example reef fish (fixture)' })).toBeVisible();
   await expect(page.getByText('Present · Native · Year-round')).toBeVisible();
   await expect(page.getByRole('link', { name: 'View on the map' })).toHaveAttribute('href', /\/map\?bbox=17\d(\.\d+)?,/);
+  // Fiji has one species, so no filter could narrow the list and none is offered (D-059).
+  await expect(page.getByText('Filters', { exact: true })).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 
   await page.goto('/regions/norway?seasonality=breeding');
   await expect(page.getByRole('link', { name: 'Regional example bird (fixture)' })).toBeVisible();
   await expect(page.getByText('Present · Native · Breeding season')).toBeVisible();
+  // A selected filter always stays, so it can be unticked, even when it is the only choice (D-059).
+  await expect(page.getByRole('group', { name: 'Season here' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /^Breeding season/ })).toBeChecked();
+  await expect(page.getByRole('group', { name: 'Origin here' })).toHaveCount(0);
 
   await page.goto('/regions/peru');
   await expect(page.getByText('No species in this catalogue are recorded in Peru yet.')).toBeVisible();

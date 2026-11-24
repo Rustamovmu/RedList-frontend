@@ -63,6 +63,18 @@ test('the Wildward logo, in the header or the footer, leads to the home hero, al
   await expect(page.getByRole('heading', { level: 1 })).toBeInViewport();
 });
 
+test('the compare counter keeps clear of the logo, with no horizontal overflow (D-059)', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem('wildward:compare', JSON.stringify(['fictus-exemplaris', 'fictus-regionalis'])));
+  await page.goto('/about');
+  const counter = page.getByRole('banner').getByRole('link', { name: /Comparing\s+2 of 3/ });
+  await expect(counter).toBeVisible();
+  const [logo, count] = await Promise.all([page.getByRole('banner').getByRole('link', { name: 'Wildward' }).boundingBox(), counter.boundingBox()]);
+  expect(logo).not.toBeNull();
+  expect(count).not.toBeNull();
+  expect(count!.x - (logo!.x + logo!.width)).toBeGreaterThanOrEqual(12);
+  await expectNoHorizontalOverflow(page);
+});
+
 test('the photo credits page gives each photo its creator, licence deed and species, linked from the footer (D-055)', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('contentinfo').getByRole('link', { name: 'Photo credits' }).click();

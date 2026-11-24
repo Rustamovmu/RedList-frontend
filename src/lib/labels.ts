@@ -15,6 +15,9 @@ export const GROUP_PLURAL: Record<Profile['displayGroup'], string> = {
   arachnid: 'Arachnids', mollusc: 'Molluscs', crustacean: 'Crustaceans', coral: 'Corals', other_invertebrate: 'Other invertebrates',
 };
 
+/** Region types, as region pages and the map's selection panel name them. */
+export const REGION_TYPE_LABEL: Record<string, string> = { country: 'Country', ocean: 'Ocean', sea: 'Sea', other: 'Marine area' };
+
 export const ENVIRONMENT_LABEL: Record<string, string> = {
   terrestrial: 'Land', freshwater: 'Freshwater', marine: 'Marine', brackish: 'Brackish water', subterranean: 'Underground', aerial: 'Air',
 };
@@ -63,6 +66,23 @@ export function estimateValue(e: Estimate): string | null {
     case 'unknown':
       return null;
   }
+}
+
+/**
+ * The estimate a profile shows among its key facts (D-059). It is one of the listed estimates, shown with its own basis,
+ * context, place and year, never a sum or a blend of several. Preference, with the editor's order (`position`) as the
+ * tie-break: an estimate with a figure, then a qualitative one, then an unknown one; wild before captive; global before
+ * regional.
+ */
+export function headlineEstimate(estimates: readonly Estimate[]): Estimate | null {
+  const rank = (e: Estimate) => {
+    const value = estimateValue(e);
+    const kind = value === null ? 2 : e.form === 'qualitative' ? 1 : 0;
+    return kind * 4 + (e.context === 'wild' ? 0 : 2) + (e.scope === 'global' ? 0 : 1);
+  };
+  let best: Estimate | null = null;
+  for (const e of estimates) if (best === null || rank(e) < rank(best)) best = e;
+  return best;
 }
 
 export function referencePeriod(start: string | null, end: string | null): string | null {

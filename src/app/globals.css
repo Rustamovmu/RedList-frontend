@@ -112,9 +112,9 @@
      Colour follows one rule: lime marks what a page promises (its key phrase, in <strong>), never decoration. */
   .h-hero {
     @apply type-display text-white;
-    font-size: clamp(2.5rem, 5.4vw, 5rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
+    font-size: clamp(2rem, 4.1vw, 3.875rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
   }
   .h-page {
     @apply type-display text-white;
@@ -322,6 +322,25 @@
 }
 .maplibregl-ctrl-attrib-button {
   filter: invert(1);
+}
+
+/*
+ * Explore's "Apply filters" bar (D-059). In the phone drawer it is always pinned to the bottom (Tailwind `sticky`).
+ * In the md+ sidebar it sits after the last filter, so it never covers the first options on load, and it is pinned
+ * again once a filter has changed (FilterDrawer sets data-dirty). Unlayered, so it wins over the `sticky` utility.
+ * The inputs keep a bottom scroll margin a little taller than the bar, so a focused or just-ticked filter is scrolled
+ * clear of it instead of hidden under it (WCAG 2.4.11).
+ */
+.filter-panel input {
+  scroll-margin-bottom: 6rem;
+}
+@media (min-width: 48rem) {
+  .filter-apply {
+    position: static;
+  }
+  [data-dirty] .filter-apply {
+    position: sticky;
+  }
 }
 
 /* Body text of the information pages: lime links, square bullets. A list marked .plain keeps its own layout. */

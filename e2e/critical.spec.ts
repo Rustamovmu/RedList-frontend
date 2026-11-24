@@ -118,6 +118,24 @@ test('explore has an empty state with reset, and chips remove one filter at a ti
   await expect(page.getByRole('status')).toHaveText('1 species in this catalogue match');
 });
 
+test('explore: the Apply bar never covers the filters on load, and is pinned below the ticked filter once one changes (D-059)', async ({ page }) => {
+  test.skip(isMobile(page), 'the desktop sidebar only; in the phone drawer the bar is pinned from the start');
+  await page.goto('/species');
+  const bar = page.locator('.filter-apply');
+  const position = () => bar.evaluate((el) => getComputedStyle(el).position);
+  await expect.poll(position).toBe('static');
+  const land = page.getByRole('checkbox', { name: /^Land/ });
+  await land.check();
+  await expect.poll(position).toBe('sticky');
+  // The filter just ticked stays in view, above the pinned bar.
+  await expect
+    .poll(async () => {
+      const [l, b] = await Promise.all([land.boundingBox(), bar.boundingBox()]);
+      return l !== null && b !== null && l.y + l.height <= b.y;
+    })
+    .toBe(true);
+});
+
 test('no horizontal overflow on the core pages', async ({ page }) => {
   for (const path of ['/', '/species', '/species?sort=status', '/species/fictus-regionalis', '/species/fictus-occultus', '/compare?species=fictus-exemplaris,fictus-regionalis,fictus-captivus']) {
     await page.goto(path);

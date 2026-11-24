@@ -8,7 +8,7 @@ import { SpeciesCard } from '@/components/SpeciesCard';
 import { STATUS_SWATCH } from '@/components/StatusBadge';
 import type { components } from '@/contracts/api';
 import { apiGet } from '@/lib/api';
-import { apiQuery, appliedCount, type ExploreState, exploreHref, LIST_KEYS, type ListKey, readExplore } from '@/lib/explore-params';
+import { apiQuery, appliedCount, type ExploreState, exploreHref, LIST_KEYS, type ListKey, onlyOneChoice, readExplore } from '@/lib/explore-params';
 import { IUCN_CATEGORIES, IUCN_LABEL, type IucnCategory } from '@/lib/iucn';
 import { ENVIRONMENT_LABEL, GROUP_LABEL, TREND_LABEL } from '@/lib/labels';
 
@@ -35,6 +35,11 @@ type Option = { value: string; label: string; count: number };
 const KEY_LABEL: Record<ListKey, string> = {
   group: 'Animal group', environment: 'Environment', category: 'Status', region: 'Country or sea', habitat: 'Habitat', trend: 'Trend',
 };
+/** The same filters as words in the lead ("filter by group, environment … and trend"). */
+const KEY_WORD: Record<ListKey, string> = {
+  group: 'group', environment: 'environment', category: 'status', region: 'place', habitat: 'habitat', trend: 'trend',
+};
+const listWords = (w: readonly string[]) => (w.length > 1 ? `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}` : (w[0] ?? ''));
 
 /** Options for one filter: everything with species in it, plus anything already selected (count 0 if nothing matches). */
 function options(f: Filters, key: ListKey, selected: string[]): Option[] {
@@ -63,6 +68,13 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   ]);
   const without = (key: ListKey, value: string): ExploreState => ({ ...state, [key]: state[key].filter((v) => v !== value), page: 1 });
   const chips = LIST_KEYS.flatMap((k) => state[k].map((v) => ({ key: k, value: v })));
+  // The filters shown in the sidebar: those with options, minus any that cannot narrow the list (D-059).
+  const groups = filters
+    ? LIST_KEYS.map((key) => ({ key, opts: options(filters, key, state[key]) })).filter(
+        (g) => g.opts.length > 0 && !onlyOneChoice(g.opts, filters.total, state[g.key]),
+      )
+    : [];
+  const filterWords = (filters ? groups.map((g) => g.key) : LIST_KEYS).map((k) => KEY_WORD[k]);
 
   return (
     <form method="get" action="/species" role="search" aria-label="Search and filter species">
@@ -73,7 +85,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         lead={
           <>
             {filters ? <><strong>{filters.total} species</strong> in this catalogue. </> : null}
-            Search by name, or filter by group, environment, status, place, habitat and trend.
+            Search by name{filterWords.length ? `, or filter by ${listWords(filterWords)}` : ''}.
           </>
         }
       >
@@ -102,9 +114,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
           <FilterDrawer appliedCount={appliedCount(state) - (state.q ? 1 : 0)}>
             {filters ? (
               <div>
-                {LIST_KEYS.map((key) => {
-                  const opts = options(filters, key, state[key]);
-                  if (!opts.length) return null;
+                {groups.map(({ key, opts }) => {
                   return (
                     <div key={key} className="border-t border-rule py-5 first:border-t-0 first:pt-0">
                       <fieldset>
@@ -125,7 +135,8 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
                     </div>
                   );
                 })}
-                <div className="sticky bottom-0 -mx-5 border-t border-rule bg-black px-5 py-4 md:mx-0 md:px-0">
+                {/* Pinned to the bottom of the phone drawer. On md+ it sits after the filters until one changes (.filter-apply, D-059). */}
+                <div className="filter-apply sticky bottom-0 -mx-5 border-t border-rule bg-black px-5 py-4 md:mx-0 md:px-0">
                   <button className="btn btn-primary w-full">Apply filters</button>
                 </div>
               </div>

@@ -13,11 +13,12 @@ import { ApiError, apiGet } from '@/lib/api';
 import { mediaSrc } from '@/lib/media';
 import { absolute, jsonLd } from '@/lib/site';
 import {
-  ACTION_LABEL, BASIS_LABEL, ENVIRONMENT_LABEL, estimateValue, formatDate, GROUP_PLURAL, ORIGIN_LABEL, PRESENCE_LABEL,
+  ACTION_LABEL, BASIS_LABEL, ENVIRONMENT_LABEL, estimateValue, formatDate, GROUP_PLURAL, headlineEstimate, ORIGIN_LABEL, PRESENCE_LABEL,
   referencePeriod, SEASON_LABEL, TREND_LABEL,
 } from '@/lib/labels';
 
 type Profile = components['schemas']['SpeciesProfileDto'];
+type Estimate = components['schemas']['EstimateDto'];
 type Params = { params: Promise<{ slug: string }> };
 
 const SECTIONS = [
@@ -107,6 +108,7 @@ export default async function SpeciesPage({ params }: Params) {
   const year = (d: string | null) => (d ? Number(d.slice(0, 4)) : undefined);
   const photo = primaryPhoto(p);
   const environments = p.geography.environments.map((e) => ENVIRONMENT_LABEL[e]).join(', ');
+  const populationLead = headlineEstimate(p.population.estimates);
 
   return (
     <article className={p.related.length ? 'flush-bottom' : undefined}>
@@ -167,12 +169,14 @@ export default async function SpeciesPage({ params }: Params) {
                 )}
               </dd>
             </div>
-            <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
+            <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-baseline lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
               <dt className="label">Population</dt>
-              <dd className="mt-2 font-semibold text-white lg:mt-0 lg:text-right">
-                {p.population.estimates.length
-                  ? `${p.population.estimates.length} dated estimate${p.population.estimates.length > 1 ? 's' : ''}`
-                  : 'Unknown'}
+              <dd className="mt-2 lg:mt-0 lg:text-right" data-testid="population-fact">
+                {populationLead ? (
+                  <PopulationFact e={populationLead} more={p.population.estimates.length - 1} />
+                ) : (
+                  <span className="font-semibold text-white">Unknown</span>
+                )}
               </dd>
             </div>
             <div className="border-t border-rule p-5 sm:border-t-0 sm:border-l lg:flex lg:items-center lg:justify-between lg:gap-6 lg:border-t lg:border-l-0 lg:py-4">
@@ -546,6 +550,38 @@ function Section({ n, id, title, children }: { n: number; id: string; title: str
       <SectionHead id={`${id}-h`} n={String(n).padStart(2, '0')} title={title} rule />
       <div className="mt-8">{children}</div>
     </section>
+  );
+}
+
+/**
+ * The population key fact (D-059): one listed estimate with its own basis, wild or captive, place and year, so a figure
+ * never stands alone (PLAN §5). With more estimates, a link to the full list in "How many remain?".
+ */
+function PopulationFact({ e, more }: { e: Estimate; more: number }) {
+  const value = estimateValue(e);
+  return (
+    <>
+      <span className="block font-semibold text-white">
+        {value === null ? (
+          'Unknown'
+        ) : e.form === 'qualitative' ? (
+          value
+        ) : (
+          <>
+            <span className="figures">{value}</span> <span className="font-medium text-fog">{BASIS_LABEL[e.basis]}</span>
+          </>
+        )}
+      </span>
+      <span className="mt-0.5 block text-[0.8125rem] font-medium text-muted">
+        {e.context === 'wild' ? 'Wild' : 'Captive'} · {e.scope === 'global' ? 'Global' : (e.region?.name ?? 'Regional')} ·{' '}
+        {referencePeriod(e.referenceStart, e.referenceEnd) ?? 'date not stated'}
+      </span>
+      {more > 0 ? (
+        <a href="#population" className="mt-1 inline-flex min-h-6 items-center text-[0.8125rem] font-semibold text-lime underline underline-offset-4 hover:decoration-2">
+          and {more} more estimate{more > 1 ? 's' : ''}
+        </a>
+      ) : null}
+    </>
   );
 }
 

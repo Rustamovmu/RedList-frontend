@@ -10,6 +10,8 @@ out
 next-env.d.ts
 # copied from node_modules by scripts/copy-maplibre-worker.mjs
 public/vendor
+# self-hosted basemap (about 80 MB), fetched by `npm run basemap:fetch` (D-060)
+public/basemap
 
 # Shared agent skills (~/Developer/skills)
 .claude/skills

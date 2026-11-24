@@ -1,13 +1,16 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
-import { SpeciesCard } from '@/components/SpeciesCard';
+import { flushSync } from 'react-dom';
+import { SpeciesRow } from '@/components/SpeciesRow';
 import type { components } from '@/contracts/api';
+import { REGION_TYPE_LABEL } from '@/lib/labels';
 import { type Bbox, bboxParam, containsPoint, WORLD } from './geo';
 import { MapLegend } from './MapLegend';
-import type { Basemap } from './WorldMap';
+import type { Basemap, MapPick } from './WorldMap';
 
 type MapDto = components['schemas']['MapDto'];
 type Option = { value: string; label: string; count: number };
@@ -19,8 +22,19 @@ const WorldMap = dynamic(() => import('./WorldMap'), {
 });
 
 const LAYER_LABEL = { range: 'Published range map', country: 'Country-level presence' } as const;
+/** Below lg the list runs under the map, so it starts with this many rows and a "Show all" button (D-059). */
+const FIRST_ROWS = 12;
 
-/** /map: filters, the map and a results list kept in sync. The list is the accessible equivalent of the map. */
+/** Whether a picked place or range is still on the map after new data (a pan can move it out of view). */
+function stillShown(p: MapPick, d: MapDto): boolean {
+  return p.kind === 'region' ? d.countryPresence.some((c) => c.slug === p.slug) : d.ranges.some((r) => r.speciesSlug === p.species);
+}
+
+/**
+ * /map: filters, the map and a results list kept in sync. The list is the accessible equivalent of the map.
+ * The map is interactive (D-060): selecting a shaded place narrows the list to its species, and pointing at (or
+ * focusing) a species in the list outlines its places on the map.
+ */
 export function MapExplorer({
   initial,
   initialBbox,
@@ -43,7 +57,17 @@ export function MapExplorer({
   const [mapFailed, setMapFailed] = useState(false);
   const [basemap, setBasemap] = useState<Basemap | null>(null);
   const [nearMessage, setNearMessage] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [picked, setPicked] = useState<MapPick | null>(null);
+  const [linked, setLinked] = useState<string | null>(null);
   const request = useRef(0);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  /** Reveal the rest of the list on small screens and move focus to the first row that was hidden. */
+  function revealAll() {
+    flushSync(() => setShowAll(true));
+    listRef.current?.children[FIRST_ROWS]?.querySelector('a')?.focus();
+  }
 
   const load = useCallback(
     async (b: Bbox) => {
@@ -58,6 +82,7 @@ export function MapExplorer({
         if (id === request.current) {
           setData(json);
           setListFailed(false);
+          setPicked((p) => (p && !stillShown(p, json) ? null : p));
         }
       } catch {
         if (id === request.current) setListFailed(true);
@@ -101,6 +126,11 @@ export function MapExplorer({
 
   const applied = group.length + category.length;
   const species = data?.species ?? [];
+  // The selection narrows the list to the species recorded in the picked place, or to the species of a picked range.
+  const place = picked?.kind === 'region' ? (data?.countryPresence.find((c) => c.slug === picked.slug) ?? null) : null;
+  const rangeSpecies = picked?.kind === 'range' ? (species.find((s) => s.slug === picked.species) ?? null) : null;
+  const only = picked ? new Set(picked.kind === 'region' ? (place?.species ?? []) : [picked.species]) : null;
+  const shown = only ? species.filter((s) => only.has(s.slug)) : species;
 
   return (
     <>
@@ -148,18 +178,58 @@ export function MapExplorer({
                 <strong className="text-white">The map could not be loaded.</strong> The list still works: it shows every species for the area and filters you chose.
               </p>
             ) : (
-              <WorldMap
-                data={data}
-                fit={initialBbox}
-                onMove={onMove}
-                onFail={onFail}
-                onBasemap={setBasemap}
-                label="Map of the species in the list. The list has the same information."
-              />
+              <>
+                <WorldMap
+                  data={data}
+                  fit={initialBbox}
+                  onMove={onMove}
+                  onFail={onFail}
+                  onBasemap={setBasemap}
+                  label="Map of the species in the list. The list has the same information."
+                  interactive
+                  picked={picked}
+                  onPick={setPicked}
+                  linkedSpecies={linked}
+                />
+                {/* The selected place or range, in the map's top left corner (the zoom buttons are top right). */}
+                {picked ? (
+                  <div data-testid="map-selection" className="absolute top-3 left-3 z-10 w-[min(21rem,calc(100%-4.5rem))] border border-rule bg-black/90 py-3.5 pr-12 pl-4">
+                    <p className="kicker">{picked.kind === 'region' ? (REGION_TYPE_LABEL[picked.regionType] ?? 'Place') : 'Published range map'}</p>
+                    <p className="mt-1 text-lg font-bold leading-snug text-white">
+                      {picked.kind === 'region' ? picked.name : (rangeSpecies?.commonName ?? rangeSpecies?.scientificName ?? picked.species)}
+                    </p>
+                    {picked.kind === 'region' ? (
+                      <p className="mt-0.5 text-sm text-fog">
+                        <span className="figures">{shown.length}</span> species in this view
+                      </p>
+                    ) : null}
+                    {picked.kind === 'region' ? (
+                      <Link href={`/regions/${picked.slug}`} className="more mt-1">Open the page for {picked.name}</Link>
+                    ) : (
+                      <Link href={`/species/${picked.species}`} className="more mt-1">Open the profile</Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setPicked(null)}
+                      className="absolute top-1.5 right-1.5 inline-flex h-11 w-11 items-center justify-center text-2xl leading-none text-fog hover:text-lime"
+                    >
+                      <span aria-hidden>×</span>
+                      <span className="sr-only">Clear the selection and list every species in this view</span>
+                    </button>
+                  </div>
+                ) : null}
+              </>
             )}
           </div>
           <div className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-6">
-            <MapLegend />
+            <div className="max-w-xl">
+              <MapLegend counts />
+              {mapFailed ? null : (
+                <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
+                  Select a shaded place to list only its species. Pointing at a species in the list outlines where it is recorded.
+                </p>
+              )}
+            </div>
             <div className="max-w-xs">
               <button
                 type="button"
@@ -182,24 +252,51 @@ export function MapExplorer({
               <p role="alert" className="notice-error mt-3 text-sm">Species could not be loaded. This is a problem on our side; please try again.</p>
             ) : (
               <>
-                <p role="status" className="meta mt-2" data-testid="map-count">
-                  {species.length} species in this catalogue match this view
-                  {data?.truncated ? '. Zoom in to see all of them.' : ''}
-                </p>
-                {species.length === 0 ? (
+                <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <p role="status" className="meta" data-testid="map-count">
+                    {picked?.kind === 'region'
+                      ? `${shown.length} of ${species.length} species in this view are recorded in ${picked.name}`
+                      : picked?.kind === 'range'
+                        ? `${shown.length} of ${species.length} species in this view: the one with this published range map`
+                        : `${species.length} species in this catalogue match this view${data?.truncated ? '. Zoom in to see all of them.' : ''}`}
+                  </p>
+                  {picked ? (
+                    <button type="button" onClick={() => setPicked(null)} className="inline-flex min-h-9 items-center text-sm font-semibold text-fog underline underline-offset-4 hover:text-lime">
+                      Show all {species.length}
+                    </button>
+                  ) : null}
+                </div>
+                {shown.length === 0 ? (
                   <p className="missing mt-4">No species here match these filters. Move the map or remove a filter.</p>
                 ) : (
-                  <ul
-                    data-testid="map-results"
-                    className="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:border-t lg:border-rule lg:pt-6 lg:pr-3 lg:[scrollbar-color:var(--color-rule)_transparent] lg:[scrollbar-width:thin]"
-                  >
-                    {species.map((s) => (
-                      <li key={s.slug}>
-                        <SpeciesCard card={s} />
-                        <p className="mt-2 border-t border-rule pt-2 text-[0.8125rem] text-muted">Shown on the map as: {LAYER_LABEL[s.layer]}</p>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    {/* Compact rows (D-059). On lg the box scrolls on its own; the side padding (pulled back by -ml-2) keeps
+                        the focus outline of a row inside the scroll box, where it would otherwise be clipped.
+                        Pointing at or focusing a row outlines that species' places on the map (D-060). */}
+                    <ul
+                      ref={listRef}
+                      data-testid="map-results"
+                      className="mt-6 grid sm:grid-cols-2 sm:gap-x-8 lg:-ml-2 lg:min-h-0 lg:flex-1 lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:pr-3 lg:pl-2 lg:[scrollbar-color:var(--color-rule)_transparent] lg:[scrollbar-width:thin]"
+                      onMouseLeave={() => setLinked(null)}
+                    >
+                      {shown.map((s, i) => (
+                        <li
+                          key={s.slug}
+                          className={`border-t border-rule py-4 ${i >= FIRST_ROWS && !showAll ? 'max-lg:hidden' : ''}`}
+                          onMouseEnter={() => setLinked(s.slug)}
+                          onFocus={() => setLinked(s.slug)}
+                          onBlur={() => setLinked(null)}
+                        >
+                          <SpeciesRow card={s} note={`Shown on the map as: ${LAYER_LABEL[s.layer]}`} />
+                        </li>
+                      ))}
+                    </ul>
+                    {shown.length > FIRST_ROWS && !showAll ? (
+                      <button type="button" onClick={revealAll} className="btn btn-soft mt-6 w-full lg:hidden">
+                        Show all {shown.length} species
+                      </button>
+                    ) : null}
+                  </>
                 )}
               </>
             )}

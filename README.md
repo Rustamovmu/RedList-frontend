@@ -11,12 +11,13 @@ Start the backend first (see its README). Then:
 cp .env.example .env.local    # REVALIDATE_SECRET must match the backend's
 npm install
 npm run contracts:generate    # types from ../RedList-backent/openapi.json
+npm run basemap:fetch         # optional: the map's Protomaps basemap (~80 MB, needs the pmtiles CLI, e.g. `brew install pmtiles`)
 npm run dev                   # http://localhost:3000
 ```
 
 Pages: home `/`, Explore `/species`, profiles `/species/<slug>`, compare `/compare?species=a,b,c`, map `/map`, regions `/regions/<slug>`, support directory `/support`, staff `/admin` (and `/admin/support`).
 
-The map uses MapLibre GL JS with our own Natural Earth basemap from the API (no tile provider or key). `npm run dev` and `npm run build` first copy MapLibre's worker to `public/vendor/` (`scripts/copy-maplibre-worker.mjs`, DECISIONS D-016).
+The map uses MapLibre GL JS. Its basemap is the Protomaps dark theme (OpenStreetMap data), served from this site's own `public/basemap/` after `npm run basemap:fetch`; without that file it draws our own Natural Earth land from the API. There is no tile provider or key either way (DECISIONS D-004, D-060). `npm run dev` and `npm run build` first copy MapLibre's worker to `public/vendor/` (`scripts/copy-maplibre-worker.mjs`, DECISIONS D-016).
 
 - **Species profiles:** `/species/<slug>` (try `fictus-regionalis` after `npm run db:seed:fixtures` in the backend).
 - **Staff area:** `/admin`. Create the first admin with `npm run admin:create` in the backend. Set `REVALIDATE_SECRET` in `.env.local` to the backend's value so published changes appear immediately.
@@ -27,7 +28,7 @@ The map uses MapLibre GL JS with our own Natural Earth basemap from the API (no 
 - **After publishing**, the backend calls `POST /api/revalidate` (header `x-revalidate-secret`, body `{ "tags": [...] }`) so changes appear immediately.
 
 ## Commands
-`npm run typecheck` · `npm run lint` · `npm run build` · `npm run contracts:generate` · `npm run test:e2e`
+`npm run typecheck` · `npm run lint` · `npm run build` · `npm run contracts:generate` · `npm run basemap:fetch` · `npm run test:e2e`
 
 ## Security headers
 `src/proxy.ts` sets a Content Security Policy with a fresh nonce on every page (scripts: nonce + `'strict-dynamic'` only). The root layout calls `connection()` so every page renders per request and receives it. Other headers are in `next.config.ts`. Details: backend `docs/DECISIONS.md` D-029. Adding a third-party script or host means changing that policy on purpose.

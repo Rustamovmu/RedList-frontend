@@ -6,8 +6,9 @@ import { Pagination } from '@/components/Pagination';
 import { SpeciesCard } from '@/components/SpeciesCard';
 import type { components } from '@/contracts/api';
 import { ApiError, apiGet } from '@/lib/api';
+import { onlyOneChoice } from '@/lib/explore-params';
 import { IUCN_LABEL } from '@/lib/iucn';
-import { GROUP_LABEL, ORIGIN_LABEL, PRESENCE_LABEL, SEASON_LABEL } from '@/lib/labels';
+import { GROUP_LABEL, ORIGIN_LABEL, PRESENCE_LABEL, REGION_TYPE_LABEL, SEASON_LABEL } from '@/lib/labels';
 
 type RegionPage = components['schemas']['RegionPageDto'];
 type Raw = Record<string, string | string[] | undefined>;
@@ -16,7 +17,6 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Raw> };
 const KEYS = ['group', 'category', 'origin', 'seasonality'] as const;
 type Key = (typeof KEYS)[number];
 const KEY_LABEL: Record<Key, string> = { group: 'Animal group', category: 'Status', origin: 'Origin here', seasonality: 'Season here' };
-const TYPE_LABEL: Record<string, string> = { country: 'Country', ocean: 'Ocean', sea: 'Sea', other: 'Marine area' };
 const PAGE_SIZE = 24;
 
 const list = (v: string | string[] | undefined) =>
@@ -81,12 +81,17 @@ export default async function RegionPageView({ params, searchParams }: Props) {
     group: r.facets.groups, category: r.facets.categories, origin: r.facets.origins, seasonality: r.facets.seasonalities,
   };
   const applied = KEYS.reduce((n, k) => n + state[k].length, 0);
-  const anySpecies = r.facets.groups.some((g) => g.count > 0);
+  // The facets count the whole region, whatever is filtered, and every species has exactly one group, so the group
+  // counts add up to the region's species. A filter that cannot narrow that list is left out (D-059).
+  const regionTotal = r.facets.groups.reduce((n, g) => n + g.count, 0);
+  const shown = KEYS.map((k) => ({ k, opts: facets[k].filter((o) => o.count > 0 || state[k].includes(o.value)) })).filter(
+    ({ k, opts }) => opts.length > 0 && !onlyOneChoice(opts, regionTotal, state[k]),
+  );
 
   return (
     <div>
       <PageHeader
-        kicker={TYPE_LABEL[r.region.type] ?? r.region.type}
+        kicker={REGION_TYPE_LABEL[r.region.type] ?? r.region.type}
         title={r.region.name}
         lead={
           <>
@@ -104,16 +109,14 @@ export default async function RegionPageView({ params, searchParams }: Props) {
       </PageHeader>
 
       <div className="wrap">
-        {anySpecies ? (
+        {shown.length ? (
           <form method="get" action={`/regions/${slug}`} className="mt-10" aria-label={`Filter species in ${r.region.name}`}>
             <details className="disclosure border border-rule bg-panel" open={applied > 0}>
               <summary className="flex min-h-14 items-center px-5 text-base font-bold text-white">
                 <span>Filters{applied ? ` (${applied} applied)` : ''}</span>
               </summary>
               <div className="grid gap-8 border-t border-rule px-5 pt-5 sm:grid-cols-2 lg:grid-cols-4">
-                {KEYS.map((k) => {
-                  const opts = facets[k].filter((o) => o.count > 0 || state[k].includes(o.value));
-                  if (!opts.length) return null;
+                {shown.map(({ k, opts }) => {
                   return (
                     <fieldset key={k}>
                       <legend className="text-[0.9375rem] font-bold text-white">{KEY_LABEL[k]}</legend>
