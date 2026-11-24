@@ -901,6 +901,10 @@ export interface components {
             altText: string;
             credit: string;
             license: string;
+            /** @description Width of the original image in pixels. With height, gives the photo shape, so a frame can fit it without cropping */
+            width: number;
+            /** @description Height of the original image in pixels */
+            height: number;
         };
         MapSpeciesDto: {
             slug: string;

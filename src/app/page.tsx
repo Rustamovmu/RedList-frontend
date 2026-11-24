@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { GroupTile } from '@/components/GroupTile';
+import { SpeciesWall } from '@/components/home/SpeciesWall';
 import { AlertIcon, BranchIcon, GlobeIcon, GuideIcon } from '@/components/home/StatIcons';
 import { HeroCurve } from '@/components/shell/Curves';
 import { Chevron, GridIcon, SearchIcon } from '@/components/shell/Icons';
@@ -42,6 +43,49 @@ const HERO_IMAGE = {
   alt: 'Close-ups of eight animal faces side by side: a lion, a bee, an orangutan, a spotted big cat, a gorilla, a cheetah, a fish and an owl.',
 };
 
+/** Photos on the home photo wall (SpeciesWall, D-063): enough to fill the rail on a wide screen without shrinking the frames. */
+const WALL_SIZE = 7;
+
+/**
+ * The rail frames a photo in its own shape when that shape is between 0.4 and 2.5 (width ÷ height). A wider or taller
+ * photo would be cropped, so it is left off the wall instead (D-039).
+ */
+function fitsWall(c: Card): boolean {
+  if (!c.image || c.image.height <= 0) return false;
+  const aspect = c.image.width / c.image.height;
+  return aspect >= 0.4 && aspect <= 2.5;
+}
+
+/** The wall takes the threatened categories in turn, so its labels do not all read "Critically Endangered". */
+const WALL_CATEGORIES = ['CR', 'EN', 'VU'] as const;
+
+/**
+ * The wall's photos, taken after every other photo section so those keep their picks: threatened species whose photo is
+ * not already on the page and fits a frame. Frame by frame, the wall wants the next category in turn (of CR, EN and VU,
+ * those the pool has) and an animal group it does not have yet, and gives up those wishes in that order when nothing
+ * matches. Photos that are not on a group tile come first. Hung in the order picked, so neighbouring frames differ.
+ */
+function wallPicks(pool: Card[], used: Set<string>, onTiles: Set<string>): Card[] {
+  const free = pool.filter((c) => fitsWall(c) && !used.has(c.slug));
+  const ordered = [...free.filter((c) => !onTiles.has(c.slug)), ...free.filter((c) => onTiles.has(c.slug))];
+  const categories = WALL_CATEGORIES.filter((cat) => ordered.some((c) => c.status?.category === cat));
+  const wall: Card[] = [];
+  for (let slot = 0; slot < WALL_SIZE; slot++) {
+    const category = categories.length ? categories[slot % categories.length] : null;
+    const groups = new Set(wall.map((c) => c.displayGroup));
+    const left = ordered.filter((c) => !wall.includes(c));
+    const pick =
+      left.find((c) => c.status?.category === category && !groups.has(c.displayGroup)) ??
+      left.find((c) => !groups.has(c.displayGroup)) ??
+      left.find((c) => c.status?.category === category) ??
+      left[0];
+    if (!pick) break;
+    wall.push(pick);
+    used.add(pick.slug);
+  }
+  return wall;
+}
+
 /**
  * Hands out photos for the page's photo sections: the next threatened species with a photo that is not already on the
  * page, preferring one that matches `want` and is not already a group tile's photo. So no photo appears twice when
@@ -62,7 +106,7 @@ export default async function Home() {
   await connection();
   const [filters, threatened] = await Promise.all([
     apiGet('/api/v1/filters', { tags: ['catalogue'] }).catch(() => null),
-    apiGet('/api/v1/species', { query: { category: 'CR,EN,VU', sort: 'status', pageSize: '16' }, tags: ['catalogue'] }).catch(() => null),
+    apiGet('/api/v1/species', { query: { category: 'CR,EN,VU', sort: 'status', pageSize: '48' }, tags: ['catalogue'] }).catch(() => null),
   ]);
   const pool = threatened?.items ?? [];
   const groups = filters?.groups.filter((g) => g.count > 0) ?? [];
@@ -84,6 +128,7 @@ export default async function Home() {
   const placesPhoto = pick((c) => c.environments.includes('marine'));
   const sourcePhoto = pick((c) => c.displayGroup === 'bird');
   const comparePhoto = pick();
+  const wall = wallPicks(pool, used, onTiles);
 
   // schema.org WebSite with the site search, so search engines can offer a search box for the catalogue.
   const site = {
@@ -184,6 +229,9 @@ export default async function Home() {
           <p role="alert" className="notice-error">The catalogue could not be loaded right now. Search still works.</p>
         </div>
       ) : null}
+
+      {/* ---------- meet the animals: a full-screen photo wall of threatened species (D-063) ---------- */}
+      <SpeciesWall cards={wall} allHref={THREATENED_HREF} />
 
       {/* ---------- how we source facts: photo left, text right ---------- */}
       <section aria-labelledby="how" className="wrap grid items-center gap-x-16 gap-y-10 py-24 lg:grid-cols-2 lg:py-32 xl:gap-x-24">
