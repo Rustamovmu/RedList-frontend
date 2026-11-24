@@ -52,6 +52,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/auth/link/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_checkLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/auth/link/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_redeemLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/staff/auth/logout": {
         parameters: {
             query?: never;
@@ -78,6 +126,70 @@ export interface paths {
         get: operations["AuthController_whoami"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffUsersController_list"];
+        put?: never;
+        post: operations["StaffUsersController_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["StaffUsersController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffUsersController_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/users/{id}/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffUsersController_signOut"];
         delete?: never;
         options?: never;
         head?: never;
@@ -707,9 +819,73 @@ export interface components {
             /** @description Send this back in the x-csrf-token header on every mutation. It is also set as a readable cookie. */
             csrfToken: string;
         };
+        ChangePasswordDto: {
+            currentPassword: string;
+            newPassword: string;
+        };
         OkDto: {
             /** @example true */
             ok: boolean;
+        };
+        LinkTokenDto: {
+            /** @description The token from the link fragment (#token=…) */
+            token: string;
+        };
+        LinkInfoDto: {
+            /** @enum {string} */
+            purpose: "invite" | "reset";
+            name: string;
+            email: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        RedeemLinkDto: {
+            /** @description The token from the link fragment (#token=…) */
+            token: string;
+            password: string;
+        };
+        StaffUserDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "editor" | "admin";
+            /**
+             * @description invited: no password set yet
+             * @enum {string}
+             */
+            status: "active" | "invited" | "disabled";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastActiveAt: string | null;
+            /** @description Sessions that are neither revoked nor past their absolute limit */
+            openSessions: number;
+        };
+        InviteStaffDto: {
+            email: string;
+            name: string;
+            /** @enum {string} */
+            role: "editor" | "admin";
+        };
+        StaffLinkDto: {
+            /** @enum {string} */
+            purpose: "invite" | "reset";
+            /** @description One-time link, shown only in this response. The token is in the fragment, so it never reaches a server log. */
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        InviteResultDto: {
+            user: components["schemas"]["StaffUserDto"];
+            link: components["schemas"]["StaffLinkDto"];
+        };
+        UpdateStaffDto: {
+            /** @enum {string} */
+            role?: "editor" | "admin";
+            /** @description true ends every session, device and open link of the account at once */
+            disabled?: boolean;
         };
         CardStatusDto: {
             /** @enum {string} */
@@ -1858,6 +2034,75 @@ export interface operations {
             };
         };
     };
+    AuthController_changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkDto"];
+                };
+            };
+        };
+    };
+    AuthController_checkLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkInfoDto"];
+                };
+            };
+        };
+    };
+    AuthController_redeemLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RedeemLinkDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
     AuthController_logout: {
         parameters: {
             query?: never;
@@ -1892,6 +2137,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionDto"];
+                };
+            };
+        };
+    };
+    StaffUsersController_list: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUserDto"][];
+                };
+            };
+        };
+    };
+    StaffUsersController_invite: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteStaffDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteResultDto"];
+                };
+            };
+        };
+    };
+    StaffUsersController_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStaffDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUserDto"];
+                };
+            };
+        };
+    };
+    StaffUsersController_link: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffLinkDto"];
+                };
+            };
+        };
+    };
+    StaffUsersController_signOut: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required on POST/PUT */
+                "x-csrf-token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffUserDto"];
                 };
             };
         };

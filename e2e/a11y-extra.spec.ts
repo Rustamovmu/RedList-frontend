@@ -30,6 +30,7 @@ const PAGES = [
   '/privacy',
   '/terms',
   '/admin',
+  '/admin/set-password',
 ];
 
 const STRUCTURE_RULES = ['landmark-one-main', 'page-has-heading-one', 'heading-order', 'region', 'landmark-unique', 'bypass'];
@@ -110,5 +111,11 @@ test('staff pages: keyboard sign-in, then no serious or critical axe violations'
   await staffNav.getByRole('link', { name: 'Support directory' }).click();
   await expect(page).toHaveURL(/\/admin\/support/);
   await check('/admin/support');
+  await staffNav.getByRole('link', { name: 'Staff' }).click();
+  await expect(page).toHaveURL(/\/admin\/staff/);
+  await check('/admin/staff');
+  await page.getByRole('link', { name: /\(admin\)$/ }).click();
+  await expect(page).toHaveURL(/\/admin\/account/);
+  await check('/admin/account');
   expect(report, report.join('\n')).toEqual([]);
 });

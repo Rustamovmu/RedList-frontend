@@ -14,8 +14,16 @@ export function useStaff(): Ctx {
   return ctx;
 }
 
+/** The one staff page that works without a session: setting a password from a one-time link (D-062). */
+export const SET_PASSWORD_PATH = '/admin/set-password';
+
 /** Loads the session; shows the sign-in form when there is none. */
 export function StaffSessionProvider({ children }: { children: React.ReactNode }) {
+  if (usePathname() === SET_PASSWORD_PATH) return <>{children}</>;
+  return <SessionGate>{children}</SessionGate>;
+}
+
+function SessionGate({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<S['StaffMeDto'] | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,9 +45,11 @@ export function StaffSessionProvider({ children }: { children: React.ReactNode }
   return (
     <StaffCtx.Provider value={{ user, signOut }}>
       <div className="mb-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-rule">
-        <StaffNav />
+        <StaffNav isAdmin={user.role === 'admin'} />
         <span className="flex items-center gap-3 pb-2 text-[0.8125rem] text-muted">
-          {user.name} ({user.role})
+          <Link href="/admin/account" className="underline-offset-4 hover:text-lime hover:underline">
+            {user.name} ({user.role})
+          </Link>
           <button onClick={signOut} className="btn btn-sm btn-quiet">Sign out</button>
         </span>
       </div>
@@ -90,13 +100,14 @@ const STAFF_NAV = [
   { href: '/admin', label: 'Species', match: (p: string) => p === '/admin' || p.startsWith('/admin/species') || p.startsWith('/admin/revisions') },
   { href: '/admin/media', label: 'Media', match: (p: string) => p.startsWith('/admin/media') },
   { href: '/admin/support', label: 'Support directory', match: (p: string) => p.startsWith('/admin/support') },
+  { href: '/admin/staff', label: 'Staff', match: (p: string) => p.startsWith('/admin/staff'), adminOnly: true },
 ];
 
-function StaffNav() {
+function StaffNav({ isAdmin }: { isAdmin: boolean }) {
   const path = usePathname();
   return (
     <nav aria-label="Staff" className="flex flex-wrap gap-x-6">
-      {STAFF_NAV.map((n) => {
+      {STAFF_NAV.filter((n) => isAdmin || !n.adminOnly).map((n) => {
         const current = n.match(path);
         return (
           <Link

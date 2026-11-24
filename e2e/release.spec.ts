@@ -25,6 +25,7 @@ const CORE_PAGES = [
   '/privacy',
   '/terms',
   '/admin',
+  '/admin/set-password',
   '/no-such-page', // 404
 ];
 

@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           You can use all of Wildward <strong>without an account</strong>, and <strong>we do not track you</strong>.
         </>
       }
-      updated="21 November 2026"
+      updated="24 November 2026"
       summary={
         <p className="notice bg-black/40 text-[0.9375rem] font-semibold leading-relaxed text-white">
           In short: no accounts · no tracking cookies · no analytics · your location never leaves your browser
@@ -51,9 +51,10 @@ export default function PrivacyPage() {
 
       <InfoSection id="staff" title="If you are an editor">
         <p>
-          Staff sign-in uses a session cookie and a security (CSRF) cookie, both needed to keep editing secure. We store editors&apos; names, email
-          addresses and a securely hashed password, an audit log of editorial actions, and, for each sign-in session, its start and expiry times and
-          the browser&apos;s user-agent string.
+          Staff sign-in uses a session cookie and a security (CSRF) cookie, both needed to keep editing secure. After a successful sign-in the
+          browser also keeps a device cookie for up to 180 days, so that someone else&apos;s failed attempts cannot lock that editor out. We store
+          editors&apos; names, email addresses and a securely hashed password, an audit log of editorial actions, for each sign-in session its start
+          and expiry times and the browser&apos;s user-agent string, and for each device cookie only a hash of it and when it was last used.
         </p>
       </InfoSection>
 

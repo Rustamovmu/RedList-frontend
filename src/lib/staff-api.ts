@@ -68,6 +68,17 @@ export const staffApi = {
   me: () => call<{ user: S['StaffMeDto']; csrfToken: string }>('GET', '/auth/me'),
   login: (email: string, password: string) => call<{ user: S['StaffMeDto']; csrfToken: string }>('POST', '/auth/login', { email, password }),
   logout: () => call<{ ok: true }>('POST', '/auth/logout'),
+  changePassword: (b: S['ChangePasswordDto']) => call<{ ok: true }>('POST', '/auth/password', b),
+  // One-time links: no session needed. The token comes from the link's #fragment, never from the query string.
+  checkLink: (token: string) => call<S['LinkInfoDto']>('POST', '/auth/link/check', { token }),
+  redeemLink: (token: string, password: string) => call<{ user: S['StaffMeDto']; csrfToken: string }>('POST', '/auth/link/redeem', { token, password }),
+
+  // Staff accounts (admin only, D-062)
+  listStaff: () => call<S['StaffUserDto'][]>('GET', '/users'),
+  inviteStaff: (b: S['InviteStaffDto']) => call<S['InviteResultDto']>('POST', '/users', b),
+  updateStaff: (id: string, b: S['UpdateStaffDto']) => call<S['StaffUserDto']>('PUT', `/users/${enc(id)}`, b),
+  staffLink: (id: string) => call<S['StaffLinkDto']>('POST', `/users/${enc(id)}/link`),
+  signOutStaff: (id: string) => call<S['StaffUserDto']>('POST', `/users/${enc(id)}/sign-out`),
 
   listSpecies: () => call<S['StaffSpeciesDto'][]>('GET', '/species'),
   getSpecies: (id: string) => call<S['StaffSpeciesDto']>('GET', `/species/${enc(id)}`),
