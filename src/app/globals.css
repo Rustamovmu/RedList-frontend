@@ -33,6 +33,10 @@
   --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* The wordmark only (D-043): Quicksand via @fontsource-variable/quicksand, SIL Open Font License, self-hosted. */
   --font-logo: "Quicksand Variable", "Quicksand", ui-rounded, var(--font-sans);
+  /* The home scroll cards only (D-068), under the kit's own class names: Source Serif 4 as a free stand-in for the
+     kit's paid Tiempos Headline, and Manrope. Both SIL Open Font License, self-hosted, loaded by components/ui/scroll-cards. */
+  --font-tiemposHeadline: "Source Serif 4 Variable", "Source Serif 4", Georgia, ui-serif, serif;
+  --font-manrope: "Manrope Variable", "Manrope", var(--font-sans);
 }
 
 /*

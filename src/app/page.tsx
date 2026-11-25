@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { connection } from 'next/server';
 import { GroupTile } from '@/components/GroupTile';
 import { type GlobeEntry, SpeciesGlobe } from '@/components/home/SpeciesGlobe';
+import { SourceCards } from '@/components/home/SourceCards';
 import { SpeciesStrip } from '@/components/home/SpeciesStrip';
 import { AlertIcon, BranchIcon, GlobeIcon, GuideIcon } from '@/components/home/StatIcons';
 import { HeroCurve } from '@/components/shell/Curves';
@@ -23,18 +24,12 @@ import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
  * never a global total. Below the hero every photo is a catalogue image, captioned with the species it shows; photographers
  * and licences are listed on /credits, linked from the footer (D-055). The hero image is the owner's choice (DECISIONS D-041).
  * After the numbers come two full-screen sections the owner asked for: a photo strip (D-067, which replaced the photo
- * wall of D-063) and a globe (D-064).
+ * wall of D-063) and a globe (D-064). Then "How we source facts" shows its three rules, and then four threatened species, as pinned photo cards (D-068).
  */
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 type Card = components['schemas']['SpeciesCardDto'];
 type Pin = components['schemas']['SpeciesPinDto'];
-
-const RULES = [
-  'Every number and status links to the source it came from, with the source’s own date.',
-  'Population estimates keep their units, places and years, and unknown is never shown as zero.',
-  'Each profile is reviewed by our editors before it is published, and the review date is shown.',
-];
 
 const THREATENED_HREF = '/species?category=CR&category=EN&category=VU&sort=status';
 
@@ -121,6 +116,29 @@ function globePicks(pool: Card[], used: Set<string>, pins: Pin[]): GlobeEntry[] 
   return picked.sort((a, b) => a.pin.lng - b.pin.lng);
 }
 
+/** Species cards after the three rules in "How we source facts" (SourceCards, D-068). */
+const SOURCE_SPECIES = 4;
+
+/**
+ * The source section's species cards, taken last so no other section changes its picks: threatened species whose photo
+ * is not already on the page and that have a common name (the card's title is plain text, and a scientific name must
+ * be set in italic). Each prefers an animal group the section does not show yet, then takes any.
+ */
+function sourceSpeciesPicks(pool: Card[], used: Set<string>, shown: (Card | null)[]): Card[] {
+  const picked: Card[] = [];
+  const groups = new Set(shown.filter((c): c is Card => c !== null).map((c) => c.displayGroup));
+  for (const newGroup of [true, false]) {
+    for (const c of pool) {
+      if (picked.length >= SOURCE_SPECIES || !c.image || !c.commonName || used.has(c.slug)) continue;
+      if (newGroup && groups.has(c.displayGroup)) continue;
+      picked.push(c);
+      used.add(c.slug);
+      groups.add(c.displayGroup);
+    }
+  }
+  return picked;
+}
+
 /**
  * Hands out photos for the page's photo sections: the next threatened species with a photo that is not already on the
  * page, preferring one that matches `want` and is not already a group tile's photo. So no photo appears twice when
@@ -170,6 +188,11 @@ export default async function Home() {
     ? await apiGet('/api/v1/map/pins', { query: { species: globeCandidates.join(',') }, tags: ['catalogue'] }).catch(() => null)
     : null;
   const globe = globePicks(pool, used, pins?.pins ?? []);
+  // The other two source cards take their photos last, so no section above changes its picks (D-068); each prefers an
+  // animal group the cards do not show yet.
+  const sourcePhotos = [sourcePhoto];
+  for (let i = 1; i < 3; i++) sourcePhotos.push(pick((c) => !sourcePhotos.some((p) => p?.displayGroup === c.displayGroup)));
+  const sourceSpecies = sourceSpeciesPicks(pool, used, sourcePhotos);
 
   // schema.org WebSite with the site search, so search engines can offer a search box for the catalogue.
   const site = {
@@ -277,25 +300,8 @@ export default async function Home() {
       {/* ---------- around the world: a full-screen globe of threatened species, one place each (D-064) ---------- */}
       <SpeciesGlobe entries={globe} />
 
-      {/* ---------- how we source facts: photo left, text right ---------- */}
-      <section aria-labelledby="how" className="wrap grid items-center gap-x-16 gap-y-10 py-24 lg:grid-cols-2 lg:py-32 xl:gap-x-24">
-        {sourcePhoto ? <SectionPhoto card={sourcePhoto} sizes="(min-width: 1024px) 46vw, 100vw" frame="aspect-[3/2]" /> : null}
-        <div className={sourcePhoto ? '' : 'lg:col-span-2'}>
-          <h2 id="how" className="h-section">How we source facts</h2>
-          <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-muted">
-            {SITE_NAME} is an independent catalogue for curious learners. Each profile answers the same eight questions, from what a species is to how we know.
-          </p>
-          <ol className="mt-8 max-w-[54ch] space-y-5">
-            {RULES.map((r, i) => (
-              <li key={r} className="grid grid-cols-[2.5rem_1fr] border-t border-rule pt-5">
-                <span aria-hidden className="figures pt-0.5 text-sm font-bold text-lime">0{i + 1}</span>
-                <p className="text-[1.0625rem] leading-relaxed text-fog">{r}</p>
-              </li>
-            ))}
-          </ol>
-          <Link href="/methodology" className="btn btn-soft go mt-10">Read the methodology</Link>
-        </div>
-      </section>
+      {/* ---------- how we source facts: the three rules as pinned photo cards (D-068) ---------- */}
+      <SourceCards photos={sourcePhotos} species={sourceSpecies} />
 
       {/* ---------- threatened species, as article cards ---------- */}
       {cards.length ? (
