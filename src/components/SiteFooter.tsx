@@ -45,7 +45,7 @@ export function SiteFooter() {
           <p>
             <HomeLink className="inline-flex min-h-11 items-center gap-3 text-white">
               <Mark className="h-11 w-11 text-lime" />
-              <Wordmark className="text-[1.875rem] leading-none" />
+              <Wordmark className="text-[2.25rem] leading-none" />
             </HomeLink>
           </p>
           <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-relaxed text-muted">

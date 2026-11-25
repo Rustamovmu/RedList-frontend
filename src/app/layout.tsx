@@ -4,8 +4,8 @@ import { connection } from 'next/server';
 // The italic matters: scientific names are always set in a true italic, never a slanted roman.
 import '@fontsource-variable/plus-jakarta-sans/wght.css';
 import '@fontsource-variable/plus-jakarta-sans/wght-italic.css';
-// The wordmark only: Quicksand, a rounded face (SIL Open Font License, D-043). Only the Latin file is downloaded.
-import '@fontsource-variable/quicksand/wght.css';
+// The wordmark only: DM Serif Display, a high-contrast serif (SIL Open Font License, D-070). Only the Latin file is loaded.
+import '@fontsource/dm-serif-display/latin-400.css';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';

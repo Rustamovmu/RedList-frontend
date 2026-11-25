@@ -21,7 +21,7 @@ export function SiteHeader() {
         {/* A size smaller below 340px, so the logo row still holds the compare counter and the account link (D-066). */}
         <HomeLink primary className="inline-flex min-h-11 items-center gap-3 justify-self-start text-white [grid-area:logo] max-[339px]:gap-2">
           <Mark className="h-9 w-9 text-lime max-[339px]:h-8 max-[339px]:w-8" />
-          <Wordmark className="text-[1.5rem] leading-none max-[339px]:text-[1.3rem]" />
+          <Wordmark className="text-[1.75rem] leading-none max-[339px]:text-[1.5rem]" />
         </HomeLink>
         <div className="flex items-center gap-2 justify-self-end [grid-area:count] md:hidden">
           <CompareCounter />
