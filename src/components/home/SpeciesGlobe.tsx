@@ -62,8 +62,9 @@ function toItem(e: GlobeEntry): GlobeTestimonial {
  * profile. Its photo is cropped to a circle in the pin and on the card (an exception to D-039).
  *
  * The globe turns slowly on its own, so a button pauses all its motion (WCAG 2.2.2): rotation, the pins' pulse and the
- * stars. With reduced motion it never turns, and the button is hidden. Like the photo wall, it is drawn in the browser
- * once the section is within 600 px of the screen; the server renders the heading and a space of about its height.
+ * stars. With reduced motion it never turns, and the button is hidden. Like the photo wall that came before the strip
+ * (D-063), it is drawn in the browser once the section is within 600 px of the screen; the server renders the heading
+ * and a space of about its height.
  */
 export function SpeciesGlobe({ entries }: { entries: GlobeEntry[] }) {
   const items = useMemo(() => entries.map(toItem), [entries]);

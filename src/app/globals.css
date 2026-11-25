@@ -36,13 +36,14 @@
 }
 
 /*
- * shadcn-style colour names, mapped onto the palette above, for the vendored home components in components/ui: the
- * picture rail gallery (photo wall, D-063) and the testimonial globe (D-064). Their classes (bg-card,
- * text-muted-foreground, ring-ring, ring-chart-2…) and inline styles (var(--color-card)…) read these, and the globe reads
- * background and foreground to colour its sphere. `static` because inline styles are not scanned, so the variables must
- * always be emitted. Our `muted` stays the muted TEXT grey; muted-foreground is the same grey as a literal, so a section
- * may repaint `--color-muted` (the photo backing in both components) without touching its text. The chart colours are
- * all lime: the site keeps one signal colour (D-034), and they carry no meaning here.
+ * shadcn-style colour names, mapped onto the palette above, for the vendored home components in components/ui. They were
+ * added for the picture rail gallery (photo wall, D-063, since replaced by the filmstrip, D-067); the testimonial globe
+ * (D-064) uses them now. Its classes (bg-card, text-muted-foreground, ring-ring…) and inline styles (var(--color-card)…)
+ * read these, and it reads background and foreground to colour its sphere. The filmstrip reads only `border` from here;
+ * its other colours are set on the home strip (SpeciesStrip). `static` because inline styles are not scanned, so the
+ * variables must always be emitted. Our `muted` stays the muted TEXT grey; muted-foreground is the same grey as a
+ * literal, so a section may repaint `--color-muted` (the globe's photo backing) without touching its text. The chart
+ * colours are all lime: the site keeps one signal colour (D-034), and they carry no meaning here.
  */
 @theme static {
   --color-background: var(--color-canvas);

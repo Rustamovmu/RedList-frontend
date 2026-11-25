@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { connection } from 'next/server';
 import { GroupTile } from '@/components/GroupTile';
 import { type GlobeEntry, SpeciesGlobe } from '@/components/home/SpeciesGlobe';
-import { SpeciesWall } from '@/components/home/SpeciesWall';
+import { SpeciesStrip } from '@/components/home/SpeciesStrip';
 import { AlertIcon, BranchIcon, GlobeIcon, GuideIcon } from '@/components/home/StatIcons';
 import { HeroCurve } from '@/components/shell/Curves';
 import { Chevron, GridIcon, SearchIcon } from '@/components/shell/Icons';
@@ -22,7 +22,8 @@ import { absolute, jsonLd, SITE_NAME } from '@/lib/site';
  * the catalogue in numbers, then photo-led sections. Every number comes from the database and says "in this catalogue",
  * never a global total. Below the hero every photo is a catalogue image, captioned with the species it shows; photographers
  * and licences are listed on /credits, linked from the footer (D-055). The hero image is the owner's choice (DECISIONS D-041).
- * After the numbers come two full-screen sections the owner asked for: a photo wall (D-063) and a globe (D-064).
+ * After the numbers come two full-screen sections the owner asked for: a photo strip (D-067, which replaced the photo
+ * wall of D-063) and a globe (D-064).
  */
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
@@ -46,47 +47,41 @@ const HERO_IMAGE = {
   alt: 'Close-ups of eight animal faces side by side: a lion, a bee, an orangutan, a spotted big cat, a gorilla, a cheetah, a fish and an owl.',
 };
 
-/** Photos on the home photo wall (SpeciesWall, D-063): enough to fill the rail on a wide screen without shrinking the frames. */
-const WALL_SIZE = 7;
+/**
+ * Photos on the home photo strip (SpeciesStrip, D-067). The filmstrip reads best with 8 to 24 frames; 10 keeps each
+ * thumbnail wide enough to recognise on a laptop, and about 2.6 rem wide on a 360 px phone.
+ */
+const STRIP_SIZE = 10;
+
+/** The strip takes the threatened categories in turn, so neighbouring photos do not all read "Critically Endangered". */
+const STRIP_CATEGORIES = ['CR', 'EN', 'VU'] as const;
 
 /**
- * The rail frames a photo in its own shape when that shape is between 0.4 and 2.5 (width ÷ height). A wider or taller
- * photo would be cropped, so it is left off the wall instead (D-039).
+ * The strip's photos, taken after every other photo section so those keep their picks: threatened species whose photo
+ * is not already on the page. Any photo shape will do, because the strip shows each one whole (D-039). Frame by frame,
+ * the strip wants the next category in turn (of CR, EN and VU, those the pool has) and an animal group it does not have
+ * yet, and gives up those wishes in that order when nothing matches. Photos that are not on a group tile come first.
+ * Shown in the order picked, so neighbouring frames differ.
  */
-function fitsWall(c: Card): boolean {
-  if (!c.image || c.image.height <= 0) return false;
-  const aspect = c.image.width / c.image.height;
-  return aspect >= 0.4 && aspect <= 2.5;
-}
-
-/** The wall takes the threatened categories in turn, so its labels do not all read "Critically Endangered". */
-const WALL_CATEGORIES = ['CR', 'EN', 'VU'] as const;
-
-/**
- * The wall's photos, taken after every other photo section so those keep their picks: threatened species whose photo is
- * not already on the page and fits a frame. Frame by frame, the wall wants the next category in turn (of CR, EN and VU,
- * those the pool has) and an animal group it does not have yet, and gives up those wishes in that order when nothing
- * matches. Photos that are not on a group tile come first. Hung in the order picked, so neighbouring frames differ.
- */
-function wallPicks(pool: Card[], used: Set<string>, onTiles: Set<string>): Card[] {
-  const free = pool.filter((c) => fitsWall(c) && !used.has(c.slug));
+function stripPicks(pool: Card[], used: Set<string>, onTiles: Set<string>): Card[] {
+  const free = pool.filter((c) => c.image && !used.has(c.slug));
   const ordered = [...free.filter((c) => !onTiles.has(c.slug)), ...free.filter((c) => onTiles.has(c.slug))];
-  const categories = WALL_CATEGORIES.filter((cat) => ordered.some((c) => c.status?.category === cat));
-  const wall: Card[] = [];
-  for (let slot = 0; slot < WALL_SIZE; slot++) {
+  const categories = STRIP_CATEGORIES.filter((cat) => ordered.some((c) => c.status?.category === cat));
+  const strip: Card[] = [];
+  for (let slot = 0; slot < STRIP_SIZE; slot++) {
     const category = categories.length ? categories[slot % categories.length] : null;
-    const groups = new Set(wall.map((c) => c.displayGroup));
-    const left = ordered.filter((c) => !wall.includes(c));
+    const groups = new Set(strip.map((c) => c.displayGroup));
+    const left = ordered.filter((c) => !strip.includes(c));
     const pick =
       left.find((c) => c.status?.category === category && !groups.has(c.displayGroup)) ??
       left.find((c) => !groups.has(c.displayGroup)) ??
       left.find((c) => c.status?.category === category) ??
       left[0];
     if (!pick) break;
-    wall.push(pick);
+    strip.push(pick);
     used.add(pick.slug);
   }
-  return wall;
+  return strip;
 }
 
 /** Pins on the home globe (SpeciesGlobe, D-064). */
@@ -100,7 +95,7 @@ function arcDegrees(a: Pin, b: Pin): number {
 }
 
 /**
- * The globe's species, taken after the wall: threatened species whose photo is not already on the page and that have a
+ * The globe's species, taken after the strip: threatened species whose photo is not already on the page and that have a
  * pin (GET /map/pins: a point inside a place where they live; species with hidden locations never have one).
  * Pins must not cover each other: a pin is about 12° of arc wide at the middle of the globe, 17° when it is featured,
  * so each new pin keeps 20° from the others, then 10° if candidates run short; a closer one is left off. Two species in
@@ -168,7 +163,7 @@ export default async function Home() {
   const placesPhoto = pick((c) => c.environments.includes('marine'));
   const sourcePhoto = pick((c) => c.displayGroup === 'bird');
   const comparePhoto = pick();
-  const wall = wallPicks(pool, used, onTiles);
+  const strip = stripPicks(pool, used, onTiles);
   // The globe's candidates are the threatened species with a photo not yet on the page; the API says where each lives.
   const globeCandidates = pool.filter((c) => c.image && !used.has(c.slug)).map((c) => c.slug);
   const pins = globeCandidates.length
@@ -276,8 +271,8 @@ export default async function Home() {
         </div>
       ) : null}
 
-      {/* ---------- meet the animals: a full-screen photo wall of threatened species (D-063) ---------- */}
-      <SpeciesWall cards={wall} allHref={THREATENED_HREF} />
+      {/* ---------- meet the animals: a full-screen photo strip of threatened species (D-067) ---------- */}
+      <SpeciesStrip cards={strip} allHref={THREATENED_HREF} />
 
       {/* ---------- around the world: a full-screen globe of threatened species, one place each (D-064) ---------- */}
       <SpeciesGlobe entries={globe} />
